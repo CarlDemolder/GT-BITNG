@@ -1,0 +1,8 @@
+Added Component: Designator=J5(Mounting Hole)
+Added Component: Designator=J6(Mounting Hole)
+Added Component: Designator=J7(Mounting Hole)
+Added Component: Designator=J8(Mounting Hole)
+Added Member To Class: ClassName=DB_Pheripherals-X01 Member=Component J5 M2/2-56 Mounting Hole
+Added Member To Class: ClassName=DB_Pheripherals-X01 Member=Component J6 M2/2-56 Mounting Hole
+Added Member To Class: ClassName=DB_Pheripherals-X01 Member=Component J7 M2/2-56 Mounting Hole
+Added Member To Class: ClassName=DB_Pheripherals-X01 Member=Component J8 M2/2-56 Mounting Hole

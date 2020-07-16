@@ -1,0 +1,16 @@
+Removed Pin From Net: NetName=GND Pin=P1-1
+Removed Pin From Net: NetName=V_BATT Pin=R9-1
+Removed Member From Class: ClassName=DB_Power-X01 Member=D3
+Removed Member From Class: ClassName=DB_Power-X01 Member=R9
+Change Component DesignItemId : Designator=J4 Old DesignItemId= New DesignItemId=7c368be3265735b2816d0cab4417f87
+Change Component DesignItemId : Designator=U2 Old DesignItemId= New DesignItemId=bceab6869a9cb85cf5675529ee35ce4
+Change Component DesignItemId : Designator=U11 Old DesignItemId= New DesignItemId=COM-USB-FT201XQ-SQ17
+Change Component DesignItemId : Designator=U1 Old DesignItemId= New DesignItemId=NRSC-NRF52832-QF-48
+Change Component DesignItemId : Designator=U16 Old DesignItemId= New DesignItemId=TI-BQ51013B-RHL20
+Added Pin To Net: NetName=GND Pin=P1-2
+Added Pin To Net: NetName=NetP1_1 Pin=P1-1
+Added Pin To Net: NetName=NetP1_1 Pin=TP18-2
+Added Net: Name=NetP1_1
+Added Pin To Net: NetName=NetR12_1 Pin=R12-1
+Added Pin To Net: NetName=NetR12_1 Pin=U16-13
+Added Net: Name=NetR12_1

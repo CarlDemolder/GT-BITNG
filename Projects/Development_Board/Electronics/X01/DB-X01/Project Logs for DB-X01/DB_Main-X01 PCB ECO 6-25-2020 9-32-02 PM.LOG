@@ -1,0 +1,11 @@
+Removed Pin From Net: NetName=VCC Pin=J4-1
+Removed Pin From Net: NetName=GND Pin=J4-3
+Removed Pin From Net: NetName=GND Pin=J4-5
+Change Component DesignItemId : Designator=U1 Old DesignItemId=CMP-2100-03661-1 New DesignItemId=
+Change Component Footprint: Designator=U1 Old Footprint=NRSC-QF-48_M New Footprint=NRF52832-QFAA-R7
+Change Component Library : Designator=U1 Old Library=Altium Content Vault New Library=DB-X01.SchLib
+Change Managed Component Library Link : Designator=U1 Old VaultGUID= New VaultGUID= Old ItemGUID=64D9EED1-C5CD-4D0A-9BD5-8B6B41A7ADC5 New ItemGUID= Old RevisionGUID=F575A4AA-9D3E-4319-BB11-600899B98360 New RevisionGUID=
+Added Pin To Net: NetName=VCC Pin=J4-1
+Added Pin To Net: NetName=GND Pin=J4-3
+Added Pin To Net: NetName=GND Pin=J4-5
+Added Member To Class: ClassName=DB_Main-X01 Member=Component J4 FTSH-105-01-L-DV-007-K

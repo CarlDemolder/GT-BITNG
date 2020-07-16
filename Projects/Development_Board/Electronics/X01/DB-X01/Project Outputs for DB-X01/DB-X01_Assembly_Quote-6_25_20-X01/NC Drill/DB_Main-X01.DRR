@@ -1,0 +1,20 @@
+----------------------------------------------------------------------------------------------------------------------------------
+NCDrill File Report For: DB_Main-X01.PcbDoc   6/25/2020  12:14:57 AM
+----------------------------------------------------------------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : DB_Main-X01.TXT
+
+Tool       Hole Size               Hole Tolerance               Hole Type       Hole Count   Plated         Tool Travel
+----------------------------------------------------------------------------------------------------------------------------------
+T1      8mil (0.2mm)                                              Round             26        PTH        0.00inch (0.00mm)
+T2      12mil (0.305mm)                                           Round             262       PTH        0.00inch (0.00mm)
+T3      39mil (1mm)                                               Round             2         PTH        0.00inch (0.00mm)
+T4      45mil (1.143mm)                                           Round             12        PTH        0.00inch (0.00mm)
+T5      94mil (2.4mm)                                             Round             4         PTH        0.00inch (0.00mm)
+T6      122mil (3.1mm)                                            Round             2         PTH        0.00inch (0.00mm)
+T7      51mil (1.3mm)                                             Round             2         NPTH       0.00inch (0.00mm)
+----------------------------------------------------------------------------------------------------------------------------------
+Totals                                                                              310
+
+Total Processing Time (hh:mm:ss) : 00:00:00

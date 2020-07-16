@@ -1,0 +1,10 @@
+Output: Export STEP
+Type  : ExportSTEP
+From  : PCB Document [DB_Main-X01.PcbDoc]
+   Generated File[DB_Main-X01.step]
+
+
+Files Generated   : 1
+Documents Printed : 0
+
+Finished Output Generation At 10:21:49 PM On 6/28/2020

@@ -1,0 +1,8 @@
+[ProjectGroup]
+Version=1.0
+[Project1]
+ProjectPath=DB-X01\DB-X01.PrjPcb
+[Project2]
+ProjectPath=..\..\..\..\..\..\..\Downloads\tidraa8\TIDA-00318.PrjPCB
+[Project3]
+ProjectPath=..\..\..\..\..\Coleman-Nordic-Butterfly\Altium\infant_temp_v1c_4-14-19\infant_temperature_1c.PrjPcb
