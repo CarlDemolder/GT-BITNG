@@ -113,6 +113,10 @@
       <file file_name="../../../TMP116.h" />
       <file file_name="../../../ft201x.c" />
       <file file_name="../../../ft201x.h" />
+      <file file_name="../../../bmi160.c" />
+      <file file_name="../../../max30003.c" />
+      <file file_name="../../../bmi160.h" />
+      <file file_name="../../../max30003.h" />
     </folder>
     <folder Name="nRF_Segger_RTT">
       <file file_name="$(SDK)/external/segger_rtt/SEGGER_RTT.c" />

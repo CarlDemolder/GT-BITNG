@@ -33,10 +33,23 @@
 #define EN_MAX30102_POWER_LDO_PIN       7                                       /** Pinout for MAX30102 POWER ENABLE for DB-X01 */
 #define EN_MAX30003_POWER_LDO_PIN       13                                      /** Pinout for MAX30003 for DB-X01 */
 
+#define BMI160_INT1_PIN                 24                                      /** Pinout for BMI 160 INT1 pin for DB-X01 */
+#define BMI160_INT2_PIN                 23                                      /** Pinout for BMI 160 INT2 pin for DB-X01 */
 
-#define I2C_SCL_PIN                     28                                      /** Pinout for LED for DB-X01 */
-#define I2C_SCL_PIN                     28                                      /** Pinout for LED for DB-X01 */
+#define SPI_SDI_PIN                     14                                      /** Pinout for SPI SDI pin for DB-X01 */
+#define SPI_SDO_PIN                     16                                      /** Pinout for SPI SDO pin for DB-X01 */
+#define SPI_CLK_PIN                     15                                      /** Pinout for SPI CLK pin for DB-X01 */
 
+#define MAX30003_INT1_PIN               27                                      /** Pinout for MAX30003 INT1 pin for DB-X01 */
+#define MAX30003_INT2_PIN               26                                      /** Pinout for MAX30003 INT2 pin for DB-X01 */
+#define MAX30003_CS_PIN                 17                                      /** Pinout for MAX30003 CS pin for DB-X01 */
+#define MAX30003_F_CLOCK_PIN            18                                      /** Pinout for MAX30003 F_CLOCK pin for DB-X01 */
+
+#define MAX30102_INT1_PIN               23                                      /** Pinout for MAX30102 INT1 pin for DB-X01 */
+
+#define FT201X_RESET_PIN                22                                      /** Pinout for FT201X RESET pin for DB-X01 */
+
+#define TMP117_ALERT_PIN                19                                      /** Pinout for TMP117 ALERT pin for DB-X01 */
 
 #define HARDWARE_VERSION_NUMBER         "DB-X01"
 
