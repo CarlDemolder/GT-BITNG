@@ -1,8 +1,0 @@
-Added Pin To Net: NetName=NetD1_A Pin=D1-A
-Added Pin To Net: NetName=CHG_N Pin=D1-K
-Added Pin To Net: NetName=NetD2_A Pin=D2-A
-Added Pin To Net: NetName=LED_IND Pin=D2-K
-Added Pin To Net: NetName=NetD3_A Pin=D3-A
-Added Pin To Net: NetName=TS_CTRL Pin=D3-K
-Added Pin To Net: NetName=NetD4_A Pin=D4-A
-Added Pin To Net: NetName=LED_BLE Pin=D4-K
