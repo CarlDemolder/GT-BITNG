@@ -271,19 +271,11 @@
 
 #define BMI160_RA_CMD               0x7E
 
-// Function Prototypes
+
+uint8_t bmi160_read_chip_id(void);
+
 void bmi160_init_registers(void);
 
-void nrf_drv_bmi_uninit(void);
-
-uint8_t nrf_drv_bmi_read_chip_id(void);
-
-void bmi160_write_single_register(uint8_t register_address, uint8_t register_value);
-
-uint8_t nrf_drv_bmi_read_single_register(uint8_t reg_addr);
-
-void nrf_drv_bmi_init_regs(void);
-
-void nrf_drv_bmi_read_accel_gyro(ble_mpu_t *p_mpu);
+void bmi160_read_accel_gyro(uint8_t *data_array_pointer); 
 
 #endif // BMI160_H_

@@ -4,9 +4,9 @@
 #include "common.h"
 #include "i2c.h"
 
-#define FT201X_DEVICE_ADDRESS 0X22
-#define FT201X_READ_BUFFER_ADDRESS 0X73
-#define FT201X_WRITE_BUFFER_ADDRESS 0X23
+#define FT201X_DEVICE_ADDRESS           0X22
+#define FT201X_READ_BUFFER_ADDRESS      0X73
+#define FT201X_WRITE_BUFFER_ADDRESS     0X23
 
 
 void ft201x_init();

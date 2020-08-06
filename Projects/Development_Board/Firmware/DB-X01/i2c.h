@@ -6,7 +6,9 @@
 
 void twi_init(void);
 void i2c_write(uint8_t slave_address, uint8_t const* array_data, uint8_t array_size);
-void i2c_read(uint8_t slave_address, uint8_t register_address, uint8_t* array_data, uint8_t array_size); 
+void i2c_write_single_register(uint8_t device_address, uint8_t register_address, uint8_t register_value);
+void i2c_read(uint8_t slave_address, uint8_t register_address, uint8_t* array_data, uint8_t array_size);
+uint8_t i2c_read_single_register(uint8_t device_address, uint8_t register_address); 
 void i2c_stop(void);
 void i2c_start(void);
 
