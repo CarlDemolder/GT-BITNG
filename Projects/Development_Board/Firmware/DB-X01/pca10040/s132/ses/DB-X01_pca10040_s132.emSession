@@ -44,14 +44,14 @@
  <Files>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="54" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../main.c" selected="0" top="54" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="77" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../common.c" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="20" y="55" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../common.h" selected="0" top="13" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="11" y="55" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../ft201x.c" selected="0" top="37" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="55" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../common.h" selected="0" top="55" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="55" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../ft201x.c" selected="0" top="55" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="20" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../ft201x.h" selected="0" top="20" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../TMP116.h" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="29" y="22" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../TMP116.c" selected="0" top="4" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="22" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../TMP116.c" selected="0" top="22" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="152" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../bmi160.c" selected="1" top="117" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="281" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../bmi160.h" selected="0" top="252" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../i2c.c" selected="0" top="41" codecName="Default"/>
  </Files>
- <ARMCrossStudioWindow activeProject="DB-X01_pca10040_s132" fileDialogDefaultFilter="" autoConnectTarget="J-Link" buildConfiguration="Debug" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="C:/Users/cdemolde/Documents/GitHub/GT-BITNG/Projects/Development_Board/Firmware/DB-X01" debugSearchPath="" autoConnectCapabilities="3199"/>
+ <ARMCrossStudioWindow activeProject="DB-X01_pca10040_s132" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="C:/Users/cdemolde/Documents/GitHub/GT-BITNG/Projects/Development_Board/Firmware/DB-X01" debugSearchPath="" autoConnectCapabilities="3199"/>
 </session>
