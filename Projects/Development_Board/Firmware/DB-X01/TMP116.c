@@ -13,13 +13,14 @@ float tmp116_get_celsius(void)
 uint16_t tmp116_get_uint16(void)
 {    
     NRF_LOG_INFO("TMP116_get_uint16_t");
-    uint8_t tmp116_gnd_address = 0x48;                    //Slave Address for TMP116, ADD0 = GND
-    uint8_t tmp116_temp_address = 0x00;                   //Temperature values stored in this Address of TMP116
-    uint8_t i2c_temp_counts[2];
-    uint8_t temp_register_byte_count = 2;                 //Number of bytes of buffer to read
+    uint8_t device_address = 0x48;                      // Slave Address for TMP116, ADD0 = GND
+    uint8_t register_address = 0x00;                    // Temperature values stored in this Address of TMP116
+    uint8_t register_byte_count = 2;                    // Number of bytes of buffer to read
+    uint8_t register_data[2];
 
-    i2c_read(tmp116_gnd_address, tmp116_temp_address, i2c_temp_counts, temp_register_byte_count);
-    uint16_t uint16_i2c_counts =  (i2c_temp_counts[0] << 8) | i2c_temp_counts[1];
+
+    i2c_read(device_address, register_address, register_data, register_byte_count);
+    uint16_t uint16_i2c_counts =  (register_data[0] << 8) | register_data[1];
     return uint16_i2c_counts;
 }
 
@@ -42,24 +43,34 @@ void tmp116_get_uint8_t(uint8_t *tmp116_uint8_t)
 
 void configure_tmp116(uint8_t configuration_mode)
 {
+    _unlock_eeprom_tmp116();
+    _set_operating_mode_tmp116(configuration_mode);
+    _general_call_reset_tmp116();
+}
+
+static void _unlock_eeprom_tmp116(void)
+{
     uint8_t register_byte_count = 3; //Slave Address + Register Write Value
-    uint8_t tmp116_gnd_address = 0x48;                   //Slave Address for TMP116, ADD0 = GND
+    uint8_t device_address = 0x48;                   // Slave Address for TMP116, ADD0 = GND
     
     /*TMP116 unlock EEPROM address for writing to configuration register. */
-    uint8_t tmp116_eeprom_unlock_address = 0x04;         //Register for EEPROM Unlock Address
-    uint8_t tmp116_eun_value_1 = 0x80;                         //EUN Value to Unlock EEPROM 
-    uint8_t tmp116_eun_value_2 = 0x00;                         //EUN Value to Unlock EEPROM 
+    uint8_t register_address = 0x04;                 // Register for EEPROM Unlock Address
+    uint8_t tmp116_eun_value_1 = 0x80;               // EUN Value to Unlock EEPROM 
+    uint8_t tmp116_eun_value_2 = 0x00;               // EUN Value to Unlock EEPROM 
     
-    uint8_t tmp116_eeprom_register_value[3]= {0};
-    tmp116_eeprom_register_value[0] = tmp116_eeprom_unlock_address;
-    tmp116_eeprom_register_value[1] = tmp116_eun_value_1;
-    tmp116_eeprom_register_value[2] = tmp116_eun_value_2;
-    uint8_t *tmp116_eeprom_register_value_pointer = tmp116_eeprom_register_value;
+    uint8_t register_data[3]= {0};
+    register_data[0] = register_address;
+    register_data[1] = tmp116_eun_value_1;
+    register_data[2] = tmp116_eun_value_2;
+    uint8_t *register_data_pointer = register_data;
     
-    i2c_write(tmp116_gnd_address, tmp116_eeprom_register_value_pointer, register_byte_count);
+    i2c_write(device_address, register_data_pointer, register_byte_count);
 
     NRF_LOG_INFO("Unlock EPROM");
+}
 
+static void _set_operating_mode_tmp116(uint8_t configuration_mode)
+{
     uint8_t shutdown_mode = 0;
     uint8_t continous_mode = 1;
     uint8_t tmp116_config_value_1;
@@ -78,7 +89,7 @@ void configure_tmp116(uint8_t configuration_mode)
     }
     
     /*TMP116 Internal register write to Configuration Register. */
-    uint8_t tmp116_config_address = 0x01;                //Register for Configuration Register
+    uint8_t register_address = 0x01;                //Register for Configuration Register
 
     uint8_t tmp116_config_value_2 = 0x00;                //Configuration Value to set TMP116
     // MOD[1:0] = 11, ~ Single Shot Mode
@@ -86,36 +97,41 @@ void configure_tmp116(uint8_t configuration_mode)
     // MOD[1:0] = 01, ~ Shutdown Mode
     // AVG[1:0] = 00, ~ No Averaging, 15.5 ms Active Conversion Time
     // CONV[2:0] = 000, ~Conversion Cycle Time in CC Mode
-    
-    uint8_t tmp116_config_register_value[3]= {0};
-    tmp116_config_register_value[0] = tmp116_config_address;
-    tmp116_config_register_value[1] = tmp116_config_value_1;
-    tmp116_config_register_value[2] = tmp116_config_value_2;
-    uint8_t *tmp116_config_register_value_pointer = tmp116_config_register_value;
-    
-    i2c_write(tmp116_gnd_address, tmp116_config_register_value_pointer, register_byte_count);
+ 
+    uint8_t register_byte_count = 3; //Slave Address + Register Write Value
+    uint8_t device_address = 0x48;                   // Slave Address for TMP116, ADD0 = GND
 
+    uint8_t register_data[3] = {0};
+    register_data[0] = register_address;
+    register_data[1] = tmp116_config_value_1;
+    register_data[2] = tmp116_config_value_2;
+    uint8_t *register_data_pointer = register_data;
+
+    i2c_write(device_address, register_data_pointer, register_byte_count);
+}
+
+static void _general_call_reset_tmp116(void)
+{
     NRF_LOG_INFO("Configure Register Function");
     
-    /*General-Call Reset Function to reset TMP116 internal registers to power-up values. */
-    uint8_t general_call_address = 0x00;                  //General Call Address, ADD0 = GND
-    uint8_t general_byte_count = 1;                      //General Call Reset Value
-    uint8_t tmp116_general_call_reset = 0x06;             //TMP116 General Call Reset Value
-    
-    uint8_t tmp116_general_call_reset_value[1]= {0};
-    tmp116_general_call_reset_value[0] = tmp116_general_call_reset;
-    uint8_t *tmp116_general_call_reset_value_pointer = tmp116_general_call_reset_value;
-    
+    uint8_t device_address = 0x48;                   // Slave Address for TMP116, ADD0 = GND
 
-    i2c_write(general_call_address, tmp116_general_call_reset_value_pointer, general_byte_count);
+    /*General-Call Reset Function to reset TMP116 internal registers to power-up values. */
+    uint8_t register_address = 0x00;                  // General Call Address, ADD0 = GND
+    uint8_t register_value = 0x06;                    // TMP116 General Call Reset Value    
+
+    i2c_write_single_register(device_address, register_address, register_value);
       
     NRF_LOG_INFO("General-Call Reset Function");
 
     /*Read back the configuration register */
-    uint8_t i2c_temp_counts[2];
-    uint8_t temp_i2c_register_byte_count = 2; //Number of bytes of buffer to read
+
+    register_address = 0x01;                // Register for Configuration Register
+    uint8_t register_byte_count = 2;                // Number of bytes of buffer to read
+    uint8_t register_data[2];
     
-    i2c_read(tmp116_gnd_address, tmp116_config_address, i2c_temp_counts, temp_i2c_register_byte_count);
+    i2c_read(device_address, register_address, register_data, register_byte_count);
     nrf_delay_ms(100);    
     NRF_LOG_INFO("Sent Read Sensor Configuration");
+    NRF_LOG_HEXDUMP_INFO(register_data, sizeof(register_data));
 }

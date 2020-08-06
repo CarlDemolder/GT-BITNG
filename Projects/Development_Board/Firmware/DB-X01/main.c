@@ -2,6 +2,8 @@
 #include "power.h"
 #include "bluetooth.h"
 #include "TMP116.h"                   
+#include "bmi160.h"
+#include "max30003.h"
                                                                                                                         
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 

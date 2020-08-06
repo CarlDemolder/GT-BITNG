@@ -248,7 +248,7 @@ void on_temperature_evt(ble_temperature_service_t * p_cus_service, temperature_e
         case TEMPERATURE_EVT_NOTIFICATION_DISABLED:
             NRF_LOG_DEBUG("ON_TEMPERATURE_EVENT NOTIFICATION DISABLED");
             rtc_stop();
-            kill_nrf52();
+            disable_vcc_ldo();
             break;
 
         case TEMPERATURE_EVT_CONNECTED:
@@ -374,7 +374,7 @@ void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 
         case BLE_ADV_EVT_IDLE:
             NRF_LOG_INFO("BLE advertising idle.");
-            kill_nrf52();   // Disabling the LDO to kill the MCU
+            disable_vcc_ldo();   // Disabling the LDO to kill the MCU
             break;
 
         default:
@@ -546,7 +546,7 @@ void update_temperature_characteristic(uint8_t* tmp116_uint8_t)
 void set_hardware_version(void)
 {
     uint32_t err_code;
-    uint8_t hw_version[5] = HARDWARE_VERSION_NUMBER;
+    uint8_t hw_version[6] = HARDWARE_VERSION_NUMBER;
     err_code = hardware_version_value_update(&m_ble_temperature_service, hw_version);   // Update the TMP116 Characteristic Value
     APP_ERROR_CHECK(err_code);
 }

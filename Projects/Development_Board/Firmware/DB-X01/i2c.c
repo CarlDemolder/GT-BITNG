@@ -68,6 +68,25 @@ void i2c_write(uint8_t slave_address, uint8_t const* array_data, uint8_t array_s
     nrf_delay_ms(10);
 }
 
+
+void i2c_write_single_register(uint8_t slave_address, uint8_t register_address, uint8_t register_value)
+{
+    uint8_t register_byte_count = 2;              
+    
+    /*BMI160 Register values to initialize sensor*/
+    uint8_t register_array[2]= {0};       // Register Address + Register Write Value
+    uint8_t device_address = slave_address;
+
+    register_array[0] = register_address;
+    register_array[1] = register_value;
+    uint8_t *register_array_pointer = register_array;
+    
+    i2c_write(device_address, register_array_pointer, register_byte_count);
+ 
+    nrf_delay_ms(1); // required delay between I2C write commands
+    NRF_LOG_INFO("Register at address 0x%X changed to 0x%X. \r\n", register_address, register_value);
+}
+
 void i2c_read(uint8_t slave_address, uint8_t register_address, uint8_t* array_data, uint8_t array_size)
 {
     m_xfer_done = false;
@@ -82,6 +101,17 @@ void i2c_read(uint8_t slave_address, uint8_t register_address, uint8_t* array_da
     APP_ERROR_CHECK(error_code);
     while(m_xfer_done == false);
     nrf_delay_ms(10);
+}
+
+uint8_t i2c_read_single_register(uint8_t device_address, uint8_t register_address)
+{
+    uint8_t register_data;
+    i2c_read(device_address, register_address, &register_data, 1);
+
+    NRF_LOG_INFO("Register HEX Data Dump: \r\n");
+    NRF_LOG_HEXDUMP_INFO(&register_data, sizeof(register_data));
+
+    return register_data;
 }
 
 void i2c_stop(void)

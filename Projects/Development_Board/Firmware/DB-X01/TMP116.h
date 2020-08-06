@@ -6,6 +6,10 @@
 
 //TMP116 definitions
 
+static void _unlock_eeprom_tmp116(void);
+static void _set_operating_mode_tmp116(uint8_t configuration_mode);
+static void _general_call_reset_tmp116(void);
+
 float tmp116_get_celsius(void);
 uint16_t tmp116_get_uint16(void);
 void tmp116_string_celsius(char *tmp116_temperature);
