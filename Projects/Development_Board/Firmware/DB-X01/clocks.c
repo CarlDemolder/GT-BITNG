@@ -1,6 +1,6 @@
 #include "clocks.h"
 
-const nrfx_rtc_t rtc = NRFX_RTC_INSTANCE(2); /**< Declaring an instance of nrfx_rtc for RTC1. RTC0 is reserved for Soft Device */
+const nrfx_rtc_t rtc = NRFX_RTC_INSTANCE(2); /**< Declaring an instance of nrfx_rtc for RTC2. RTC0 is reserved for Soft Device */
 
 uint8_t nrfx_rtc_is_running = 0;
 uint8_t nrfx_rtc_restart = 0;    // Constant used to restart RTC counter if the phone disconnects if already connected
@@ -18,13 +18,13 @@ void clocks_init(void)
 //    ret_code_t err_code = nrfx_clock_init(nrfx_clock_irq_handler);
 //    APP_ERROR_CHECK(err_code);
 //
-//    nrfx_clock_hfclk_start();
-    lfclock_restart();
+    hfclock_start();    // Starting the High Frequency Clock
+    lfclock_start();    // Starting the Low Frequency Clock
 }
 
-/**@brief Function to restart the HF clock
+/**@brief Function to start the HF clock
  */
-void hfclock_restart(void)
+void hfclock_start(void)
 {
     if(!nrfx_clock_hfclk_is_running())
     {
@@ -42,9 +42,9 @@ void hfclock_stop(void)
     }
 }
 
-/**@brief Function to restart the LF clock
+/**@brief Function to start the LF clock
  */
-void lfclock_restart(void)
+void lfclock_start(void)
 {
     if(!nrfx_clock_lfclk_is_running())
     {

@@ -54,4 +54,4 @@ Output/DB-X01_pca10040_s132\ Debug/Obj/nrf_log_default_backends.o: \
  C:/Users/carld/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/libraries/log/src/nrf_log_internal.h \
  C:/Users/carld/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/libraries/log/nrf_log_types.h \
  C:/Users/carld/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/libraries/util/nrf_assert.h \
- C:/Users/carld/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/libraries/log/nrf_log_backend_uart.h
+ C:/Users/carld/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/libraries/log/nrf_log_backend_rtt.h

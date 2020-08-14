@@ -1,6 +1,6 @@
 #include "spi.h"
 
-static const nrfx_spim_t m_spim_1 = NRFX_SPIM_INSTANCE(1);
+static const nrfx_spim_t m_spim_2 = NRFX_SPIM_INSTANCE(2);
 
 /* Indicates if operation on SPI has ended. */
 static volatile bool spim_xfer_done = false;
@@ -31,13 +31,13 @@ void spim_init(void)
     spim_config.ss_pin = MAX30003_CS_PIN;
     spim_config.ss_active_high = false;
     spim_config.orc = 0x55;
-    APP_ERROR_CHECK(nrfx_spim_init(&m_spim_1, &spim_config, spim_event_handler, NULL));
+    APP_ERROR_CHECK(nrfx_spim_init(&m_spim_2, &spim_config, spim_event_handler, NULL));
     NRF_LOG_INFO("SPIM initialized \r\n");
 }
 
 void spim_uninit(void) 
 {
-    nrfx_spim_uninit(&m_spim_1);
+    nrfx_spim_uninit(&m_spim_2);
     NRF_LOG_INFO("SPIM uninitialized \r\n");
 }
 
@@ -53,7 +53,7 @@ void spim_read_single_register(uint8_t register_address, uint8_t *data_array)
     transfer_buffer.p_rx_buffer = register_data;
     transfer_buffer.rx_length = sizeof(register_data);
 
-    APP_ERROR_CHECK(nrfx_spim_xfer(&m_spim_1, &transfer_buffer, 0));
+    APP_ERROR_CHECK(nrfx_spim_xfer(&m_spim_2, &transfer_buffer, 0));
     while (spim_xfer_done == false); 
 
     NRF_LOG_INFO("REGISTER DATA @ Address 0x%x: \r\n", register_address);
@@ -73,7 +73,7 @@ void spim_read_registers(uint8_t register_address, uint8_t *data_array, uint8_t 
     transfer_buffer.p_rx_buffer = data_array;
     transfer_buffer.rx_length = array_size;
 
-    APP_ERROR_CHECK(nrfx_spim_xfer(&m_spim_1, &transfer_buffer, 0));
+    APP_ERROR_CHECK(nrfx_spim_xfer(&m_spim_2, &transfer_buffer, 0));
     while (spim_xfer_done == false); 
 
     NRF_LOG_INFO("REGISTER DATA @ Address 0x%x: \r\n", register_address);
@@ -98,7 +98,7 @@ void spim_write_single_register(uint8_t register_address, uint8_t byte_0, uint8_
     transfer_buffer.p_rx_buffer = NULL;
     transfer_buffer.rx_length = NULL;
 
-    APP_ERROR_CHECK(nrfx_spim_xfer(&m_spim_1, &transfer_buffer, 0));
+    APP_ERROR_CHECK(nrfx_spim_xfer(&m_spim_2, &transfer_buffer, 0));
 
     while (spim_xfer_done == false); 
 

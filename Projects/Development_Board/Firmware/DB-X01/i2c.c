@@ -32,8 +32,8 @@ void twim_handler(nrfx_twim_evt_t const * p_event, void * p_context)
 
 /*
  * Initialize I2C module, called Two Wire Interface (TWI)
- * Setting Pin P0.00 to SDA
- * Setting Pin P0.05 to SCL
+ * Setting Pin P0.30 to SDA
+ * Setting Pin P0.28 to SCL
  * Setting I2C frequency to 100 kHz
  * Giving it a low priority to not disturb BLE and Power Interrupts
  */

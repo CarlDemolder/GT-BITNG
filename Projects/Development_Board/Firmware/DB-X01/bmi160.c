@@ -93,8 +93,8 @@ void bmi160_read_accel_gyro(uint8_t *data_array_pointer)
     NRF_LOG_INFO("BMI160 Hex Data Dump: \r\n");
     NRF_LOG_HEXDUMP_INFO(register_data, sizeof(register_data));
 
-    for(uint8_t i = 0; i < register_byte_count; i++)
-    {
-        data_array_pointer[i] = register_data[i];
-    }
+//    for(uint8_t i = 0; i < register_byte_count; i++)
+//    {
+//        data_array_pointer[i] = register_data[i];
+//    }
 }

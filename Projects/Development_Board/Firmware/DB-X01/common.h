@@ -25,8 +25,8 @@
 #define BLE_LED_PIN                     11                                      /** Pinout for BLE LED for DB-X01 */
 #define IND_LED_PIN                     12                                      /** Pinout for IND LED for DB-X01 */
 
-#define I2C_SDA_PIN                     30                                      /** Pinout for LED for DB-X01 */
-#define I2C_SCL_PIN                     28                                      /** Pinout for LED for DB-X01 */
+#define I2C_SDA_PIN                     30                                      /** Pinout for I2C SDA for DB-X01 */
+#define I2C_SCL_PIN                     28                                      /** Pinout for I2C SCL for DB-X01 */
 
 #define EN_VCC_LDO_PIN                  8                                       /** Pinout for LDO Enable for DB-X01 */
 #define EN_MAX30102_LED_LDO_PIN         6                                       /** Pinout for MAX30102 LED ENABLE for DB-X01 */
@@ -51,6 +51,8 @@
 
 #define TMP117_ALERT_PIN                19                                      /** Pinout for TMP117 ALERT pin for DB-X01 */
 
+#define NRESET_PIN                      21                                      /** Pinout for nRESET pin for DB-X01 */ 
+
 #define HARDWARE_VERSION_NUMBER         "DB-X01"
 
 void log_init(void);
@@ -68,7 +70,7 @@ void disable_max30102_power_ldo(void);
 void enable_max30003_power_ldo(void);
 void disable_max30003_power_ldo(void);
 
-void led_init(void);
+void init_leds(void);
 
 void ind_led_off(void);
 void ind_led_on(void);
@@ -78,6 +80,8 @@ void ind_led_blink(uint16_t on_ms, uint16_t off_ms);
 void ble_led_off(void);
 void ble_led_on(void);
 void ble_led_blink(uint16_t on_ms, uint16_t off_ms);
+
+void enable_nreset(void);
 
 
 #endif // __COMMON_H

@@ -20,9 +20,9 @@ typedef void (*app_rtc_handler_t)(void);
 typedef void (*app_clock_handler_t)(void);
 
 void clocks_init(void);
-void hfclock_restart(void);
+void hfclock_start(void);
 void hfclock_stop(void);
-void lfclock_restart(void);
+void lfclock_start(void);
 void lfclock_stop(void);
 void rtc_config(void);
 void rtc_handler(nrfx_rtc_int_type_t int_type);

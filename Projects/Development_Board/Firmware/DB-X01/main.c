@@ -27,13 +27,16 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
  */
 int main(void)
 {
-    log_init();                 // Initialize debugging through RTT not UART
-    ldo_init();                 // Initialize hardware/GPIO pins
     clocks_init();              // Initialize Clocks: HF & LF
+    log_init();                 // Initialize debugging through RTT not UART
+    init_leds();                // Initialize LEDs
+    ldo_init();                 // Initialize hardware/GPIO pins
     power_init();               // Initialize Power Manager Unit
+    enable_vcc_ldo();           // Enable LDO VCC, 3V
+    enable_max30102_power_ldo();  // Enable power to the MAX30102, 1.8V
     twi_init();                 // Initialize I2C protocol
-
-    rtc_config();                 // Initialize RTC Clock with the RTC Handler
+    ind_led_blink(1000, 1000);    // Blink the LED for a second to wait for TWI to initialize
+//    rtc_config();                 // Initialize RTC Clock with the RTC Handler
 
     // ble_stack_init();
     // gap_params_init();
@@ -44,8 +47,10 @@ int main(void)
     // conn_params_init();
     // peer_manager_init();
 
-    enable_dcdc_converter();    // Enabling the DC/DC Converter after the BLE Stack has been Initialized
-    // configure_tmp116(0);    // Setting the TMP116 into Shutdown Mode 
+//    enable_dcdc_converter();    // Enabling the DC/DC Converter after the BLE Stack has been Initialized
+    i2c_start();      // Starting the I2C module
+    ind_led_blink(1000,1000);   // Blink the LED for a second to wait for I2C to start
+//    configure_tmp116(0);    // Setting the TMP116 into Shutdown Mode 
 
     // Start execution.
     NRF_LOG_INFO("Nordic Butterfly started.");
@@ -53,11 +58,18 @@ int main(void)
     // advertising_start();
 
     // Turn off unneccessary pheripherals before entering main loop.
-    i2c_stop();           // Turn off the TWI Pheripheral Module
-//    hfclock_stop();       // Stop the HF Crystal Clock
+//    i2c_stop();           // Turn off the TWI Pheripheral Module
+
+//    bmi160_init_registers();
 
     for (;;)
     {
-        power_handler();
+//        power_handler();
+        ind_led_blink(1000,1000);   // Indicator LED blink
+        NRF_LOG_INFO("Blink");
+//        tmp116_get_celsius();
+
+//        uint8_t *data_array_pointer;
+//        bmi160_read_accel_gyro(data_array_pointer); 
     }
 }
