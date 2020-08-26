@@ -19,7 +19,7 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
-
+#include "nrfx_gpiote.h"
 
 
 #define BLE_LED_PIN                     11                                      /** Pinout for BLE LED for DB-X01 */
@@ -54,6 +54,8 @@
 #define NRESET_PIN                      21                                      /** Pinout for nRESET pin for DB-X01 */ 
 
 #define HARDWARE_VERSION_NUMBER         "DB-X01"
+
+void gpiote_init(void);
 
 void log_init(void);
 void ldo_init(void);

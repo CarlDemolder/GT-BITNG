@@ -1,9 +1,14 @@
 #include "spi.h"
 
-static const nrfx_spim_t m_spim_2 = NRFX_SPIM_INSTANCE(2);
+/* SPIM instance ID. */
+#define SPIM_INSTANCE_ID     2
 
 /* Indicates if operation on SPI has ended. */
 static volatile bool spim_xfer_done = false;
+
+
+/* SPIM instance. */
+const nrfx_spim_t m_spim_2 = NRFX_SPIM_INSTANCE(SPIM_INSTANCE_ID);
 
 void spim_event_handler(nrfx_spim_evt_t const *p_event, void *p_context) 
 {

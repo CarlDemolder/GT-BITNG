@@ -2,8 +2,8 @@
 #define __POWER_H__
 
 #include "common.h"
-#include "nrf_pwr_mgmt.h"
 #include "nrfx_power.h"
+#include "nrf_pwr_mgmt.h"
 #include "nrfx_power_clock.h"
 
 

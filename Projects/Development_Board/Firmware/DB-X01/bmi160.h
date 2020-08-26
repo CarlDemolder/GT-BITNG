@@ -124,6 +124,8 @@
 #define BMI160_RA_GYRO_CONF         0X42
 #define BMI160_RA_GYRO_RANGE        0X43
 
+#define BMI160_FIFO_DOWNS           0X45
+
 #define BMI160_FIFO_HEADER_EN_BIT   4
 #define BMI160_FIFO_ACC_EN_BIT      6
 #define BMI160_FIFO_GYR_EN_BIT      7
@@ -261,16 +263,18 @@
 #define BMI160_ACCEL_RANGE_SEL_BIT  0
 #define BMI160_ACCEL_RANGE_SEL_LEN  4
 
-#define BMI160_CMD_START_FOC        0x03
-#define BMI160_CMD_ACC_MODE_NORMAL  0x11
-#define BMI160_CMD_GYR_MODE_NORMAL  0x15
-#define BMI160_CMD_FIFO_FLUSH       0xB0
-#define BMI160_CMD_INT_RESET        0xB1
-#define BMI160_CMD_STEP_CNT_CLR     0xB2
-#define BMI160_CMD_SOFT_RESET       0xB6
+#define BMI160_CMD_START_FOC            0x03
+#define BMI160_CMD_ACC_MODE_NORMAL      0x11
+#define BMI160_CMD_ACC_MODE_LOW_POWER   0x12
+#define BMI160_CMD_GYR_MODE_NORMAL      0x15
+#define BMI160_CMD_FIFO_FLUSH           0xB0
+#define BMI160_CMD_INT_RESET            0xB1
+#define BMI160_CMD_STEP_CNT_CLR         0xB2
+#define BMI160_CMD_SOFT_RESET           0xB6
 
 #define BMI160_RA_CMD               0x7E
 
+void bmi160_init(void);
 
 uint8_t bmi160_read_chip_id(void);
 

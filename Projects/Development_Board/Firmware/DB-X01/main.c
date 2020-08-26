@@ -4,6 +4,7 @@
 #include "TMP116.h"                   
 #include "bmi160.h"
 #include "max30003.h"
+#include "serial_slave.h"
                                                                                                                         
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
@@ -27,14 +28,21 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
  */
 int main(void)
 {
-    clocks_init();              // Initialize Clocks: HF & LF
     log_init();                 // Initialize debugging through RTT not UART
-    init_leds();                // Initialize LEDs
+    gpiote_init();              // Initializing the GPIO task scheduler and manager
     ldo_init();                 // Initialize hardware/GPIO pins
-    power_init();               // Initialize Power Manager Unit
     enable_vcc_ldo();           // Enable LDO VCC, 3V
-    enable_max30102_power_ldo();  // Enable power to the MAX30102, 1.8V
-    twi_init();                 // Initialize I2C protocol
+    
+    power_init();               // Initialize Power Manager Unit
+
+    init_leds();                // Initialize LEDs
+    ind_led_blink(2000, 2000);    // Blink the LED for a second to wait for TWI to initialize
+
+
+
+//    enable_max30102_power_ldo();  // Enable power to the MAX30102, 1.8V
+    enable_max30003_power_ldo();
+//    twim_init();                 // Initialize I2C protocol
     ind_led_blink(1000, 1000);    // Blink the LED for a second to wait for TWI to initialize
 //    rtc_config();                 // Initialize RTC Clock with the RTC Handler
 
@@ -47,29 +55,41 @@ int main(void)
     // conn_params_init();
     // peer_manager_init();
 
-//    enable_dcdc_converter();    // Enabling the DC/DC Converter after the BLE Stack has been Initialized
-    i2c_start();      // Starting the I2C module
+    enable_dcdc_converter();    // Enabling the DC/DC Converter AFTER the BLE Stack has been Initialized
     ind_led_blink(1000,1000);   // Blink the LED for a second to wait for I2C to start
-//    configure_tmp116(0);    // Setting the TMP116 into Shutdown Mode 
+
 
     // Start execution.
-    NRF_LOG_INFO("Nordic Butterfly started.");
+    NRF_LOG_INFO("DB-X01 started.");
     // set_hardware_version();
     // advertising_start();
 
     // Turn off unneccessary pheripherals before entering main loop.
 //    i2c_stop();           // Turn off the TWI Pheripheral Module
+//    ind_led_blink(1000,1000);   // Blink the LED for a second to wait for I2C to start
+//    i2c_start();
+//    ind_led_blink(1000,1000);   // Blink the LED for a second to wait for I2C to start
 
-//    bmi160_init_registers();
+      spim_init();
+      ind_led_blink(1000,1000);   // Blink the LED for a second to wait for SPIM to start
+      max30003_soft_reset();
+      max30003_init(); 
+
+//    bmi160_init();
+//    configure_tmp116(1);        // Setting the TMP116 into Shutdown Mode 
+//    uint8_t chip_id = bmi160_read_chip_id();
 
     for (;;)
     {
+//        serial_slave_handler();
 //        power_handler();
-        ind_led_blink(1000,1000);   // Indicator LED blink
+        ind_led_blink(2000,2000);   // Indicator LED blink
         NRF_LOG_INFO("Blink");
-//        tmp116_get_celsius();
-
-//        uint8_t *data_array_pointer;
-//        bmi160_read_accel_gyro(data_array_pointer); 
+        max30003_read_device_info();
+//        if(max30003_read_interrupt() == 1)
+//        {
+//            uint8_t data_array[52];
+//            max30003_read_fifo_data(data_array);
+//        }
     }
 }

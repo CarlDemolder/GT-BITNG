@@ -13,13 +13,10 @@ static app_clock_handler_t m_app_clock_handler;
 
 void clocks_init(void)
 {
-    NRF_LOG_DEBUG("Clocks Init");
+    NRF_LOG_INFO("Clocks Init");
     // Initialize Clock module.
 //    ret_code_t err_code = nrfx_clock_init(nrfx_clock_irq_handler);
 //    APP_ERROR_CHECK(err_code);
-//
-    hfclock_start();    // Starting the High Frequency Clock
-    lfclock_start();    // Starting the Low Frequency Clock
 }
 
 /**@brief Function to start the HF clock
@@ -29,6 +26,7 @@ void hfclock_start(void)
     if(!nrfx_clock_hfclk_is_running())
     {
         nrfx_clock_hfclk_start();
+        NRF_LOG_INFO("NRFX Clock HFCLK Started");
     }
 }
 
@@ -39,6 +37,7 @@ void hfclock_stop(void)
     if(nrfx_clock_hfclk_is_running())
     {
         nrfx_clock_hfclk_stop();
+        NRF_LOG_INFO("NRFX Clock HFCLK Stopped");
     }
 }
 
@@ -60,6 +59,7 @@ void lfclock_stop(void)
     if(nrfx_clock_lfclk_is_running())
     {
         nrfx_clock_lfclk_stop();
+        NRF_LOG_INFO("NRFX Clock LFCLK Stopped");
     }
 }
 
