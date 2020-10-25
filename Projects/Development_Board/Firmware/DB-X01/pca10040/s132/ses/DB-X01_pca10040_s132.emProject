@@ -87,6 +87,7 @@
       <file file_name="../../../../../../../../../Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/src/nrfx_power.c" />
       <file file_name="../../../../../../../../../Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/include/nrfx_power_clock.h" />
       <file file_name="../../../../../../../../../Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/src/nrfx_spim.c" />
+      <file file_name="../../../../../../../../../Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/src/nrfx_timer.c" />
     </folder>
     <folder Name="Application">
       <file file_name="../../../main.c" />

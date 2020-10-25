@@ -12,10 +12,11 @@ const nrfx_spim_t m_spim_2 = NRFX_SPIM_INSTANCE(SPIM_INSTANCE_ID);
 
 void spim_event_handler(nrfx_spim_evt_t const *p_event, void *p_context) 
 {
-    NRF_LOG_DEBUG("SPI_HANDLER Event Occured");
+    NRF_LOG_INFO("SPI_HANDLER Event Occured");
     switch (p_event->type)
     {
         case NRFX_SPIM_EVENT_DONE:
+            NRF_LOG_INFO("NRFX SPIM EVENT DONE");
             spim_xfer_done = true;
             break;
         default:
@@ -26,7 +27,7 @@ void spim_event_handler(nrfx_spim_evt_t const *p_event, void *p_context)
 void spim_init(void) 
 {
     nrfx_spim_config_t spim_config = NRFX_SPIM_DEFAULT_CONFIG;
-    spim_config.mode = NRF_SPIM_MODE_1;
+    spim_config.mode = NRF_SPIM_MODE_0;
     spim_config.bit_order = NRF_SPIM_BIT_ORDER_MSB_FIRST;
     spim_config.frequency = NRF_SPIM_FREQ_1M;
     spim_config.irq_priority = APP_IRQ_PRIORITY_HIGHEST;
@@ -34,7 +35,6 @@ void spim_init(void)
     spim_config.sck_pin = SPI_CLK_PIN;
     spim_config.mosi_pin = SPI_MOSI_PIN;
     spim_config.ss_pin = MAX30003_CS_PIN;
-    spim_config.ss_active_high = false;
     spim_config.orc = 0x55;
     APP_ERROR_CHECK(nrfx_spim_init(&m_spim_2, &spim_config, spim_event_handler, NULL));
     NRF_LOG_INFO("SPIM initialized \r\n");

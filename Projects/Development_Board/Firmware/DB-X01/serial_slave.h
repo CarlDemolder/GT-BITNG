@@ -3,6 +3,10 @@
 
 #include "common.h"
 #include "ft201x.h"
+#include "TMP116.h"                   
+#include "bmi160.h"
+#include "clocks.h"
+#include "power.h"  
 
 #define USB_COMMAND_HEADER                        0XAA
 #define USB_COMMAND_FOOTER                        0XAB
@@ -18,12 +22,12 @@
 
 #define NRF52_HF_CLOCK_COMMAND                    0x10
 #define NRF52_LF_CLOCK_COMMAND                    0x11
-#define NRF52_RTC_CLOCK_COMMAND                   0X12
-#define NRF52_POWER_COMMAND                       0X13
-#define NRF52_LED_COMMAND                         0X14
-#define NRF52_LOG_COMMAND                         0X15
-#define NRF52_I2C_COMMAND                         0X16
-#define NRF52_SPI_COMMAND                         0X17
+#define NRF52_CLOCK_COMMAND                       0X12
+#define NRF52_RTC_CLOCK_COMMAND                   0X13
+#define NRF52_POWER_COMMAND                       0X14
+#define NRF52_COMMON_COMMAND                      0X15
+#define NRF52_I2C_COMMAND                         0X17
+#define NRF52_SPI_COMMAND                         0X18
 
 #define FT201X_READ_CHIP_ID_COMMAND               0X20
 #define FT201X_SET_VCP_COMMAND                    0X21
@@ -53,8 +57,40 @@
 #define BLE_INIT_PEER_MANAGER_COMMAND             0X66
 #define BLE_INIT_ADVERTISING_COMMAND              0X67
 
+#define NRF52_HF_CLOCK_START                      0X70
+#define NRF52_HF_CLOCK_STOP                       0X71
+#define NRF52_NRFX_CLOCK_DRIVER_INIT              0X72
+#define NRF52_NRFX_CLOCK_DRIVER_UNINIT            0X73
+#define NRF52_LF_CLOCK_START                      0X74
+#define NRF52_LF_CLOCK_STOP                       0X75
+
+#define NRF52_RTC_CONFIG                          0X80
+#define NRF52_RTC_SET_COUNTER                     0X81
+#define NRF52_RTC_START                           0X82
+#define NRF52_RTC_STOP                            0X83
+#define NRF52_RTC_RESTART                         0X84
+
+#define NRF52_POWER_DCDC_CONVERTER_ENABLE         0X90
+#define NRF52_POWER_DCDC_CONVERTER_DISABLE        0X91
+#define NRF52_POWER_SLEEP_MODE_ENTER              0X92
+#define NRF52_POWER_DEEP_SLEEP_MODE_ENTER         0X93
+#define NRF52_POWER_HANDLER                       0X94
+
+#define NRF52_LED_INIT                            0X99
+#define NRF52_LED_IND_LED_ON                      0X9A
+#define NRF52_LED_IND_LED_OFF                     0X9B
+#define NRF52_LED_IND_BLINK                       0X9C
+#define NRF52_LED_BLE_LED_ON                      0X9D
+#define NRF52_LED_BLE_LED_OFF                     0X9E
+#define NRF52_LED_BLE_BLINK                       0X9F
+
+#define NRF52_I2C_TWIM_INIT                       0XA0
+#define NRF52_LOG_INIT                            0XA1
+#define NRF52_GPIOTE_INIT                         0XA2
+#define NRF52_LDO_INIT                            0XA3
 
 
+void enable_serial_slave_handler(void);
 void serial_slave_handler(void);
 static void _nrf52_handler(uint8_t *serial_array_data);
 static void _ft201x_handler(uint8_t *serial_array_data);

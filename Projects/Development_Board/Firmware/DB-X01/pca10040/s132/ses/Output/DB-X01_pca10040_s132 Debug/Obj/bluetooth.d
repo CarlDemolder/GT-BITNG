@@ -134,4 +134,6 @@ Output/DB-X01_pca10040_s132\ Debug/Obj/bluetooth.o: \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/hal/nrf_clock.h \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/include/nrfx_power_clock.h \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/include/nrfx_rtc.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/hal/nrf_rtc.h
+ C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/hal/nrf_rtc.h \
+ C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/include/nrfx_timer.h \
+ C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/hal/nrf_timer.h

@@ -36,8 +36,8 @@
 #define BMI160_INT1_PIN                 24                                      /** Pinout for BMI 160 INT1 pin for DB-X01 */
 #define BMI160_INT2_PIN                 23                                      /** Pinout for BMI 160 INT2 pin for DB-X01 */
 
-#define SPI_MISO_PIN                    14                                      /** Pinout for SPI SDI pin for DB-X01 */
-#define SPI_MOSI_PIN                    16                                      /** Pinout for SPI SDO pin for DB-X01 */
+#define SPI_MISO_PIN                    16                                      /** Pinout for SPI SDI pin for DB-X01 */
+#define SPI_MOSI_PIN                    14                                      /** Pinout for SPI SDO pin for DB-X01 */
 #define SPI_CLK_PIN                     15                                      /** Pinout for SPI CLK pin for DB-X01 */
 
 #define MAX30003_INT1_PIN               27                                      /** Pinout for MAX30003 INT1 pin for DB-X01 */

@@ -1,0 +1,10 @@
+Output: Bill of Materials
+Type  : BOM
+From  : BOM Document [DB-X02.BomDoc]
+   Generated File[Bill of Materials-DB-X02.xlsx]
+
+
+Files Generated   : 1
+Documents Printed : 0
+
+Finished Output Generation At 8:27:36 PM On 10/4/2020

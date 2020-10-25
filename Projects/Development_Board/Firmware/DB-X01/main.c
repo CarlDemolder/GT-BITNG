@@ -1,8 +1,7 @@
 #include "common.h"
 #include "power.h"
 #include "bluetooth.h"
-#include "TMP116.h"                   
-#include "bmi160.h"
+
 #include "max30003.h"
 #include "serial_slave.h"
                                                                                                                         
@@ -28,20 +27,17 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
  */
 int main(void)
 {
-    log_init();                 // Initialize debugging through RTT not UART
-    gpiote_init();              // Initializing the GPIO task scheduler and manager
-    ldo_init();                 // Initialize hardware/GPIO pins
-    enable_vcc_ldo();           // Enable LDO VCC, 3V
-    
+    enable_vcc_ldo();                 // Enable LDO VCC, 3.3V
+    enable_serial_slave_handler();    // Enable Serial Slave Handler
+ 
     power_init();               // Initialize Power Manager Unit
 
-    init_leds();                // Initialize LEDs
+
     ind_led_blink(2000, 2000);    // Blink the LED for a second to wait for TWI to initialize
 
 
-
 //    enable_max30102_power_ldo();  // Enable power to the MAX30102, 1.8V
-    enable_max30003_power_ldo();
+//    enable_max30003_power_ldo();
 //    twim_init();                 // Initialize I2C protocol
     ind_led_blink(1000, 1000);    // Blink the LED for a second to wait for TWI to initialize
 //    rtc_config();                 // Initialize RTC Clock with the RTC Handler
@@ -72,7 +68,6 @@ int main(void)
 
       spim_init();
       ind_led_blink(1000,1000);   // Blink the LED for a second to wait for SPIM to start
-      max30003_soft_reset();
       max30003_init(); 
 
 //    bmi160_init();
@@ -81,11 +76,12 @@ int main(void)
 
     for (;;)
     {
-//        serial_slave_handler();
-//        power_handler();
+        serial_slave_handler();
+        power_handler();
         ind_led_blink(2000,2000);   // Indicator LED blink
         NRF_LOG_INFO("Blink");
-        max30003_read_device_info();
+//        max30003_read_device_info();
+//        max30003_read_device_status();
 //        if(max30003_read_interrupt() == 1)
 //        {
 //            uint8_t data_array[52];

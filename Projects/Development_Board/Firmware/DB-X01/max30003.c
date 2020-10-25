@@ -27,20 +27,21 @@ void max30003_read_device_status(void)
 // Control functions>
 void max30003_init(void) 
 {
+    max30003_soft_reset();
     _max30003_init_interrupt();   // Initializing the interrupt pin
 
     // Interrupts and Dynamic Modes
-    spim_write_single_register(MAX30003_EN_INT_ADDRESS, 0x80, 0x00, 0x03);   //0x02
-    spim_write_single_register(MAX30003_EN_INT2_ADDRESS, 0x00, 0x00, 0x03);  //0x03
-    spim_write_single_register(MAX30003_MNGR_INT_ADDRESS, 0x78, 0x00, 0x04); //0x04
-    spim_write_single_register(MAX30003_MNGR_DYN_ADDRESS, 0x3f, 0x00, 0x00); //0x05
+    spim_write_single_register(MAX30003_EN_INT_ADDRESS, 0x80, 0x00, 0x03);      // 0x02
+    spim_write_single_register(MAX30003_EN_INT2_ADDRESS, 0x00, 0x00, 0x03);     // 0x03
+    spim_write_single_register(MAX30003_MNGR_INT_ADDRESS, 0x78, 0x00, 0x04);    // 0x04
+    spim_write_single_register(MAX30003_MNGR_DYN_ADDRESS, 0x3f, 0x00, 0x00);    // 0x05
 
     // Set up ECG Configurations:
-    spim_write_single_register(MAX30003_CNFG_GEN_ADDRESS, 0x08, 0x10, 0x07);   //0x10
-    spim_write_single_register(MAX30003_CNFG_CAL_ADDRESS, 0x72, 0x00, 0x00);   //0x12
-    spim_write_single_register(MAX30003_CNFG_EMUX_ADDRESS, 0x0B, 0x00, 0x00);  //0x14
-    spim_write_single_register(MAX30003_CNFG_ECG_ADDRESS, 0x80, 0x50, 0x00);   //0x15
-    spim_write_single_register(MAX30003_CNFG_RTOR1_ADDRESS, 0x3f, 0x35, 0x00); //0x1D - RR DETECT DISABLED
+    spim_write_single_register(MAX30003_CNFG_GEN_ADDRESS, 0x08, 0x10, 0x07);    // 0x10
+    spim_write_single_register(MAX30003_CNFG_CAL_ADDRESS, 0x72, 0x00, 0x00);    // 0x12
+    spim_write_single_register(MAX30003_CNFG_EMUX_ADDRESS, 0x0B, 0x00, 0x00);   // 0x14
+    spim_write_single_register(MAX30003_CNFG_ECG_ADDRESS, 0x80, 0x50, 0x00);    // 0x15
+    spim_write_single_register(MAX30003_CNFG_RTOR1_ADDRESS, 0x3f, 0x35, 0x00);  // 0x1D - RR DETECT DISABLED
 
     max30003_sync();
 }
@@ -75,7 +76,7 @@ void max30003_sync(void)
 void max30003_read_fifo_data(uint8_t* data_array) 
 {
     uint8_t register_address = MAX30003_ECG_FIFO_BURST_ADDRESS;
-    uint8_t register_data[51+1];
+    uint8_t register_data[52];
 
     spim_read_registers(register_address, register_data, sizeof(register_data)); 
 
@@ -85,16 +86,15 @@ void max30003_read_fifo_data(uint8_t* data_array)
 
 static void _max30003_init_interrupt(void)
 {
-    nrfx_gpiote_in_config_t max30003_in_config = NRFX_GPIOTE_CONFIG_IN_SENSE_HITOLO(true);
-    max30003_in_config.is_watcher = true;
-    max30003_in_config.pull = NRF_GPIO_PIN_NOPULL;
+    nrf_gpio_pin_dir_set(MAX30003_INT1_PIN, NRF_GPIO_PIN_DIR_INPUT);
+    nrfx_gpiote_in_config_t max30003_interrupt_config = NRFX_GPIOTE_CONFIG_IN_SENSE_HITOLO(true);
 
-    ret_code_t error_code = nrfx_gpiote_in_init(MAX30003_INT1_PIN, &max30003_in_config, max30003_interrupt_handler);
+    ret_code_t error_code = nrfx_gpiote_in_init(MAX30003_INT1_PIN, &max30003_interrupt_config, max30003_interrupt_handler);
     
     NRF_LOG_INFO(" nrfx_gpiote_in_init: %d: \r\n", error_code);
     APP_ERROR_CHECK(error_code);
 
-//    nrfx_gpiote_in_event_enable(MAX30003_INT2_PIN, true);
+    nrfx_gpiote_in_event_enable(MAX30003_INT1_PIN, true);
 }
 
 void max30003_interrupt_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)

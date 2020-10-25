@@ -11,11 +11,19 @@ static app_clock_handler_t m_app_clock_handler;
 /**@brief Function to initialize the HF clock and the NRF Clocks
  */
 
-void clocks_init(void)
+void nrf52_nrfx_clock_init(void)
 {
     NRF_LOG_INFO("Clocks Init");
     // Initialize Clock module.
 //    ret_code_t err_code = nrfx_clock_init(nrfx_clock_irq_handler);
+//    APP_ERROR_CHECK(err_code);
+}
+
+void nrf52_nrfx_clock_uninit(void)
+{
+    NRF_LOG_INFO("Clocks Uninit");
+    // Initialize Clock module.
+//    ret_code_t err_code = nrfx_clock_uninit(nrfx_clock_irq_handler);
 //    APP_ERROR_CHECK(err_code);
 }
 
@@ -78,7 +86,6 @@ void rtc_config(void)
     config.prescaler = 4095;    // This sets the frequency of the RTC to 8 Hz. 
     err_code = nrfx_rtc_init(&rtc, &config, rtc_handler);
     APP_ERROR_CHECK(err_code);
-
 }
 
 /**@brief Function for handling the measurement timer timeout.

@@ -8,6 +8,7 @@
 
 #include "nrfx_clock.h"
 #include "nrfx_rtc.h"
+#include "nrfx_timer.h"
 
 #define RTC_TIMER_CLOCK_FREQ            32768                     /**< Clock frequency of the RTC timer used to implement the app timer module. */
 
@@ -19,7 +20,8 @@
 typedef void (*app_rtc_handler_t)(void);
 typedef void (*app_clock_handler_t)(void);
 
-void clocks_init(void);
+void nrf52_nrfx_clock_init(void);
+void nrf52_nrfx_clock_uninit(void);
 void hfclock_start(void);
 void hfclock_stop(void);
 void lfclock_start(void);

@@ -9,11 +9,11 @@ void power_init(void)
     err_code = nrf_pwr_mgmt_init();
     APP_ERROR_CHECK(err_code);
 
-//    err_code = nrfx_power_init(NULL);
-//    APP_ERROR_CHECK(err_code);
+    err_code = nrfx_power_init(NULL);
+    APP_ERROR_CHECK(err_code);
 }
 
-void sleep_mode_on_enter(void)
+void sleep_mode_enter(void)
 {
     NRF_LOG_INFO("Entering Sleep Mode via System On");
     ret_code_t err_code;
@@ -53,4 +53,9 @@ void power_handler(void)
 void enable_dcdc_converter(void)
 {
     sd_power_dcdc_mode_set(NRF_POWER_DCDC_ENABLE);
+}
+
+void disable_dcdc_converter(void)
+{
+    sd_power_dcdc_mode_set(NRF_POWER_DCDC_DISABLE);
 }

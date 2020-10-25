@@ -1,0 +1,12 @@
+[ProjectGroup]
+Version=1.0
+[Project1]
+ProjectPath=Development_Board\Electronics\DB\DB-X01\DB-X01.PrjPcb
+[Project2]
+ProjectPath=Development_Board\Electronics\DB\DB-X02\DB-X02.PrjPcb
+[Project3]
+ProjectPath=PNW\Electrical\Sensor_Glove-X01\Sensor_Glove-X01.PrjPcb
+[Project4]
+ProjectPath=..\..\Coleman-Nordic-Butterfly\Altium\infant_temp_v1c_4-14-19\infant_temperature_1c.PrjPcb
+[Project5]
+ProjectPath=LP_ECG\Electronics\LP_ECG-X01\LP_ECG-X01.PrjPcb

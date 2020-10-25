@@ -16,8 +16,11 @@ void log_init(void)
 
 void gpiote_init(void)
 {
-    ret_code_t error_code = nrfx_gpiote_init();
-    APP_ERROR_CHECK(error_code);
+    if(!nrfx_gpiote_is_init())
+    {
+        ret_code_t error_code = nrfx_gpiote_init();
+        APP_ERROR_CHECK(error_code);
+    }
 }
 
 void ldo_init(void)
@@ -27,6 +30,10 @@ void ldo_init(void)
     nrf_gpio_cfg_output(EN_MAX30102_LED_LDO_PIN);         // set EN_MAX30102_LED_LDO pin to output
     nrf_gpio_cfg_output(EN_MAX30102_POWER_LDO_PIN);       // set EN_MAX30102_POWER_LDO pin to output
     nrf_gpio_cfg_output(EN_MAX30003_POWER_LDO_PIN);       // set EN_MAX30003_POWER_LDO pin to output
+
+    disable_max30003_power_ldo();     // Disable MAX30003 Power LDO on startup
+    disable_max30102_led_ldo();       // Disable MAX30102 LED LDO on startup
+    disable_max30102_power_ldo();     // Disable MAX30102 Power LDO on startup
 }
 
 void enable_vcc_ldo(void)

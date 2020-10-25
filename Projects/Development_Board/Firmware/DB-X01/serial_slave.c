@@ -1,5 +1,20 @@
 #include "serial_slave.h"
 
+void enable_serial_slave_handler(void)
+{
+    uint8_t log_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LOG_INIT};       // Enable LOG Driver
+    _nrf52_handler(log_array_data);
+
+    uint8_t i2c_array_data[4] = {0x00, 0x00, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  // Enable TWIM Driver
+    _nrf52_handler(i2c_array_data);
+
+    uint8_t led_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LED_INIT};  // Enable LED Driver
+    _nrf52_handler(led_array_data);
+
+    uint8_t ldo_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LDO_INIT};  // Enable LDO Drivers
+    _nrf52_handler(ldo_array_data);
+}
+
 
 void serial_slave_handler(void)
 {
@@ -61,26 +76,169 @@ static void _nrf52_handler(uint8_t *serial_array_data)
     {
         case NRF52_HF_CLOCK_COMMAND:
             NRF_LOG_INFO("NRF52_MODULE: NRF52_HF_CLOCK_COMMAND");
+            switch(serial_array_data[3])
+            {
+                case NRF52_HF_CLOCK_START:  
+                    hfclock_start();
+                    break;
+
+                case NRF52_HF_CLOCK_STOP:
+                    hfclock_stop();
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         case NRF52_LF_CLOCK_COMMAND:
             NRF_LOG_INFO("NRF52_MODULE: NRF52_LF_CLOCK_COMMAND");
+            switch(serial_array_data[3])
+            {
+                case NRF52_LF_CLOCK_START:  
+                    lfclock_start();
+                    break;
+
+                case NRF52_LF_CLOCK_STOP:
+                    lfclock_stop();
+                    break;
+
+                default:
+                    break;
+            }
+            break;
+
+        case NRF52_CLOCK_COMMAND:
+            NRF_LOG_INFO("NRF52_MODULE: NRF52_CLOCK_COMMAND");
+            switch(serial_array_data[3])
+            {
+                case NRF52_NRFX_CLOCK_DRIVER_INIT:  
+                    nrf52_nrfx_clock_init();
+                    break;
+
+                case NRF52_NRFX_CLOCK_DRIVER_UNINIT:
+                    nrf52_nrfx_clock_uninit();
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         case NRF52_RTC_CLOCK_COMMAND:
             NRF_LOG_INFO("NRF52_MODULE: NRF52_RTC_CLOCK_COMMAND");
+            switch(serial_array_data[3])
+            {
+                case NRF52_RTC_CONFIG:
+                    rtc_config();
+                    break;
+
+                case NRF52_RTC_START:  
+                    rtc_start();
+                    break;
+
+                case NRF52_RTC_STOP:
+                    rtc_stop();
+                    break;
+
+                case NRF52_RTC_RESTART:  
+                    rtc_restart();
+                    break;
+
+                case NRF52_RTC_SET_COUNTER:
+                    rtc_set_counter(serial_array_data[4]);
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         case NRF52_POWER_COMMAND:
             NRF_LOG_INFO("NRF52_MODULE: NRF52_POWER_COMMAND");
+            switch(serial_array_data[3])
+            {
+                case NRF52_POWER_DCDC_CONVERTER_ENABLE:
+                    enable_dcdc_converter();
+                    break;
+
+                case NRF52_POWER_DCDC_CONVERTER_DISABLE:  
+                    disable_dcdc_converter();
+                    break;
+
+                case NRF52_POWER_SLEEP_MODE_ENTER:
+                    sleep_mode_enter();
+                    break;
+
+                case NRF52_POWER_DEEP_SLEEP_MODE_ENTER:  
+                    deep_sleep_mode_enter();
+                    break;
+
+                case NRF52_POWER_HANDLER:  
+                    power_handler();
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
-        case NRF52_LED_COMMAND:
-            NRF_LOG_INFO("NRF52_MODULE: NRF52_LED_COMMAND");
+        case NRF52_COMMON_COMMAND:
+            NRF_LOG_INFO("NRF52_MODULE: NRF52_COMMON_COMMAND");
+            switch(serial_array_data[3])
+            {
+                case NRF52_LED_INIT:
+                    init_leds();
+                    break;
+
+                case NRF52_LED_IND_LED_ON:  
+                    ind_led_on();
+                    break;
+
+                case NRF52_LED_IND_LED_OFF:
+                    ind_led_off();
+                    break;
+
+                case NRF52_LED_IND_BLINK:  
+                    ind_led_blink(serial_array_data[4], serial_array_data[5]);
+                    break;
+
+                case NRF52_LED_BLE_LED_ON:  
+                    ble_led_on();
+                    break;
+
+                case NRF52_LED_BLE_LED_OFF:
+                    ble_led_off();
+                    break;
+
+                case NRF52_LED_BLE_BLINK:  
+                    ble_led_blink(serial_array_data[4], serial_array_data[5]);
+                    break;
+
+                case NRF52_LOG_INIT:
+                    log_init();
+                    break;
+
+                case NRF52_LDO_INIT:
+                    ldo_init();
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
-        case NRF52_LOG_COMMAND:
-            NRF_LOG_INFO("NRF52_MODULE: NRF52_LOG_COMMAND");
+        case NRF52_I2C_COMMAND:
+            NRF_LOG_INFO("NRF52_MODULE: NRF52_I2C_COMMAND");
+            switch(serial_array_data[3])
+            {
+                case NRF52_I2C_TWIM_INIT:
+                    twim_init();
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         default:
