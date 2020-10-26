@@ -5,67 +5,91 @@ void enable_serial_slave_handler(void)
     uint8_t log_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LOG_INIT};       // Enable LOG Driver
     _nrf52_handler(log_array_data);
 
-    uint8_t i2c_array_data[4] = {0x00, 0x00, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  // Enable TWIM Driver
-    _nrf52_handler(i2c_array_data);
+    uint8_t ldo_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LDO_INIT};       // Enable LDO Drivers
+    _nrf52_handler(ldo_array_data);
+
+    uint8_t vcc_en_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_VCC_LDO_EN};   // Enable VCC LDO
+    _nrf52_handler(vcc_en_array_data);  
+
+    uint8_t power_manager_array_data[4] = {0x00, 0x00, NRF52_POWER_COMMAND, NRF52_POWER_MANAGER_INIT};  // Enable Power Manager
+    _nrf52_handler(power_manager_array_data);
+
+    uint8_t i2c_init_array_data[4] = {0x00, 0x00, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  // Enable TWIM Driver
+    _nrf52_handler(i2c_init_array_data);
+
+    uint8_t i2c_start_array_data[4] = {0x00, 0x00, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_START};  // Start TWIM Driver
+    _nrf52_handler(i2c_start_array_data);
 
     uint8_t led_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LED_INIT};  // Enable LED Driver
     _nrf52_handler(led_array_data);
 
-    uint8_t ldo_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LDO_INIT};  // Enable LDO Drivers
-    _nrf52_handler(ldo_array_data);
+    uint8_t long_blink_led_array_data[5] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LED_IND_BLINK, NRF52_LED_IND_LONG_BLINK};  // IND LED Long Blink
+    _nrf52_handler(long_blink_led_array_data);
 }
 
-
-void serial_slave_handler(void)
+void disable_serial_slave_handler(void)
 {
-    uint8_t ft201x_data_bytes_available = ft201x_available();
-    if(ft201x_data_bytes_available > 2)
+    uint8_t i2c_stop_array_data[4] = {0x00, 0x00, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_STOP};  // Stop TWIM Driver
+    _nrf52_handler(i2c_stop_array_data);
+}
+
+void serial_slave_manager_handler(void)
+{
+    while(FT201X_USB_NORMAL == ft201x_check_usb_state())
     {
-          uint8_t serial_array_data[ft201x_data_bytes_available];
-          ft201x_read_buffer(serial_array_data, ft201x_data_bytes_available);
-          if(serial_array_data[0] == USB_COMMAND_HEADER && serial_array_data[-1] == USB_COMMAND_FOOTER)
-          {
-              switch(serial_array_data[1])
+        uint8_t ft201x_data_bytes_available = ft201x_available();
+        if(ft201x_data_bytes_available > 2)
+        {
+              uint8_t serial_array_data[ft201x_data_bytes_available];
+              ft201x_read_buffer(serial_array_data, ft201x_data_bytes_available);
+              if(serial_array_data[0] == USB_COMMAND_HEADER && serial_array_data[-1] == USB_COMMAND_FOOTER)
               {
-                  case NRF52_MODULE:
-                      NRF_LOG_INFO("SERIAL HANDLER: NRF52_MODULE");
-                      _nrf52_handler(serial_array_data);
-                      break;
+                  switch(serial_array_data[1])
+                  {
+                      case NRF52_MODULE:
+                          NRF_LOG_INFO("SERIAL HANDLER: NRF52_MODULE");
+                          _nrf52_handler(serial_array_data);
+                          break;
 
-                  case FT201X_MODULE:
-                      NRF_LOG_INFO("SERIAL HANDLER: FT201X_MODULE");
-                      _ft201x_handler(serial_array_data);
-                      break;
+                      case FT201X_MODULE:
+                          NRF_LOG_INFO("SERIAL HANDLER: FT201X_MODULE");
+                          _ft201x_handler(serial_array_data);
+                          break;
 
-                  case BMI160_MODULE:
-                      NRF_LOG_INFO("SERIAL HANDLER: BMI160_MODULE");
-                      _bmi160_handler(serial_array_data);
-                      break;
+                      case BMI160_MODULE:
+                          NRF_LOG_INFO("SERIAL HANDLER: BMI160_MODULE");
+                          _bmi160_handler(serial_array_data);
+                          break;
 
-                  case MAX30003_MODULE:
-                      NRF_LOG_INFO("SERIAL HANDLER: MAX30003_MODULE");
-                      _max30003_handler(serial_array_data);
-                      break;    
+                      case MAX30003_MODULE:
+                          NRF_LOG_INFO("SERIAL HANDLER: MAX30003_MODULE");
+                          _max30003_handler(serial_array_data);
+                          break;    
 
-                  case TMP116_MODULE:
-                      NRF_LOG_INFO("SERIAL HANDLER: TMP116_MODULE");
-                      _tmp116_handler(serial_array_data);
-                      break;
+                      case TMP116_MODULE:
+                          NRF_LOG_INFO("SERIAL HANDLER: TMP116_MODULE");
+                          _tmp116_handler(serial_array_data);
+                          break;
 
-                  case BLE_MODULE:
-                      NRF_LOG_INFO("SERIAL HANDLER: BLE_MODULE");
-                      _ble_handler(serial_array_data);
-                      break;
+                      case BLE_MODULE:
+                          NRF_LOG_INFO("SERIAL HANDLER: BLE_MODULE");
+                          _ble_handler(serial_array_data);
+                          break;
 
-                  default:
-                      ft201x_flush_buffers();
-                      break;
+                      default:
+                          ft201x_flush_buffers();
+                          break;
+                  }
               }
-          }
-          else
-          {
-              ft201x_flush_buffers();
-          }
+              else
+              {
+                  ft201x_flush_buffers();
+              }
+        }
+        else
+        {
+            power_manager_handler();
+        }
     }
 }
 
@@ -174,8 +198,12 @@ static void _nrf52_handler(uint8_t *serial_array_data)
                     deep_sleep_mode_enter();
                     break;
 
-                case NRF52_POWER_HANDLER:  
-                    power_handler();
+                case NRF52_POWER_MANAGER_HANDLER:  
+                    power_manager_handler();
+                    break;
+
+                case NRF52_POWER_MANAGER_INIT:  
+                    power_manager_init();
                     break;
 
                 default:
@@ -199,8 +227,24 @@ static void _nrf52_handler(uint8_t *serial_array_data)
                     ind_led_off();
                     break;
 
-                case NRF52_LED_IND_BLINK:  
-                    ind_led_blink(serial_array_data[4], serial_array_data[5]);
+                case NRF52_LED_IND_BLINK: 
+                    switch(serial_array_data[4])
+                    {
+                        case NRF52_LED_IND_CUSTOM_BLINK:
+                            ind_led_blink(serial_array_data[5], serial_array_data[6]);
+                            break;     
+                        case NRF52_LED_IND_SHORT_BLINK:
+                            ind_led_short_blink();
+                            break;   
+                        case NRF52_LED_IND_MEDIUM_BLINK:
+                            ind_led_medium_blink();
+                            break;
+                        case NRF52_LED_IND_LONG_BLINK:
+                            ind_led_long_blink();
+                            break;
+                        default:
+                            break;
+                    }                                                                                       
                     break;
 
                 case NRF52_LED_BLE_LED_ON:  
@@ -223,6 +267,10 @@ static void _nrf52_handler(uint8_t *serial_array_data)
                     ldo_init();
                     break;
 
+                case NRF52_VCC_LDO_EN:
+                    enable_vcc_ldo();
+                    break;
+
                 default:
                     break;
             }
@@ -235,7 +283,12 @@ static void _nrf52_handler(uint8_t *serial_array_data)
                 case NRF52_I2C_TWIM_INIT:
                     twim_init();
                     break;
-
+                case NRF52_I2C_TWIM_STOP:
+                    i2c_stop();
+                    break;
+                case NRF52_I2C_TWIM_START:
+                    i2c_start();
+                    break;
                 default:
                     break;
             }

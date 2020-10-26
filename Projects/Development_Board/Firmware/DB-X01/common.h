@@ -77,7 +77,9 @@ void init_leds(void);
 void ind_led_off(void);
 void ind_led_on(void);
 void ind_led_blink(uint16_t on_ms, uint16_t off_ms);
-
+void ind_led_short_blink(void);
+void ind_led_medium_blink(void);
+void ind_led_long_blink(void);
 
 void ble_led_off(void);
 void ble_led_on(void);

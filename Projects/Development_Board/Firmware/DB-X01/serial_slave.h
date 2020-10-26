@@ -74,7 +74,8 @@
 #define NRF52_POWER_DCDC_CONVERTER_DISABLE        0X91
 #define NRF52_POWER_SLEEP_MODE_ENTER              0X92
 #define NRF52_POWER_DEEP_SLEEP_MODE_ENTER         0X93
-#define NRF52_POWER_HANDLER                       0X94
+#define NRF52_POWER_MANAGER_HANDLER               0X94
+#define NRF52_POWER_MANAGER_INIT                  0X95
 
 #define NRF52_LED_INIT                            0X99
 #define NRF52_LED_IND_LED_ON                      0X9A
@@ -85,13 +86,22 @@
 #define NRF52_LED_BLE_BLINK                       0X9F
 
 #define NRF52_I2C_TWIM_INIT                       0XA0
-#define NRF52_LOG_INIT                            0XA1
-#define NRF52_GPIOTE_INIT                         0XA2
-#define NRF52_LDO_INIT                            0XA3
+#define NRF52_I2C_TWIM_START                      0XA1
+#define NRF52_I2C_TWIM_STOP                       0xA2
+#define NRF52_LOG_INIT                            0XA3
+#define NRF52_GPIOTE_INIT                         0XA4
+#define NRF52_LDO_INIT                            0XA5
+#define NRF52_VCC_LDO_EN                          0XA6
+
+
+#define NRF52_LED_IND_CUSTOM_BLINK                0XB0
+#define NRF52_LED_IND_SHORT_BLINK                 0XB1
+#define NRF52_LED_IND_MEDIUM_BLINK                0XB2
+#define NRF52_LED_IND_LONG_BLINK                  0XB3
 
 
 void enable_serial_slave_handler(void);
-void serial_slave_handler(void);
+void serial_slave_manager_handler(void);
 static void _nrf52_handler(uint8_t *serial_array_data);
 static void _ft201x_handler(uint8_t *serial_array_data);
 static void _bmi160_handler(uint8_t *serial_array_data);

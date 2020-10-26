@@ -4,6 +4,7 @@
 #include "common.h"
 #include "ble_temperature_service.h"
 #include "clocks.h"
+#include "serial_slave.h"
 
 #include "peer_manager.h"
 #include "peer_manager_handler.h"
@@ -15,6 +16,8 @@
 #include "ble_advertising.h"
 #include "ble_conn_params.h"
 #include "nrf_sdh_ble.h"
+
+void bluetooth_manager_handler(void);
 
 void nrf_qwr_error_handler(uint32_t nrf_error);
 void pm_evt_handler(pm_evt_t const * p_evt);

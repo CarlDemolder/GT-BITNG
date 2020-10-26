@@ -2,7 +2,7 @@
 
 /**@brief Function for initializing power management.
  */
-void power_init(void)
+void power_manager_init(void)
 {
     NRF_LOG_INFO("Power Management Initialized");
     ret_code_t err_code;
@@ -42,7 +42,7 @@ void deep_sleep_mode_enter(void)
  *
  * @details If there is no pending log operation, then sleep until next the next event occurs.
  */
-void power_handler(void)
+void power_manager_handler(void)
 {
     if (NRF_LOG_PROCESS() == false)
     {

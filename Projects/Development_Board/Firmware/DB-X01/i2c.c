@@ -79,8 +79,6 @@ void twim_init(void)
 
     err_code = nrfx_twim_init(&m_twim_0, &twim_config, twim_handler, NULL);
     APP_ERROR_CHECK(err_code);
-
-    nrfx_twim_enable(&m_twim_0);
 }
 
 void i2c_write_registers(uint8_t slave_address, uint8_t const* array_data, uint8_t array_size) 

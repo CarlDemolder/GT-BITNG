@@ -2,6 +2,7 @@
 
 /**@brief Function for initializing the nrf log module.
  */
+
 void log_init(void)
 {
     ret_code_t err_code = NRF_LOG_INIT(NULL);
@@ -119,6 +120,30 @@ void ind_led_blink(uint16_t on_ms, uint16_t off_ms)
   nrf_delay_ms(on_ms);
   ind_led_off();
   nrf_delay_ms(off_ms);
+}
+
+void ind_led_short_blink(void)
+{
+  ind_led_on();
+  nrf_delay_ms((uint32_t) 100);
+  ind_led_off();
+  nrf_delay_ms((uint32_t) 100);
+}
+
+void ind_led_medium_blink(void)
+{
+  ind_led_on();
+  nrf_delay_ms((uint32_t) 1000);
+  ind_led_off();
+  nrf_delay_ms((uint32_t) 1000);
+}
+
+void ind_led_long_blink(void)
+{
+  ind_led_on();
+  nrf_delay_ms((uint32_t) 3000);
+  ind_led_off();
+  nrf_delay_ms((uint32_t) 3000);
 }
 
 void ble_led_off(void)

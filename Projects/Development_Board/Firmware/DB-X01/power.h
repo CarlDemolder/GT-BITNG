@@ -6,10 +6,10 @@
 #include "nrf_pwr_mgmt.h"
 #include "nrfx_power_clock.h"
 
-void power_init(void);
+void power_manager_init(void);
 void sleep_mode_enter(void);
 void deep_sleep_mode_enter(void);
-void power_handler(void);
+void power_manager_handler(void);
 void enable_dcdc_converter(void);
 void disable_dcdc_converter(void);
 
