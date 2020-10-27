@@ -108,11 +108,11 @@ void rtc_handler(nrfx_rtc_int_type_t int_type)
         ret_code_t err_code;
         
         i2c_start();      // Powering on the I2C Module
-        configure_tmp116(1);    // Setting the TMP116 to Automatic mode
-        uint8_t tmp116_uint8_t[5];
-        tmp116_get_uint8_t(tmp116_uint8_t); //Places the TMP116 Temperature in Character Vector
-        update_temperature_characteristic(tmp116_uint8_t);    // Update the BLE GATT Database with the new Temperature Value
-        configure_tmp116(0);    // Setting the TMP116 into Shutdown Mode 
+        configure_tmp117(1);    // Setting the TMP116 to Automatic mode
+        uint8_t tmp117_uint8_t[5];
+        tmp117_get_uint8_t(tmp117_uint8_t); //Places the TMP116 Temperature in Character Vector
+        update_temperature_characteristic(tmp117_uint8_t);    // Update the BLE GATT Database with the new Temperature Value
+        configure_tmp117(0);    // Setting the TMP116 into Shutdown Mode 
         i2c_stop();       // Powering off the I2C Module
     }
 }

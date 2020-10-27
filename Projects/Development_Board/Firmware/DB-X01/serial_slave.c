@@ -27,7 +27,7 @@ void enable_serial_slave_handler(void)
     _nrf52_handler(long_blink_led_array_data);
 }
 
-void disable_serial_slave_handler(void)
+static void _disable_serial_slave_manager_handler(void)
 {
     uint8_t i2c_stop_array_data[4] = {0x00, 0x00, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_STOP};  // Stop TWIM Driver
     _nrf52_handler(i2c_stop_array_data);
@@ -66,9 +66,9 @@ void serial_slave_manager_handler(void)
                           _max30003_handler(serial_array_data);
                           break;    
 
-                      case TMP116_MODULE:
-                          NRF_LOG_INFO("SERIAL HANDLER: TMP116_MODULE");
-                          _tmp116_handler(serial_array_data);
+                      case TMP117_MODULE:
+                          NRF_LOG_INFO("SERIAL HANDLER: TMP117_MODULE");
+                          _tmp117_handler(serial_array_data);
                           break;
 
                       case BLE_MODULE:
@@ -91,6 +91,14 @@ void serial_slave_manager_handler(void)
             power_manager_handler();
         }
     }
+    _disable_serial_slave_manager_handler();
+}
+
+
+void bluetooth_manager_handler(void)
+{
+    
+
 }
 
 
@@ -319,6 +327,14 @@ static void _ft201x_handler(uint8_t *serial_array_data)
             NRF_LOG_INFO("FT201X_MODULE: FT201X_WRITE_EEPROM_COMMAND");
             break;
 
+        case FT201X_WRITE_DATA_COMMAND:
+            NRF_LOG_INFO("FT201X_MODULE: FT201X_WRITE_DATA_COMMAND");
+            break;
+        
+        case FT201X_READ_DATA_COMMAND:
+            NRF_LOG_INFO("FT201X_MODULE: FT201X_READ_DATA_COMMAND");
+            break;
+
         default:
             break;
     }
@@ -345,32 +361,42 @@ static void _bmi160_handler(uint8_t *serial_array_data)
     }
 }
 
-static void _tmp116_handler(uint8_t *serial_array_data)
+static void _tmp117_handler(uint8_t *serial_array_data)
 {
     switch(serial_array_data[2])
     {
-        case TMP116_READ_CHIP_ID_COMMAND:
-            NRF_LOG_INFO("TMP116_MODULE: TMP116_READ_CHIP_ID_COMMAND");
+        case TMP117_READ_CHIP_ID_COMMAND:
+            NRF_LOG_INFO("tmp117_MODULE: TMP117_READ_CHIP_ID_COMMAND");
+            uint16_t tmp117_chip_id = tmp117_read_chip_id();
+            uint8_t tmp117_chip_id_array_data[4] = {0x00, 0x00, FT201X_WRITE_DATA_COMMAND, (tmp117_chip_id & 0xF0), (tmp117_chip_id & 0x0F)};  // Write TMP117 Chip ID
+            _ft201x_handler(tmp117_chip_id_array_data);
             break;
 
-        case TMP116_INIT_COMMAND:
-            NRF_LOG_INFO("TMP116_MODULE: TMP116_INIT_COMMAND");
+        case TMP117_READ_REVISION_NUMBER_COMMAND:
+            NRF_LOG_INFO("TMP117_MODULE: TMP117_READ_CHIP_ID_COMMAND");
+            uint8_t tmp117_revision_number = tmp117_read_revision_number();
+            uint8_t tmp117_revision_number_array_data[4] = {0x00, 0x00, FT201X_WRITE_DATA_COMMAND, tmp117_chip_id};  // Write TMP117 Chip ID
+            _ft201x_handler(tmp117_revision_number_array_data);
             break;
 
-        case TMP116_SET_OPERATING_MODE_COMMAND:
-            NRF_LOG_INFO("TMP116_MODULE: TMP116_SET_OPERATING_MODE_COMMAND");
+        case TMP117_INIT_COMMAND:
+            NRF_LOG_INFO("TMP117_MODULE: TMP117_INIT_COMMAND");
             break;
 
-        case TMP116_TEMP_UINT16_COMMAND:
-            NRF_LOG_INFO("TMP116_MODULE: TMP116_UINT16_COMMAND");    
+        case TMP117_SET_OPERATING_MODE_COMMAND:
+            NRF_LOG_INFO("TMP117_MODULE: TMP117_SET_OPERATING_MODE_COMMAND");
             break;
 
-        case TMP116_TEMP_UINT8_COMMAND:
-            NRF_LOG_INFO("TMP116_MODULE: TMP116_TEMP_UINT8_COMMAND");    
+        case TMP117_TEMP_UINT16_COMMAND:
+            NRF_LOG_INFO("TMP117_MODULE: TMP117_UINT16_COMMAND");    
             break;
 
-        case TMP116_TEMP_CHAR_ARRAY_COMMAND:
-            NRF_LOG_INFO("TMP116_MODULE: TMP116_TEMP_CHAR_ARRAY_COMMAND");    
+        case TMP117_TEMP_UINT8_COMMAND:
+            NRF_LOG_INFO("TMP117_MODULE: TMP117_TEMP_UINT8_COMMAND");    
+            break;
+
+        case TMP117_TEMP_CHAR_ARRAY_COMMAND:
+            NRF_LOG_INFO("TMP117_MODULE: TMP117_TEMP_CHAR_ARRAY_COMMAND");    
             break;
 
         default:

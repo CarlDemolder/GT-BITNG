@@ -3,7 +3,7 @@
 
 #include "common.h"
 #include "ft201x.h"
-#include "TMP116.h"                   
+#include "tmp117.h"                   
 #include "bmi160.h"
 #include "clocks.h"
 #include "power.h"  
@@ -14,7 +14,7 @@
 #define USB_LOG_FOOTER                            0XAD
 
 #define NRF52_MODULE                              0X01
-#define TMP116_MODULE                             0X02
+#define TMP117_MODULE                             0X02
 #define BMI160_MODULE                             0X03
 #define MAX30003_MODULE                           0X04
 #define FT201X_MODULE                             0X05
@@ -33,17 +33,20 @@
 #define FT201X_SET_VCP_COMMAND                    0X21
 #define FT201X_WRITE_EEPROM_COMMAND               0X22
 #define FT201X_READ_EEPROM_COMMAND                0X23
+#define FT201X_WRITE_DATA_COMMAND                 0X24
+#define FT201X_READ_DATA_COMMAND                  0X25
 
 #define BMI160_READ_CHIP_ID_COMMAND               0X30
 #define BMI160_INIT_COMMAND                       0X31
 #define BMI160_READ_ACCEL_GYRO_COMMAND            0X32
 
-#define TMP116_READ_CHIP_ID_COMMAND               0X40
-#define TMP116_INIT_COMMAND                       0X41
-#define TMP116_SET_OPERATING_MODE_COMMAND         0X42
-#define TMP116_TEMP_UINT16_COMMAND                0X43
-#define TMP116_TEMP_UINT8_COMMAND                 0X44
-#define TMP116_TEMP_CHAR_ARRAY_COMMAND            0X45
+#define TMP117_READ_CHIP_ID_COMMAND               0X40
+#define TMP117_INIT_COMMAND                       0X41
+#define TMP117_SET_OPERATING_MODE_COMMAND         0X42
+#define TMP117_TEMP_UINT16_COMMAND                0X43
+#define TMP117_TEMP_UINT8_COMMAND                 0X44
+#define TMP117_TEMP_CHAR_ARRAY_COMMAND            0X45
+#define TMP117_READ_REVISION_NUMBER_COMMAND       0X46
 
 #define MAX30003_READ_CHIP_ID_COMMAND             0X50
 #define MAX30003_INIT_COMMAND                     0X51
@@ -102,10 +105,12 @@
 
 void enable_serial_slave_handler(void);
 void serial_slave_manager_handler(void);
+void bluetooth_manager_handler(void);
+
 static void _nrf52_handler(uint8_t *serial_array_data);
 static void _ft201x_handler(uint8_t *serial_array_data);
 static void _bmi160_handler(uint8_t *serial_array_data);
-static void _tmp116_handler(uint8_t *serial_array_data);
+static void _tmp117_handler(uint8_t *serial_array_data);
 static void _max30003_handler(uint8_t *serial_array_data);
 static void _ble_handler(uint8_t *serial_array_data);
 

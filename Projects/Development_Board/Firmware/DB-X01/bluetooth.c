@@ -41,13 +41,6 @@ static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        
 ble_uuid_t m_adv_uuids[] ={{TEMPERATURE_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}};  /**< Universally unique service identifiers. */
 
 
-void bluetooth_manager_handler(void)
-{
-    
-
-}
-
-
 /**@brief Function for handling Queued Write Module errors.
  *
  * @details A pointer to this function will be passed to each service which may need to inform the

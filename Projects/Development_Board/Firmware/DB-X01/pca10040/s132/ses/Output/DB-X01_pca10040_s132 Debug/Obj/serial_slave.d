@@ -91,7 +91,7 @@ Output/DB-X01_pca10040_s132\ Debug/Obj/serial_slave.o: \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/include/nrfx_twim.h \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/include/nrfx_twi_twim.h \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/hal/nrf_twim.h \
- C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\TMP116.h \
+ C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\tmp117.h \
  C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\bmi160.h \
  C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\clocks.h \
  C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\bluetooth.h \

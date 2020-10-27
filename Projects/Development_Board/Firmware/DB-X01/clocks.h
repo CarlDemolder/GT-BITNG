@@ -3,7 +3,7 @@
 
 #include "common.h"
 #include "bluetooth.h"
-#include "TMP116.h"
+#include "tmp117.h"
 #include "i2c.h"
 
 #include "nrfx_clock.h"

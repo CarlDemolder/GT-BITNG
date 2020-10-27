@@ -125,7 +125,7 @@ Output/DB-X01_pca10040_s132\ Debug/Obj/bluetooth.o: \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/nrf_ble_qwr/nrf_ble_qwr.h \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/libraries/pwr_mgmt/nrf_pwr_mgmt.h \
  C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\clocks.h \
- C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\TMP116.h \
+ C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\tmp117.h \
  C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\i2c.h \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/include/nrfx_twim.h \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/include/nrfx_twi_twim.h \
@@ -136,10 +136,4 @@ Output/DB-X01_pca10040_s132\ Debug/Obj/bluetooth.o: \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/include/nrfx_rtc.h \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/hal/nrf_rtc.h \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/include/nrfx_timer.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/hal/nrf_timer.h \
- C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\serial_slave.h \
- C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\ft201x.h \
- C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\bmi160.h \
- C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\power.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/include/nrfx_power.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/hal/nrf_power.h
+ C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/hal/nrf_timer.h
