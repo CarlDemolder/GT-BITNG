@@ -9,8 +9,8 @@ void power_manager_init(void)
     err_code = nrf_pwr_mgmt_init();
     APP_ERROR_CHECK(err_code);
 
-    err_code = nrfx_power_init(NULL);
-    APP_ERROR_CHECK(err_code);
+//    err_code = nrfx_power_init(NULL);
+//    APP_ERROR_CHECK(err_code);
 }
 
 void sleep_mode_enter(void)

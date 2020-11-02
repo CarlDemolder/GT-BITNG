@@ -1,16 +1,12 @@
 #include "max30003.h"
 
-uint8_t max30003_default_registers[] = {};
-
-uint8_t max30003_interrupt;
-
 void max30003_read_device_info(void) 
 {
-    NRF_LOG_INFO("[MAX30003] Read Device Information \r\n");
+    NRF_LOG_INFO("max30003_read_device_info");
     uint8_t data_array[3];
     spim_read_single_register(MAX30003_INFO_ADDRESS, data_array);
 
-    NRF_LOG_INFO("Device Information: \r\n");
+    NRF_LOG_INFO("Device Information:");
     NRF_LOG_HEXDUMP_INFO(data_array, sizeof(data_array)); // Hex Dump Output (temp)
 }
 
@@ -24,11 +20,10 @@ void max30003_read_device_status(void)
     NRF_LOG_HEXDUMP_INFO(data_array, sizeof(data_array)); // Hex Dump Output (temp)
 }
 
-// Control functions>
 void max30003_init(void) 
 {
-    max30003_soft_reset();
-    _max30003_init_interrupt();   // Initializing the interrupt pin
+    max30003_soft_reset();        // Soft Reset
+    max30003_init_interrupt();    // Initializing the interrupt pin
 
     // Interrupts and Dynamic Modes
     spim_write_single_register(MAX30003_EN_INT_ADDRESS, 0x80, 0x00, 0x03);      // 0x02
@@ -43,7 +38,8 @@ void max30003_init(void)
     spim_write_single_register(MAX30003_CNFG_ECG_ADDRESS, 0x80, 0x50, 0x00);    // 0x15
     spim_write_single_register(MAX30003_CNFG_RTOR1_ADDRESS, 0x3f, 0x35, 0x00);  // 0x1D - RR DETECT DISABLED
 
-    max30003_sync();
+    max30003_enable_interrupt();    // Enable the interrupt of the NRF52
+    max30003_sync();            // Synchronize the clock frequency of the MAX30003 with the NRF52
 }
 
 void max30003_readback_registers(void) 
@@ -62,30 +58,32 @@ void max30003_readback_registers(void)
 
 void max30003_soft_reset(void) 
 {
-    NRF_LOG_INFO("[MAX30003] Running software reset \r\n");
+    NRF_LOG_INFO("max_30003_soft_reset");
     spim_write_single_register(MAX30003_SW_RST_ADDRESS, 0x00, 0x00, 0x00);
-    nrf_delay_ms(5); // Give time to start up.
+    nrf_delay_ms(5); // Delay the MCU to allow the MAX30003 to go through a soft reset
 }
 
 void max30003_sync(void) 
 {
-    NRF_LOG_INFO("[MAX30003] Running Sync/Start \r\n");
+    NRF_LOG_INFO("max30003_sync");
     spim_write_single_register(MAX30003_SYNCH_ADDRESS, 0x00, 0x00, 0x00);
 }
 
 void max30003_read_fifo_data(uint8_t* data_array) 
 {
+    NRF_LOG_INFO("max30003_read_fifo_data");
     uint8_t register_address = MAX30003_ECG_FIFO_BURST_ADDRESS;
     uint8_t register_data[52];
 
     spim_read_registers(register_address, register_data, sizeof(register_data)); 
 
-    NRF_LOG_INFO("[MAX30003] FIFO READ DATA \r\n");
+    NRF_LOG_INFO("[MAX30003] FIFO READ DATA: \r\n");
     NRF_LOG_HEXDUMP_INFO(register_data, sizeof(register_data)); // Hex Dump Output (temp)
 }
 
-static void _max30003_init_interrupt(void)
+void max30003_init_interrupt(void)
 {
+    NRF_LOG_INFO("max30003_init_interrupt");
     nrf_gpio_pin_dir_set(MAX30003_INT1_PIN, NRF_GPIO_PIN_DIR_INPUT);
     nrfx_gpiote_in_config_t max30003_interrupt_config = NRFX_GPIOTE_CONFIG_IN_SENSE_HITOLO(true);
 
@@ -93,21 +91,23 @@ static void _max30003_init_interrupt(void)
     
     NRF_LOG_INFO(" nrfx_gpiote_in_init: %d: \r\n", error_code);
     APP_ERROR_CHECK(error_code);
+}
 
+void max30003_enable_interrupt(void)
+{
+    NRF_LOG_INFO("max30003_enable_interrupt");
+    nrfx_gpiote_in_event_enable(MAX30003_INT1_PIN, true);
+}
+
+void max30003_disable_interrupt(void)
+{
+    NRF_LOG_INFO("max30003_disable_interrupt");
     nrfx_gpiote_in_event_enable(MAX30003_INT1_PIN, true);
 }
 
 void max30003_interrupt_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
+    NRF_LOG_INFO("max30003_interrupt_handler");
     UNUSED_PARAMETER(pin);
     UNUSED_PARAMETER(action);
-    NRF_LOG_INFO("MAX30003 Interrupt Handler Triggered");
-    max30003_interrupt = 1;
-}
-
-uint8_t max30003_read_interrupt()
-{
-    uint8_t return_value = max30003_interrupt;
-    max30003_interrupt = 0;
-    return return_value;
 }

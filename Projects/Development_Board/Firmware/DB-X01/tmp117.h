@@ -17,17 +17,27 @@
 #define TMP117_EEPROM_3_REGISTER                0X08
 #define TMP117_DEVICE_ID_REGISTER               0X0F
 
+#define TMP117_SHUTDOWN_MODE                    0X00
+#define TMP117_CONTINUOUS_CONVERSION_MODE       0X01
+
+#define TMP117_NO_AVERAGING_MODE                0X00
+#define TMP117_8_AVERAGED_MODE                  0X01
+#define TMP117_32_AVERAGED_MODE                 0X02
+#define TMP117_64_AVERAGED_MODE                 0X03
+
+#define TMP117_GENERAL_CALL_RESET               0X06
+
 //tmp117 definitions
 
-static void _unlock_eeprom_tmp117(void);
-static void _set_operating_mode_tmp117(uint8_t configuration_mode);
-static void _general_call_reset_tmp117(void);
+void tmp117_unlock_eeprom(void);
+void tmp117_set_operating_mode(uint8_t conversion_mode, uint8_t averaging_mode);
+void tmp117_general_call_reset(void);
 
 float tmp117_get_celsius(void);
-uint16_t tmp117_get_uint16(void);
+uint16_t tmp117_get_uint16_t(void);
 void tmp117_string_celsius(char *tmp117_temperature);
 void tmp117_get_uint8_t(uint8_t *tmp117_uint8);
-void configure_tmp117(uint8_t configuration_mode);
+void tmp117_init(uint8_t configuration_mode, uint8_t averaging_mode);
 
 uint16_t tmp117_read_chip_id(void);
 uint8_t tmp117_read_revision_number(void);

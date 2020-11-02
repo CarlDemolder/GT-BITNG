@@ -43,7 +43,6 @@
 #define MAX30003_INT1_PIN               27                                      /** Pinout for MAX30003 INT1 pin for DB-X01 */
 #define MAX30003_INT2_PIN               26                                      /** Pinout for MAX30003 INT2 pin for DB-X01 */
 #define MAX30003_CS_PIN                 17                                      /** Pinout for MAX30003 CS pin for DB-X01 */
-#define MAX30003_F_CLOCK_PIN            18                                      /** Pinout for MAX30003 F_CLOCK pin for DB-X01 */
 
 #define MAX30102_INT1_PIN               23                                      /** Pinout for MAX30102 INT1 pin for DB-X01 */
 
@@ -54,6 +53,8 @@
 #define NRESET_PIN                      21                                      /** Pinout for nRESET pin for DB-X01 */ 
 
 #define HARDWARE_VERSION_NUMBER         "DB-X01"
+
+#define LAST_ARRAY_ELEMENT(x)           (sizeof(x)/sizeof(x[0])-1)             /** Array index for the last element of the array */ 
 
 void gpiote_init(void);
 

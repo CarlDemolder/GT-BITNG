@@ -32,7 +32,7 @@ void ft201x_read_buffer(uint8_t* array_data, uint8_t array_size)
     NRF_LOG_INFO("FT201X: reading data from buffer");
     uint8_t device_address = FT201X_DEVICE_ADDRESS;                     // Slave Address for FT201X
     uint8_t register_byte_count = array_size;                           // Number of bytes of buffer to read
-    uint8_t register_data[register_byte_count];                         // Store data in array
+//    uint8_t register_data[register_byte_count];                         // Store data in array
     
     if( register_byte_count > 0)
     {
@@ -82,7 +82,7 @@ void ft201x_soft_reset(void)
     uint8_t register_data = FT201X_SOFT_RESET_COMMAND; 
     i2c_write_registers(GENERAL_CALL_ADDRESS, &register_data, register_byte_count);
 
-    NRF_LOG_INFO("FT201X transmit and receive buffers have been flushed.");
+    NRF_LOG_INFO("FT201X Soft Reset.");
 }
 
 uint8_t ft201x_check_usb_state(void)

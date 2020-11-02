@@ -4,10 +4,6 @@
 #include "spi.h"
 #include "common.h"
 
-// Write command (0b[ADDR(6:0)]|1):
-#define MAX30003_READ_ADDR(x) ((x << 1) | 1) // x is the address  
-#define MAX30003_WRITE_ADDR(x) ((x << 1) | 0) // x is the address  
-
 //Register Addresses:
 #define MAX30003_STAT_ADDRESS               0x01
 #define MAX30003_EN_INT_ADDRESS             0x02

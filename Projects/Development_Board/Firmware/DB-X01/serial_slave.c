@@ -42,7 +42,8 @@ void serial_slave_manager_handler(void)
         {
               uint8_t serial_array_data[ft201x_data_bytes_available];
               ft201x_read_buffer(serial_array_data, ft201x_data_bytes_available);
-              if(serial_array_data[0] == USB_COMMAND_HEADER && serial_array_data[-1] == USB_COMMAND_FOOTER)
+
+              if(serial_array_data[0] == USB_COMMAND_HEADER && serial_array_data[LAST_ARRAY_ELEMENT(serial_array_data)] == USB_COMMAND_FOOTER)
               {
                   switch(serial_array_data[1])
                   {
@@ -239,17 +240,24 @@ static void _nrf52_handler(uint8_t *serial_array_data)
                     switch(serial_array_data[4])
                     {
                         case NRF52_LED_IND_CUSTOM_BLINK:
-                            ind_led_blink(serial_array_data[5], serial_array_data[6]);
-                            break;     
+                        {
+                            uint16_t ind_led_on_ms = (uint16_t)(((uint16_t)serial_array_data[5] << 8) | serial_array_data[6]);
+                            uint16_t ind_led_off_ms = (uint16_t)(((uint16_t)serial_array_data[7] << 8) | serial_array_data[8]);
+                            ind_led_blink(ind_led_on_ms, ind_led_off_ms);
+                            break;
+                        }         
                         case NRF52_LED_IND_SHORT_BLINK:
                             ind_led_short_blink();
-                            break;   
+                            break;
+                               
                         case NRF52_LED_IND_MEDIUM_BLINK:
                             ind_led_medium_blink();
                             break;
+
                         case NRF52_LED_IND_LONG_BLINK:
                             ind_led_long_blink();
                             break;
+
                         default:
                             break;
                     }                                                                                       
@@ -263,10 +271,13 @@ static void _nrf52_handler(uint8_t *serial_array_data)
                     ble_led_off();
                     break;
 
-                case NRF52_LED_BLE_BLINK:  
-                    ble_led_blink(serial_array_data[4], serial_array_data[5]);
+                case NRF52_LED_BLE_BLINK:
+                {
+                    uint16_t ble_led_on_ms = (uint16_t)(((uint16_t)serial_array_data[4] << 8) | serial_array_data[5]);
+                    uint16_t ble_led_off_ms = (uint16_t)(((uint16_t)serial_array_data[6] << 8) | serial_array_data[7]);
+                    ble_led_blink(ble_led_on_ms, ble_led_off_ms);
                     break;
-
+                }
                 case NRF52_LOG_INIT:
                     log_init();
                     break;
@@ -368,7 +379,7 @@ static void _tmp117_handler(uint8_t *serial_array_data)
         case TMP117_READ_CHIP_ID_COMMAND:
             NRF_LOG_INFO("tmp117_MODULE: TMP117_READ_CHIP_ID_COMMAND");
             uint16_t tmp117_chip_id = tmp117_read_chip_id();
-            uint8_t tmp117_chip_id_array_data[4] = {0x00, 0x00, FT201X_WRITE_DATA_COMMAND, (tmp117_chip_id & 0xF0), (tmp117_chip_id & 0x0F)};  // Write TMP117 Chip ID
+            uint8_t tmp117_chip_id_array_data[5] = {0x00, 0x00, FT201X_WRITE_DATA_COMMAND, (tmp117_chip_id & 0xF0), (tmp117_chip_id & 0x0F)};  // Write TMP117 Chip ID
             _ft201x_handler(tmp117_chip_id_array_data);
             break;
 
@@ -379,24 +390,40 @@ static void _tmp117_handler(uint8_t *serial_array_data)
             _ft201x_handler(tmp117_revision_number_array_data);
             break;
 
+        case TMP117_UNLOCK_EEPROM_COMMAND:
+            NRF_LOG_INFO("TMP117_MODULE: TMP117_UNLOCK_EEPROM_COMMAND");
+            tmp117_unlock_eeprom();
+            break;
+
         case TMP117_INIT_COMMAND:
             NRF_LOG_INFO("TMP117_MODULE: TMP117_INIT_COMMAND");
+            tmp117_init(serial_array_data[3], serial_array_data[4]);
             break;
 
         case TMP117_SET_OPERATING_MODE_COMMAND:
             NRF_LOG_INFO("TMP117_MODULE: TMP117_SET_OPERATING_MODE_COMMAND");
+            tmp117_set_operating_mode(serial_array_data[3], serial_array_data[4]);
+            break;
+
+        case TMP117_GENERAL_CALL_RESET_COMMAND:
+            NRF_LOG_INFO("TMP117_MODULE: TMP117_GENERAL_CALL_RESET_COMMAND");   
+            tmp117_general_call_reset();
             break;
 
         case TMP117_TEMP_UINT16_COMMAND:
-            NRF_LOG_INFO("TMP117_MODULE: TMP117_UINT16_COMMAND");    
-            break;
-
-        case TMP117_TEMP_UINT8_COMMAND:
-            NRF_LOG_INFO("TMP117_MODULE: TMP117_TEMP_UINT8_COMMAND");    
+            NRF_LOG_INFO("TMP117_MODULE: TMP117_UINT16_COMMAND");
+            uint16_t tmp117_temp_value = tmp117_get_uint16_t();
+            uint8_t tmp117_temp_value_array_data[5] = {0x00, 0x00, FT201X_WRITE_DATA_COMMAND, (tmp117_temp_value & 0xF0), (tmp117_temp_value & 0x0F)};  // Write TMP117 Temperature Value
+            _ft201x_handler(tmp117_temp_value_array_data);             
             break;
 
         case TMP117_TEMP_CHAR_ARRAY_COMMAND:
             NRF_LOG_INFO("TMP117_MODULE: TMP117_TEMP_CHAR_ARRAY_COMMAND");    
+            uint8_t tmp117_uint8_t[5];
+            tmp117_get_uint8_t(tmp117_uint8_t);
+            uint8_t tmp117_uint8_t_array_data[8] = {0x00, 0x00, FT201X_WRITE_DATA_COMMAND, tmp117_uint8_t[4], tmp117_uint8_t[3],
+            tmp117_uint8_t[2], tmp117_uint8_t[1], tmp117_uint8_t[0]};  // Write TMP117 Temperature Value
+            _ft201x_handler(tmp117_uint8_t_array_data);           
             break;
 
         default:
