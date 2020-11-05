@@ -55,6 +55,7 @@
 "Output/DB-X01_pca10040_s132 Debug/Obj/spi.o"
 "Output/DB-X01_pca10040_s132 Debug/Obj/serial_slave.o"
 "Output/DB-X01_pca10040_s132 Debug/Obj/tmp117.o"
+"Output/DB-X01_pca10040_s132 Debug/Obj/ecg.o"
 "Output/DB-X01_pca10040_s132 Debug/Obj/SEGGER_RTT.o"
 "Output/DB-X01_pca10040_s132 Debug/Obj/SEGGER_RTT_Syscalls_SES.o"
 "Output/DB-X01_pca10040_s132 Debug/Obj/SEGGER_RTT_printf.o"

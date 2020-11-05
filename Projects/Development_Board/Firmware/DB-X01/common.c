@@ -24,6 +24,11 @@ void gpiote_init(void)
     }
 }
 
+void ram_retention(void)
+{
+//    sd_power_ram_power_set()
+}
+
 void ldo_init(void)
 {
     // Initialize LDO pins for power savings

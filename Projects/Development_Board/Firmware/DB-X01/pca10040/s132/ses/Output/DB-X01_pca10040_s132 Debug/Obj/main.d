@@ -144,6 +144,7 @@ Output/DB-X01_pca10040_s132\ Debug/Obj/main.o: \
  C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\spi.h \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/include/nrfx_spim.h \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/hal/nrf_spim.h \
+ C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\ecg.h \
  C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\serial_slave.h \
  C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\ft201x.h \
  C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\bmi160.h

@@ -5,8 +5,10 @@
 #include "ft201x.h"
 #include "tmp117.h"                   
 #include "bmi160.h"
+#include "max30003.h"
 #include "clocks.h"
 #include "power.h"  
+
 
 #define USB_COMMAND_HEADER                        0XAA
 #define USB_COMMAND_FOOTER                        0XAB
@@ -51,6 +53,8 @@
 
 #define MAX30003_READ_CHIP_ID_COMMAND             0X50
 #define MAX30003_INIT_COMMAND                     0X51
+#define MAX30003_SOFT_RESET_COMMAND               0X52
+#define MAX30003_INTERRUPT_ENABLE_COMMAND         0X53
 
 #define BLE_INIT_GAP_PARAMS_COMMAND               0X60
 #define BLE_UPDATE_GAP_PARAMS_COMMAND             0X61
@@ -97,6 +101,11 @@
 #define NRF52_LDO_INIT                            0XA5
 #define NRF52_VCC_LDO_EN                          0XA6
 
+#define NRF52_SPI_SPIM_INIT                       0X00
+#define NRF52_SPI_SPIM_ENABLE                     0X01
+#define NRF52_SPI_SPIM_DISABLE                    0X02
+#define NRF52_SPI_SPIM_UNINIT                     0X03
+
 
 #define NRF52_LED_IND_CUSTOM_BLINK                0XB0
 #define NRF52_LED_IND_SHORT_BLINK                 0XB1
@@ -108,7 +117,7 @@ void enable_serial_slave_handler(void);
 void serial_slave_manager_handler(void);
 void bluetooth_manager_handler(void);
 
-static void _nrf52_handler(uint8_t *serial_array_data);
+void _nrf52_handler(uint8_t *serial_array_data);
 static void _ft201x_handler(uint8_t *serial_array_data);
 static void _bmi160_handler(uint8_t *serial_array_data);
 static void _tmp117_handler(uint8_t *serial_array_data);

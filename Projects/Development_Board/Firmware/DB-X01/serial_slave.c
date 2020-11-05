@@ -102,8 +102,7 @@ void bluetooth_manager_handler(void)
 
 }
 
-
-static void _nrf52_handler(uint8_t *serial_array_data)
+void _nrf52_handler(uint8_t *serial_array_data)
 {
     switch(serial_array_data[2])
     {
@@ -302,12 +301,40 @@ static void _nrf52_handler(uint8_t *serial_array_data)
                 case NRF52_I2C_TWIM_INIT:
                     twim_init();
                     break;
+
                 case NRF52_I2C_TWIM_STOP:
                     i2c_stop();
                     break;
+
                 case NRF52_I2C_TWIM_START:
                     i2c_start();
                     break;
+
+                default:
+                    break;
+            }
+            break;
+
+        case NRF52_SPI_COMMAND:
+            NRF_LOG_INFO("NRF52_MODULE: NRF52_SPIM_COMMAND");
+            switch(serial_array_data[3])
+            {
+                case NRF52_SPI_SPIM_INIT:
+                    spim_init();
+                    break;
+
+                case NRF52_SPI_SPIM_ENABLE:
+                    spim_enable();
+                    break;
+
+                case NRF52_SPI_SPIM_DISABLE:
+                    spim_disable();
+                    break;
+                
+                case NRF52_SPI_SPIM_UNINIT:
+                    spim_uninit();
+                    break;
+
                 default:
                     break;
             }
