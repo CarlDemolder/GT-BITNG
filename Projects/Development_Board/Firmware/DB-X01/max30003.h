@@ -28,6 +28,21 @@ enum MAX30003_Registers
     MAX30003_RTOR_ADDRESS = 0x25
 };
 
+enum MAX30003_ECG_Constants
+{
+    MAX30003_MAX_FIFO_WORDS = 0b00011111    // 32 is the max number of words available to read from the FIFO
+};
+
+enum MAX30003_ECG_Data_Tags
+{
+    MAX30003_ETAG_VALID = 0b00000000,       // Valid Sample
+    MAX30003_ETAG_FAST = 0b00000001,        // Fast Mode Sample
+    MAX30003_ETAG_VALID_EOF = 0b00000010,   // Last Valid Sample
+    MAX30003_ETAG_FAST_EOF = 0b00000011,    // Last Fast Mode Sample
+    MAX30003_ETAG_EMPTY = 0b00000110,       // FIFO Empty (Exception)
+    MAX30003_OVERFLOW = 0b00000111          // FIFO Overflow
+};
+
 /**@brief Status Register Structure. This structure contains all values read from the Status Register.*/
 extern struct Status_Register
 {
@@ -111,8 +126,53 @@ extern struct Calibration_Configuration_Register
     uint8_t vmag;                   /**< Register Value */
     uint8_t fcal;                   /**< Register Value */  
     uint8_t fifty;                  /**< Register Value */
-    uint8_t thigh;                  /**< Register Value */  
+    uint16_t thigh;                 /**< Register Value */  
 } calibration_configuration_register;
+
+/**@brief Input Multiplexer Configuration Register Structure. This structure contains all values read from the Input Multiplexer Configuration Register.*/
+extern struct Input_Multiplexer_Configuration_Register
+{
+    uint8_t pol;                    /**< Register Value */
+    uint8_t openp;                  /**< Register Value */  
+    uint8_t openn;                  /**< Register Value */
+    uint8_t calp_sel;               /**< Register Value */  
+    uint8_t caln_sel;               /**< Register Value */
+} input_multiplexer_configuration_register;
+
+/**@brief ECG Configuration Register Structure. This structure contains all values read from the ECG Configuration Register.*/
+extern struct ECG_Configuration_Register
+{
+    uint8_t rate;                   /**< Register Value */
+    uint8_t gain;                   /**< Register Value */  
+    uint8_t dhpf;                   /**< Register Value */
+    uint8_t dlpf;                   /**< Register Value */  
+} ecg_configuration_register;
+
+/**@brief RTOR1 Configuration Register Structure. This structure contains all values read from the RTOR1 Configuration Register.*/
+extern struct RTOR1_Configuration_Register
+{
+    uint8_t wndw;                   /**< Register Value */
+    uint8_t gain;                   /**< Register Value */  
+    uint8_t en_rtor;                /**< Register Value */
+    uint8_t pavg;                   /**< Register Value */ 
+    uint8_t ptsf;                   /**< Register Value */ 
+} rtor1_configuration_register;
+
+/**@brief RTOR2 Configuration Register Structure. This structure contains all values read from the RTOR2 Configuration Register.*/
+extern struct RTOR2_Configuration_Register
+{
+    uint8_t hoff;                   /**< Register Value */
+    uint8_t ravg;                   /**< Register Value */  
+    uint8_t rhsf;                   /**< Register Value */
+} rtor2_configuration_register;
+
+/**@brief FIFO Memory Register Structure. This structure contains all values read from the RTO Configuration Register.*/
+extern struct ECG_FIFO_Memory_Register
+{
+    uint16_t ecg_voltage[MAX30003_MAX_FIFO_WORDS];       /**< Register Value */
+    uint8_t etag[MAX30003_MAX_FIFO_WORDS];               /**< Register Value */  
+    uint8_t ptag[MAX30003_MAX_FIFO_WORDS];               /**< Register Value */
+} ecg_fifo_memory_register;
 
 //Function Prototypes:
 void max30003_read_device_info(void);

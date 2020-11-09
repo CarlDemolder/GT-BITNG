@@ -330,7 +330,7 @@ void max30003_read_info_register(void)
 }
 
 /* 
-* Read General Configuration Register to read the following values:
+* Readand Write General Configuration Register to read and write the following values:
 * D[23:22], EN_ULP_LON = Ultra-Low Power Lead-On Detection Enable; ULP mode is only active when the ECG channel is powered down/disabled
 * D[21:20], FMSTR = Master Clock Frequency; These are generated from FCLK, which is always 32.768 kHz
 * D[19], EN_ECG = ECG Channel Enable; 1 = Enabled, 0 = Disabled; The ECG channel must be enabled to allow R-R operation 
@@ -380,9 +380,208 @@ void max30003_write_general_configuration_register(void)
     general_configuration_register_data_array[2] = (general_configuration_register.rbiasp << 1) | general_configuration_register_data_array[2];
     general_configuration_register_data_array[2] = general_configuration_register.rbiasn | general_configuration_register_data_array[2];
 
-    spim_write_single_register(MAX30003_MNGR_INT_ADDRESS, general_configuration_register_data_array[0], general_configuration_register_data_array[1], general_configuration_register_data_array[2]);
+    spim_write_single_register(MAX30003_CNFG_GEN_ADDRESS, general_configuration_register_data_array[0], general_configuration_register_data_array[1], general_configuration_register_data_array[2]);
 }
 
+/* 
+* Read and Write Calibration Configuration Register to read and write the following values:
+* D[23], NOT USED
+* D[22], EN_VCAL = Calibration Source (VCALP and VCALN) Enable
+* D[21], VMODE = Calibration Source Mode Selection
+* D[20], VMAG = Calibration Source Magnitude Selection (VMAG)
+* D[19:15], NOT USED
+* D[14:12], FCAL = Calibration Source Frequency Selection (FCAL)
+* D[11], FIFTY = Calibration Soruce Duty Cycle Mode Selection
+* D[10:0], THIGH = Calibration Source Time High Selection
+*/
+void max30003_read_calibration_configuration_register(void)
+{
+    uint8_t calibration_configuration_register_data_array[3];
+    spim_read_single_register(MAX30003_CNFG_CAL_ADDRESS, calibration_configuration_register_data_array);
+
+    calibration_configuration_register.en_vcal = (calibration_configuration_register_data_array[0] & 0b01000000) && 0b01000000;
+    calibration_configuration_register.vmode = (calibration_configuration_register_data_array[0] & 0b00100000) && 0b00100000;
+    calibration_configuration_register.vmag = (calibration_configuration_register_data_array[0] & 0b00010000) && 0b00010000;
+    calibration_configuration_register.fcal = (calibration_configuration_register_data_array[1] & 0b01110000) >> 4;
+    calibration_configuration_register.fifty = (calibration_configuration_register_data_array[1] & 0b00001000) && 0b00001000;
+    calibration_configuration_register.thigh = (calibration_configuration_register_data_array[1] & 0b00000111) | (calibration_configuration_register_data_array[2] & 0b11111111);
+}
+
+void max30003_write_calibration_configuration_register(void)
+{
+    uint8_t calibration_configuration_register_data_array[3];
+
+    calibration_configuration_register_data_array[0] = calibration_configuration_register.en_vcal << 6;
+    calibration_configuration_register_data_array[0] = (calibration_configuration_register.vmode << 5) | calibration_configuration_register_data_array[0];
+    calibration_configuration_register_data_array[0] = (calibration_configuration_register.vmag << 4) | calibration_configuration_register_data_array[0];
+    
+    calibration_configuration_register_data_array[1] = calibration_configuration_register.fcal << 4;
+    calibration_configuration_register_data_array[1] = (calibration_configuration_register.fifty << 3) | calibration_configuration_register_data_array[1];
+    calibration_configuration_register_data_array[1] = (uint8_t)((calibration_configuration_register.thigh & 0b0000011100000000) >> 8 )  | calibration_configuration_register_data_array[1];
+    
+    calibration_configuration_register_data_array[2] = (uint8_t)(calibration_configuration_register.thigh & 0b0000000011111111);
+
+    spim_write_single_register(MAX30003_CNFG_CAL_ADDRESS, calibration_configuration_register_data_array[0], calibration_configuration_register_data_array[1], calibration_configuration_register_data_array[2]);
+}
+
+/* 
+* Read and Write Input Multiplexer Configuration Register to read and write the following values:
+* D[23], POL = ECG Input Polarity Selection
+* D[22], NOT USED
+* D[21], OPENP = Open the ECGP Input Switch
+* D[20], OPENN = Open the ECGN Input Switch
+* D[19:18], CALP_SEL = ECGP Calibration Selection
+* D[17:16], CALN_SEL = ECGN Calibration Selection
+* D[15:0], NOT USED
+*/
+void max30003_read_input_multiplexer_configuration_register(void)
+{
+    uint8_t input_multiplexer_configuration_register_data_array[3];
+    spim_read_single_register(MAX30003_CNFG_EMUX_ADDRESS, input_multiplexer_configuration_register_data_array);
+
+    input_multiplexer_configuration_register.pol = (input_multiplexer_configuration_register_data_array[0] & 0b10000000) && 0b10000000;
+    input_multiplexer_configuration_register.openp = (input_multiplexer_configuration_register_data_array[0] & 0b00100000) && 0b00100000;
+    input_multiplexer_configuration_register.openn = (input_multiplexer_configuration_register_data_array[0] & 0b00010000) && 0b00010000;
+    input_multiplexer_configuration_register.calp_sel = (input_multiplexer_configuration_register_data_array[0] & 0b00001100) >> 2;
+    input_multiplexer_configuration_register.caln_sel = input_multiplexer_configuration_register_data_array[0] & 0b00000011;
+}
+
+void max30003_write_input_multiplexer_configuration_register(void)
+{
+    uint8_t input_multiplexer_configuration_register_data_array[3];
+
+    input_multiplexer_configuration_register_data_array[0] = input_multiplexer_configuration_register.pol << 7;
+    input_multiplexer_configuration_register_data_array[0] = (input_multiplexer_configuration_register.openp << 5) | input_multiplexer_configuration_register_data_array[0];
+    input_multiplexer_configuration_register_data_array[0] = (input_multiplexer_configuration_register.openn << 4) | input_multiplexer_configuration_register_data_array[0];
+    input_multiplexer_configuration_register_data_array[0] = (input_multiplexer_configuration_register.calp_sel << 2) | input_multiplexer_configuration_register_data_array[0];
+    input_multiplexer_configuration_register_data_array[0] = input_multiplexer_configuration_register.caln_sel | input_multiplexer_configuration_register_data_array[0];
+    
+    spim_write_single_register(MAX30003_CNFG_EMUX_ADDRESS, input_multiplexer_configuration_register_data_array[0], input_multiplexer_configuration_register_data_array[1], input_multiplexer_configuration_register_data_array[2]);
+}
+
+/* 
+* Read and Write ECG Configuration Register to read and write the following values:
+* D[23:22], RATE = ECG Data Rate Dependent on the F_MSTR
+* D[21:18], NOT USED
+* D[17:16], GAIN = ECG Channel Gain Setting
+* D[15], NOT USED
+* D[14], DHPF = ECG Channel Digital High-Pass Filter Cutoff Frequency
+* D[13:12], DLPF = ECGP Channel Digital Low-Pass Filter Cutoff Frequency
+* D[11:0], NOT USED
+*/
+void max30003_read_ecg_configuration_register(void)
+{
+    uint8_t ecg_configuration_register_data_array[3];
+    spim_read_single_register(MAX30003_CNFG_ECG_ADDRESS, ecg_configuration_register_data_array);
+
+    ecg_configuration_register.rate = (ecg_configuration_register_data_array[0] & 0b11000000) >> 6;
+    ecg_configuration_register.gain = ecg_configuration_register_data_array[0] & 0b00000011;
+
+    ecg_configuration_register.dhpf = (ecg_configuration_register_data_array[1] & 0b01000000) && 0b01000000;
+    ecg_configuration_register.dlpf = (ecg_configuration_register_data_array[1] & 0b00110000) >> 4;
+}
+
+void max30003_write_ecg_configuration_register(void)
+{
+    uint8_t ecg_configuration_register_data_array[3];
+
+    ecg_configuration_register_data_array[0] = ecg_configuration_register.rate << 6;
+    ecg_configuration_register_data_array[0] = ecg_configuration_register.gain | ecg_configuration_register_data_array[0];
+    ecg_configuration_register_data_array[1] = (ecg_configuration_register.dhpf << 6) | ecg_configuration_register_data_array[1];
+    ecg_configuration_register_data_array[1] = (ecg_configuration_register.dlpf << 4) | ecg_configuration_register_data_array[1];
+    
+    spim_write_single_register(MAX30003_CNFG_ECG_ADDRESS, ecg_configuration_register_data_array[0], ecg_configuration_register_data_array[1], ecg_configuration_register_data_array[2]);
+}
+
+/* 
+* Read and Write R-R #1 Configuration Register to read and write the following values:
+* D[23:20], WNDW = This is the Width of the Averaging Window; Adjusts the Algorithm Sensitivity to the Width of the QRS Complex
+* D[29:16], GAIN = R to R Gain; This is Used to Maximize the Dynamic Range of the Algorithm
+* D[15], EN_RTOR = ECG RTOR Detection Enable
+* D[14], NOT USED
+* D[13:12], PACG = R to R Peak Averaging Weight Factor
+* D[11:8], PTSF = R to R Peak Threshold Scaling Factor
+* D[7:0], NOT USED
+*/
+void max30003_read_rtor1_configuration_register(void)
+{
+    uint8_t rtor1_configuration_register_data_array[3];
+    spim_read_single_register(MAX30003_CNFG_RTOR1_ADDRESS, rtor1_configuration_register_data_array);
+
+    rtor1_configuration_register.wndw = (rtor1_configuration_register_data_array[0] & 0b11110000) >> 4;
+    rtor1_configuration_register.gain = rtor1_configuration_register_data_array[0] & 0b00001111;
+
+    rtor1_configuration_register.en_rtor = (rtor1_configuration_register_data_array[1] & 0b10000000) && 0b10000000;
+    rtor1_configuration_register.pavg = (rtor1_configuration_register_data_array[1] & 0b00110000) >> 4;
+    rtor1_configuration_register.ptsf = rtor1_configuration_register_data_array[1] & 0b00001111;
+}
+
+void max30003_write_rtor1_configuration_register(void)
+{
+    uint8_t rtor1_configuration_register_data_array[3];
+
+    rtor1_configuration_register_data_array[0] = rtor1_configuration_register.wndw << 4;
+    rtor1_configuration_register_data_array[0] = rtor1_configuration_register.gain | rtor1_configuration_register_data_array[0];
+    rtor1_configuration_register_data_array[1] = (rtor1_configuration_register.en_rtor << 7) | rtor1_configuration_register_data_array[1];
+    rtor1_configuration_register_data_array[1] = (rtor1_configuration_register.pavg << 4) | rtor1_configuration_register_data_array[1];
+    rtor1_configuration_register_data_array[1] = rtor1_configuration_register.ptsf | rtor1_configuration_register_data_array[1];
+    
+    spim_write_single_register(MAX30003_CNFG_RTOR1_ADDRESS, rtor1_configuration_register_data_array[0], rtor1_configuration_register_data_array[1], rtor1_configuration_register_data_array[2]);
+}
+
+/* 
+* Read and Write R-R #2 Configuration Register to read and write the following values:
+* D[23:22], NOT USED
+* D[21:16], HOFF = R to R Minimum Hold Off; Sets the Absolute Minimum Interval Used for the Static Portion of the Hold Off Criteria
+* D[15:14], NOT USED
+* D[13:12], GAIN = R to R Interval Averaging Weight Factor; Weighting Factor for the Current R to R interval observation
+* D[11], NOT USED
+* D[10:8], RHSF = R to R Interval Hold Off Scaling Factor; Fraction of the R to R Average Interval Used for the Dynamic Portion of the Holdoff Criteria
+* D[7:0], NOT USED
+*/
+void max30003_read_rtor2_configuration_register(void)
+{
+    uint8_t rtor2_configuration_register_data_array[3];
+    spim_read_single_register(MAX30003_CNFG_RTOR2_ADDRESS, rtor2_configuration_register_data_array);
+
+    rtor2_configuration_register.hoff = rtor2_configuration_register_data_array[0] & 0b00111111;
+
+    rtor2_configuration_register.ravg = (rtor2_configuration_register_data_array[1] & 0b00110000) >> 6;
+    rtor2_configuration_register.rhsf = rtor2_configuration_register_data_array[1] & 0b00000011;
+}
+
+void max30003_write_rtor2_configuration_register(void)
+{
+    uint8_t rtor2_configuration_register_data_array[3];
+
+    rtor2_configuration_register_data_array[0] = rtor2_configuration_register.hoff;
+    rtor2_configuration_register_data_array[1] = rtor2_configuration_register.ravg << 4;
+    rtor2_configuration_register_data_array[1] = rtor2_configuration_register.rhsf | rtor2_configuration_register_data_array[1];
+    
+    spim_write_single_register(MAX30003_CNFG_RTOR2_ADDRESS, rtor2_configuration_register_data_array[0], rtor2_configuration_register_data_array[1], rtor2_configuration_register_data_array[2]);
+}
+
+/* 
+* Read ECG FIFO Memory Register to read the following values:
+* D[23:6], ECG_VOLTAGE = ECG Sample Voltage Data; 18 Bit ECG Voltage Information at the Requested Sample Rate in Left Justified Two's Complement Format
+* D[5:3], ETAG = DATA Tag; Data condition Tag
+* D[2:0], PTAG = ???
+*/
+void max30003_read_ecg_fifo_memory_register(void)
+{
+    uint8_t ecg_fifo_memory_register_data_array[interrupt_manager_register.efit*3];    // Number of words to read from the FIFO, 3 bytes per word
+    spim_read_registers(MAX30003_ECG_FIFO_BURST_ADDRESS, ecg_fifo_memory_register_data_array, interrupt_manager_register.efit*3);
+    uint32_t temp_ecg_voltage = 0;
+    uint8_t counter = 0;
+    for(uint8_t i = 0; i < ((interrupt_manager_register.efit*3)-2); i = i + 3)
+    {
+        temp_ecg_voltage = (ecg_fifo_memory_register_data_array[i] << 10) | (ecg_fifo_memory_register_data_array[i+1] << 2) | ((ecg_fifo_memory_register_data_array[i+2] & 0b11000000) >> 6); 
+        ecg_fifo_memory_register.ecg_voltage[counter] = (uint16_t)(temp_ecg_voltage & 0b00000000000000001111111111111111);
+        ecg_fifo_memory_register.etag[counter] = (ecg_fifo_memory_register_data_array[i+2] & 0b00111000) >> 3;
+        ecg_fifo_memory_register.ptag[counter] = ecg_fifo_memory_register_data_array[i+2] & 0b00000111;
+        counter++;
+    }
+}
 
 
 void max30003_readback_registers(void) 

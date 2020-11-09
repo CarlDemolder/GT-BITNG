@@ -60,9 +60,9 @@
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="35" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../main.c" selected="0" top="0" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="104" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../serial_slave.c" selected="0" top="76" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="119" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../serial_slave.h" selected="0" top="57" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="386" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../max30003.c" selected="0" top="318" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="115" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../max30003.h" selected="1" top="81" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="55" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../spi.c" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="584" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../max30003.c" selected="1" top="542" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="41" y="173" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../max30003.h" selected="0" top="3" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="36" y="80" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../spi.c" selected="0" top="42" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="1" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../spi.h" selected="0" top="1" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="1305" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../../../../Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/mdk/nrf52.h" selected="0" top="1268" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="30" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../ecg.c" selected="0" top="0" codecName="Default"/>
