@@ -3,33 +3,33 @@
 
 void ft201x_init(void)
 {
-    NRF_LOG_INFO("FT201X Init");
+    NRF_LOG_INFO("ft201x_init");
     ft201x_flush_buffers();
 }
 
 void ft201x_enable_vcp(void)
 {
-    NRF_LOG_INFO("FT201X Enable VCP");
+    NRF_LOG_INFO("ft201x_enable_vcp");
     // Enable the Virtual Com Port Functionality
 }
 
 uint8_t ft201x_available(void)
 {
-    NRF_LOG_INFO("FT201X Init");
+    NRF_LOG_INFO("ft201x_available");
 
-    uint8_t usb_connection = ft201x_check_usb_state();
+    ft201x_data.usb_connection = ft201x_check_usb_state();
 
-    if(usb_connection == FT201X_USB_NORMAL)
+    if(ft201x_data.usb_connection == FT201X_USB_NORMAL)
     {
-        uint8_t data_available = ft201x_data_available();
-        return data_available;
+        ft201x_data.data_available = ft201x_data_available();
+        return ft201x_data.data_available;
     }
     return 0;
 }
 
 void ft201x_read_buffer(uint8_t* array_data, uint8_t array_size)
 {
-    NRF_LOG_INFO("FT201X: reading data from buffer");
+    NRF_LOG_INFO("ft201x_read_buffer");
     uint8_t device_address = FT201X_DEVICE_ADDRESS;                     // Slave Address for FT201X
     uint8_t register_byte_count = array_size;                           // Number of bytes of buffer to read
 //    uint8_t register_data[register_byte_count];                         // Store data in array
@@ -42,13 +42,15 @@ void ft201x_read_buffer(uint8_t* array_data, uint8_t array_size)
 
 void ft201x_write_buffer(uint8_t* array_data, uint8_t array_size)
 {   
+    NRF_LOG_INFO("ft201x_write_buffer");
     i2c_write_registers(FT201X_DEVICE_ADDRESS, array_data, array_size);        // Write array data to FT201X
 
     NRF_LOG_INFO("FT201X: writing data to transmitting buffer");
 }
 
 void ft201x_flush_buffers()
-{    
+{
+    NRF_LOG_INFO("ft201x_flush_buffer");    
     uint8_t register_byte_count = 1;
     uint8_t register_data = FT201X_FLUSH_COMMAND;    
     i2c_write_registers(GENERAL_CALL_ADDRESS, &register_data, register_byte_count);
@@ -58,19 +60,20 @@ void ft201x_flush_buffers()
 
 uint8_t ft201x_data_available(void)
 {
+    NRF_LOG_INFO("ft201x_data_available");
     uint8_t register_byte_count = 1;
     uint8_t register_value = FT201X_DATA_AVAILABLE_COMMAND;    
     uint8_t register_data[register_byte_count];
 
     i2c_separate_write_read_registers(GENERAL_CALL_ADDRESS, FT201X_DEVICE_ADDRESS, &register_value, register_byte_count, register_data, register_byte_count);
     
-    uint8_t FT201X_data_available_flag = register_data[0];
+    ft201x_data.data_available_flag = register_data[0];
        
-    if(FT201X_data_available_flag > 0)
+    if(ft201x_data.data_available_flag > 0)
     {  
         NRF_LOG_INFO("FT201X has data available for reading.");
-        NRF_LOG_INFO("Number of bytes available to read: %hhu", FT201X_data_available_flag);
-        return FT201X_data_available_flag;
+        NRF_LOG_INFO("Number of bytes available to read: %hhu", ft201x_data.data_available_flag);
+        return ft201x_data.data_available_flag;
     }
     NRF_LOG_INFO("FT201X does not have data available for reading.");
     return 0;
@@ -87,22 +90,28 @@ void ft201x_soft_reset(void)
 
 uint8_t ft201x_check_usb_state(void)
 {
+    NRF_LOG_INFO("ft201x_check_usb_state");
+
     uint8_t register_byte_count = 1;    
     uint8_t register_value = FT201X_USB_STATE_COMMAND; 
     uint8_t register_data[register_byte_count];
     
     i2c_separate_write_read_registers(GENERAL_CALL_ADDRESS, FT201X_DEVICE_ADDRESS, &register_value, register_byte_count, register_data, register_byte_count); 
-
-    uint8_t FT201X_usb_state = register_data[0];   
-
-    if(FT201X_usb_state == FT201X_USB_NORMAL)
+    if(get_i2c_timeout() == 0x01)
     {
-        NRF_LOG_INFO("FT201X USB State: 0x%X (expected: 0x03)\r\n", FT201X_usb_state);
-        NRF_LOG_INFO("FT201X is in its normal operating state. USB cable and computer are plugged in.");
-        return FT201X_usb_state;
+        ft201x_data.ft201x_usb_state == FT201X_DISCONNECTED;
     }
 
-    NRF_LOG_INFO("FT201X USB State: 0x%X (expected: 0x03)\r\n", FT201X_usb_state);
+    ft201x_data.ft201x_usb_state = register_data[0];   
+
+    if(ft201x_data.ft201x_usb_state == FT201X_USB_NORMAL)
+    {
+        NRF_LOG_INFO("FT201X USB State: 0x%X (expected: 0x03)\r\n", ft201x_data.ft201x_usb_state);
+        NRF_LOG_INFO("FT201X is in its normal operating state. USB cable and computer are plugged in.");
+        return ft201x_data.ft201x_usb_state;
+    }
+
+    NRF_LOG_INFO("FT201X USB State: 0x%X (expected: 0x03)\r\n", ft201x_data.ft201x_usb_state);
     return 0;
 }
 

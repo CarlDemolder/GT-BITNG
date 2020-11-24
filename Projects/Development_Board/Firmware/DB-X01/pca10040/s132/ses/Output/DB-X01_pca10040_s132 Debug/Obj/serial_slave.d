@@ -99,45 +99,6 @@ Output/DB-X01_pca10040_s132\ Debug/Obj/serial_slave.o: \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/hal/nrf_spim.h \
  C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\ecg.h \
  C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\clocks.h \
- C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\bluetooth.h \
- C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\ble_temperature_service.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/common/ble_srv_common.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/s132/headers/ble_types.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/s132/headers/ble.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/s132/headers/ble_err.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/s132/headers/ble_gap.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/s132/headers/ble_hci.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/s132/headers/ble_ranges.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/s132/headers/ble_types.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/s132/headers/ble_l2cap.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/s132/headers/ble_gatt.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/s132/headers/ble_gattc.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/s132/headers/ble_gatts.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/s132/headers/ble_gap.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/s132/headers/ble_gatt.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/s132/headers/ble_hci.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/common/ble_advdata.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/ble_advertising/ble_advertising.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/s132/headers/ble_gattc.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/common/ble_conn_params.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/common/ble_srv_common.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/softdevice/common/nrf_sdh_ble.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/peer_manager/peer_manager.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/peer_manager/peer_manager_types.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/common/ble_gatt_db.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/peer_manager/peer_database.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/peer_manager/peer_manager_internal.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/peer_manager/peer_manager_handler.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/peer_manager/peer_manager.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/libraries/bsp/bsp_btn_ble.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/libraries/bsp/bsp.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/libraries/button/app_button.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/libraries/sensorsim/sensorsim.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/common/ble_conn_state.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/libraries/atomic/nrf_atomic.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/nrf_ble_gatt/nrf_ble_gatt.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/ble/nrf_ble_qwr/nrf_ble_qwr.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/libraries/pwr_mgmt/nrf_pwr_mgmt.h \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/include/nrfx_clock.h \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/hal/nrf_clock.h \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/include/nrfx_power_clock.h \
@@ -147,4 +108,5 @@ Output/DB-X01_pca10040_s132\ Debug/Obj/serial_slave.o: \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/hal/nrf_timer.h \
  C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Firmware\DB-X01\power.h \
  C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/drivers/include/nrfx_power.h \
- C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/hal/nrf_power.h
+ C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/hal/nrf_power.h \
+ C:/Users/cdemolde/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/libraries/pwr_mgmt/nrf_pwr_mgmt.h

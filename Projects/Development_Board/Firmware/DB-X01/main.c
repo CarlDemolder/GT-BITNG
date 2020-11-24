@@ -2,7 +2,6 @@
 #include "power.h"
 #include "bluetooth.h"
 
-#include "max30003.h"
 #include "serial_slave.h"
                                                                                                                         
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
@@ -27,13 +26,10 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
  */
 int main(void)
 {
-    enable_vcc_ldo();                 // Enable LDO VCC (3.3V)
     enable_serial_slave_handler();    // Enable Serial Slave Handler
 
     for (;;)
     {
-        serial_slave_manager_handler();
-        nrf_delay_ms(2000);
-        bluetooth_manager_handler();
+        power_manager_handler();        
     }
 }

@@ -242,30 +242,30 @@ void on_temperature_evt(ble_temperature_service_t * p_cus_service, temperature_e
         case TEMPERATURE_EVT_NOTIFICATION_ENABLED:
             NRF_LOG_DEBUG("ON_TEMPERATURE_EVENT NOTIFICATION ENABLED");
             gap_params_update(m_conn_handle);
-            rtc_start();
+//            rtc_start();
             break;
 
         case TEMPERATURE_EVT_NOTIFICATION_DISABLED:
             NRF_LOG_DEBUG("ON_TEMPERATURE_EVENT NOTIFICATION DISABLED");
-            rtc_stop();
-            disable_vcc_ldo();
+//            rtc_stop();
+//            disable_vcc_ldo();
             break;
 
         case TEMPERATURE_EVT_CONNECTED:
             NRF_LOG_DEBUG("ON_TEMPERATURE_EVENT SERVICE CONNECTED");
-            rtc_restart();    // Restart the RTC Timer if the phone and sensor are disconnected
+//            rtc_restart();    // Restart the RTC Timer if the phone and sensor are disconnected
             break;
 
         case TEMPERATURE_EVT_DISCONNECTED:
             NRF_LOG_DEBUG("ON_TEMPERATURE_EVENT SERVICE DISCONNECTED");
-            rtc_stop();
+//            rtc_stop();
             break;
         
         case TEMPERATURE_EVT_WRITE:
             NRF_LOG_DEBUG("ON_TEMPERATURE_EVENT CHARACTERISTIC WRITTEN");
             sampling_interval_value_update(p_cus_service, &ble_temperature_init.sampling_interval_value);
-            rtc_stop();
-            rtc_set_counter(ble_temperature_init.sampling_interval_value);
+//            rtc_stop();
+//            rtc_set_counter(ble_temperature_init.sampling_interval_value);
 
         default:
               break;
@@ -374,7 +374,7 @@ void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 
         case BLE_ADV_EVT_IDLE:
             NRF_LOG_INFO("BLE advertising idle.");
-            disable_vcc_ldo();   // Disabling the LDO to kill the MCU
+//            disable_vcc_ldo();   // Disabling the LDO to kill the MCU
             break;
 
         default:

@@ -4,7 +4,30 @@
 #include "common.h"
 #include "nrfx_twim.h"
 
-#define GENERAL_CALL_ADDRESS            0X00                                    /** General Call Address **/
+enum TWIM_CONSTANTS
+{
+    TWIM_DELAY = 1, 
+    GENERAL_CALL_ADDRESS = 0X00,                                    /** General Call Address **/
+    TWIM_TIMEOUT = 1000
+};
+
+/**@brief TWIM Configuration Structure. This structure contains all values for the TWIM Configuration.*/
+struct TWIM_Configuration
+{
+    uint32_t timeout;
+    volatile bool twim_xfer_done;
+    uint8_t timeout_flag;
+    nrfx_twim_t nrfx_twim;
+    nrfx_twim_config_t twim_config;
+    nrfx_twim_xfer_desc_t twim_xfer_desc;
+    uint32_t nrfx_twim_xfer_flag;
+    ret_code_t error_code;
+};
+
+static struct TWIM_Configuration twim_configuration;
+
+uint8_t get_i2c_timeout();
+void twim_uninit(void);
 
 void twim_init(void);
 void i2c_write_registers(uint8_t slave_address, uint8_t const* array_data, uint8_t array_size);

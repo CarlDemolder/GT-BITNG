@@ -1,9 +1,33 @@
 #include "serial_slave.h"
 
+static void _disable_serial_slave_manager_handler(void)
+{
+    uint8_t rtc_ft201x_stop_array_data[4] = {0x00, 0x00, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_FT201X_STOP};  // Stop the RTC for the FT201X
+    _nrf52_handler(rtc_ft201x_stop_array_data);
+
+    uint8_t rtc_ft201x_uninit_array_data[4] = {0x00, 0x00, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_FT201X_UNINIT};  // Uninitialize the RTC for the FT201X
+    _nrf52_handler(rtc_ft201x_uninit_array_data);
+
+    uint8_t lf_clock_stop_array_data[4] = {0x00, 0x00, NRF52_LF_CLOCK_COMMAND, NRF52_LF_CLOCK_STOP};   // Stop LF Clock
+    _nrf52_handler(lf_clock_stop_array_data); 
+     
+    uint8_t i2c_stop_array_data[4] = {0x00, 0x00, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_STOP};  // Stop TWIM Driver
+    _nrf52_handler(i2c_stop_array_data);
+
+    uint8_t i2c_uninit_array_data[4] = {0x00, 0x00, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  // Uninitialize the TWIM Driver
+    _nrf52_handler(i2c_uninit_array_data);
+}
+
 void enable_serial_slave_handler(void)
 {
     uint8_t log_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LOG_INIT};       // Enable LOG Driver
     _nrf52_handler(log_array_data);
+
+    uint8_t nrfx_clock_init_array_data[4] = {0x00, 0x00, NRF52_CLOCK_COMMAND, NRF52_NRFX_CLOCK_DRIVER_INIT};   // Init and Enable NRFX Clock
+    _nrf52_handler(nrfx_clock_init_array_data);  
+
+    uint8_t set_pin_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_INPUT_OUTPUT_INIT};       // Initialize Input and Output Pins
+    _nrf52_handler(set_pin_array_data);
 
     uint8_t ldo_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LDO_INIT};       // Enable LDO Drivers
     _nrf52_handler(ldo_array_data);
@@ -14,28 +38,40 @@ void enable_serial_slave_handler(void)
     uint8_t power_manager_array_data[4] = {0x00, 0x00, NRF52_POWER_COMMAND, NRF52_POWER_MANAGER_INIT};  // Enable Power Manager
     _nrf52_handler(power_manager_array_data);
 
+    uint8_t led_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LED_INIT};  // Enable LED Driver
+    _nrf52_handler(led_array_data);
+
+    uint8_t long_blink_led_array_data[5] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LED_IND_BLINK, NRF52_LED_IND_LONG_BLINK};  // IND LED Long Blink
+    _nrf52_handler(long_blink_led_array_data);
+
     uint8_t i2c_init_array_data[4] = {0x00, 0x00, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  // Enable TWIM Driver
     _nrf52_handler(i2c_init_array_data);
 
     uint8_t i2c_start_array_data[4] = {0x00, 0x00, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_START};  // Start TWIM Driver
     _nrf52_handler(i2c_start_array_data);
 
-    uint8_t led_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LED_INIT};  // Enable LED Driver
-    _nrf52_handler(led_array_data);
+    uint8_t lf_clock_start_array_data[4] = {0x00, 0x00, NRF52_LF_CLOCK_COMMAND, NRF52_LF_CLOCK_START};   // Start LF Clock
+    _nrf52_handler(lf_clock_start_array_data);  
 
-    uint8_t long_blink_led_array_data[5] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LED_IND_BLINK, NRF52_LED_IND_LONG_BLINK};  // IND LED Long Blink
-    _nrf52_handler(long_blink_led_array_data);
+    uint8_t rtc_ft201x_init_array_data[4] = {0x00, 0x00, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_FT201X_INIT};  // Initialize the RTC for the FT201X
+    _nrf52_handler(rtc_ft201x_init_array_data);
+
+    uint8_t rtc_ft201x_set_counter_array_data[6] = {0x00, 0x00, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_FT201X_SET_COUNTER, 0x00, 0x08};  // Setting the counter for the RTC for the FT201X to 1 second
+    _nrf52_handler(rtc_ft201x_set_counter_array_data);
+
+    uint8_t rtc_ft201x_start_array_data[4] = {0x00, 0x00, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_FT201X_START};  // Start the RTC for the FT201X
+    _nrf52_handler(rtc_ft201x_start_array_data);
 }
 
-static void _disable_serial_slave_manager_handler(void)
+static void _enable_bluetooth_manager_handler(void)
 {
-    uint8_t i2c_stop_array_data[4] = {0x00, 0x00, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_STOP};  // Stop TWIM Driver
-    _nrf52_handler(i2c_stop_array_data);
+    
+
 }
 
 void serial_slave_manager_handler(void)
 {
-    while(FT201X_USB_NORMAL == ft201x_check_usb_state())
+    if(FT201X_USB_NORMAL == ft201x_check_usb_state())
     {
         uint8_t ft201x_data_bytes_available = ft201x_available();
         if(ft201x_data_bytes_available > 2)
@@ -87,19 +123,12 @@ void serial_slave_manager_handler(void)
                   ft201x_flush_buffers();
               }
         }
-        else
-        {
-            power_manager_handler();
-        }
     }
-    _disable_serial_slave_manager_handler();
-}
-
-
-void bluetooth_manager_handler(void)
-{
-    
-
+    else
+    {
+        _disable_serial_slave_manager_handler();
+        _enable_bluetooth_manager_handler();
+    }
 }
 
 void _nrf52_handler(uint8_t *serial_array_data)
@@ -161,26 +190,59 @@ void _nrf52_handler(uint8_t *serial_array_data)
             NRF_LOG_INFO("NRF52_MODULE: NRF52_RTC_CLOCK_COMMAND");
             switch(serial_array_data[3])
             {
-                case NRF52_RTC_CONFIG:
-                    rtc_config();
+                case NRF52_RTC_FT201X_INIT:
+                    rtc_ft201x_init();
                     break;
 
-                case NRF52_RTC_START:  
-                    rtc_start();
+                case NRF52_RTC_FT201X_UNINIT:
+                    nrfx_rtc_ft201x_uninit();
                     break;
 
-                case NRF52_RTC_STOP:
-                    rtc_stop();
+                case NRF52_RTC_FT201X_START:  
+                    rtc_ft201x_start();
                     break;
 
-                case NRF52_RTC_RESTART:  
-                    rtc_restart();
+                case NRF52_RTC_FT201X_STOP:
+                    rtc_ft201x_stop();
                     break;
 
-                case NRF52_RTC_SET_COUNTER:
-                    rtc_set_counter(serial_array_data[4]);
+                case NRF52_RTC_FT201X_RESTART:  
+                    rtc_ft201x_restart();
                     break;
 
+                case NRF52_RTC_FT201X_SET_COUNTER:
+                {
+                    uint32_t temp_counter = serial_array_data[4] << 8 | serial_array_data[5];  
+                    rtc_ft201x_set_counter(temp_counter);
+                    break;
+                }
+
+                case NRF52_RTC_TMP117_INIT:
+                    rtc_tmp117_init();
+                    break;
+
+                case NRF52_RTC_TMP117_UNINIT:
+                    nrfx_rtc_tmp117_uninit();
+                    break;
+
+                case NRF52_RTC_TMP117_START:  
+                    rtc_tmp117_start();
+                    break;
+
+                case NRF52_RTC_TMP117_STOP:
+                    rtc_tmp117_stop();
+                    break;
+
+                case NRF52_RTC_TMP117_RESTART:  
+                    rtc_tmp117_restart();
+                    break;
+
+                case NRF52_RTC_TMP117_SET_COUNTER:
+                {
+                    uint32_t temp_counter = serial_array_data[4] << 8 | serial_array_data[5];  
+                    rtc_tmp117_set_counter(temp_counter);
+                    break;
+                }
                 default:
                     break;
             }
@@ -285,6 +347,10 @@ void _nrf52_handler(uint8_t *serial_array_data)
                     ldo_init();
                     break;
 
+                case NRF52_INPUT_OUTPUT_INIT:
+                    input_output_init();
+                    break;
+
                 case NRF52_VCC_LDO_EN:
                     enable_vcc_ldo();
                     break;
@@ -300,6 +366,10 @@ void _nrf52_handler(uint8_t *serial_array_data)
             {
                 case NRF52_I2C_TWIM_INIT:
                     twim_init();
+                    break;
+
+                case NRF52_I2C_TWIM_UNINIT:
+                    twim_uninit();
                     break;
 
                 case NRF52_I2C_TWIM_STOP:
