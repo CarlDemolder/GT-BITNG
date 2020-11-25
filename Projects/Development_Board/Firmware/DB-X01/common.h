@@ -62,8 +62,9 @@ enum DB_X02_PIN_CONSTANTS
 #define HARDWARE_VERSION_NUMBER         "DB-X02"
 
 
+#define ARRAY_LENGTH(x)                 sizeof(x)/sizeof(x[0])                /** Array length */ 
 
-#define LAST_ARRAY_ELEMENT(x)           (sizeof(x)/sizeof(x[0])-1)             /** Array index for the last element of the array */ 
+#define LAST_ARRAY_ELEMENT(x)           (sizeof(x)/sizeof(x[0])-1)            /** Array index for the last element of the array */ 
 
 void gpiote_init(void);
 

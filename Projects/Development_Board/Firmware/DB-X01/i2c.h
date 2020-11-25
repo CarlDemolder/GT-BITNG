@@ -4,6 +4,9 @@
 #include "common.h"
 #include "nrfx_twim.h"
 
+/* TWIM instance ID. */
+#define TWIM_INSTANCE_ID     0
+
 enum TWIM_CONSTANTS
 {
     TWIM_DELAY = 1, 

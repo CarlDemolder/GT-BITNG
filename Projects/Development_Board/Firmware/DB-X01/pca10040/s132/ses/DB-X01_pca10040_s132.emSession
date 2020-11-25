@@ -58,15 +58,15 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="12" y="30" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../main.c" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="30" y="115" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../serial_slave.c" selected="0" top="4" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="21" y="141" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../serial_slave.h" selected="0" top="93" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="63" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../common.h" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../max30003.h" selected="0" top="132" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="5" y="62" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../clocks.c" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="30" y="3" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../spi.c" selected="1" top="24" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="35" y="19" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../spi.h" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="17" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../i2c.h" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="30" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../main.c" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="115" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../serial_slave.c" selected="0" top="410" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="141" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../serial_slave.h" selected="0" top="125" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="48" y="64" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../common.h" selected="0" top="48" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="46" y="122" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../spi.c" selected="0" top="109" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="103" y="38" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../spi.h" selected="0" top="30" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="55" y="115" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../i2c.c" selected="0" top="83" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="30" y="7" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../i2c.h" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="31" y="19" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../max30003.c" selected="1" top="0" codecName="Default"/>
  </Files>
- <ARMCrossStudioWindow activeProject="DB-X01_pca10040_s132" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" debugSearchFileMap="C:/Users/carld/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/mdk/ses_startup_nrf52.s&#xa;&#xa;C:/Users/carld/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/mdk/ses_startup_nrf_common.s&#xa;" fileDialogInitialDirectory="C:/Users/cdemolde/Documents/GitHub/GT-BITNG/Projects/Development_Board/Firmware/DB-X01" debugSearchPath="" autoConnectCapabilities="3711"/>
+ <ARMCrossStudioWindow activeProject="DB-X01_pca10040_s132" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" sessionSettings="" debugSearchFileMap="C:/Users/carld/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/mdk/ses_startup_nrf52.s&#xa;&#xa;C:/Users/carld/Documents/Nordic_SDK/nRF5_SDK_17.0.0_9d13099/modules/nrfx/mdk/ses_startup_nrf_common.s&#xa;" fileDialogInitialDirectory="C:/Users/cdemolde/Documents/GitHub/GT-BITNG/Projects/Development_Board/Firmware/DB-X01" debugSearchPath="" autoConnectCapabilities="3199"/>
 </session>

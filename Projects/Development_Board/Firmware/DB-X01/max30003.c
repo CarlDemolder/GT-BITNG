@@ -5,7 +5,7 @@ void max30003_read_device_info(void)
 {
     NRF_LOG_INFO("max30003_read_device_info");
     uint8_t data_array[3];
-    spim_read_single_register(MAX30003_INFO_ADDRESS, data_array);
+    spim_read_registers(MAX30003_INFO_ADDRESS, data_array, ARRAY_LENGTH(data_array));
 
     NRF_LOG_INFO("Device Information:");
     NRF_LOG_HEXDUMP_INFO(data_array, sizeof(data_array)); // Hex Dump Output (temp)
@@ -15,7 +15,7 @@ void max30003_read_device_status(void)
 {
     NRF_LOG_INFO("[MAX30003] Read Device Status \r\n");
     uint8_t data_array[3];
-    spim_read_single_register(MAX30003_STATUS_ADDRESS, data_array);
+    spim_read_registers(MAX30003_STATUS_ADDRESS, data_array);
 
     NRF_LOG_INFO("Device Status: \r\n");
     NRF_LOG_HEXDUMP_INFO(data_array, sizeof(data_array)); // Hex Dump Output (temp)

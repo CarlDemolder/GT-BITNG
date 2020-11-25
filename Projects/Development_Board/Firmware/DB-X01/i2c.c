@@ -1,11 +1,5 @@
 #include "i2c.h"
 
-/* TWIM instance ID. */
-#define TWIM_INSTANCE_ID     0
-
-///* TWIM instance. */
-//const nrfx_twim_t m_twim_0 = NRFX_TWIM_INSTANCE(TWIM_INSTANCE_ID);
-
 static uint8_t _twim_timeout_handler()
 {
     if(twim_configuration.timeout == 0)
@@ -99,11 +93,11 @@ void twim_init(void)
     const nrfx_twim_t m_twim_0 = NRFX_TWIM_INSTANCE(TWIM_INSTANCE_ID);
     twim_configuration.nrfx_twim = m_twim_0;
 
-    twim_configuration.err_code = nrfx_twim_init(&twim_configuration.nrfx_twim, &twim_configuration.twim_config, twim_handler, NULL);
-    APP_ERROR_CHECK(twim_configuration.err_code);
+    twim_configuration.error_code = nrfx_twim_init(&twim_configuration.nrfx_twim, &twim_configuration.twim_config, twim_handler, NULL);
+    APP_ERROR_CHECK(twim_configuration.error_code);
 
     twim_configuration.timeout = TWIM_TIMEOUT;
-    twim_configuration.twim_xfer_done = false; /* Indicates if operation on TWI has ended. */
+    twim_configuration.twim_xfer_done = false; /* Indicates if operation on TWIM has ended. */
 }
 
 void twim_uninit(void)
