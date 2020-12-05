@@ -43,7 +43,7 @@ uint8_t ft201x_available(void);
 void ft201x_init(void);
 void ft201x_enable_vcp(void);
 void ft201x_close(void);
-void ft201x_write_buffer(uint8_t* array_data, uint8_t array_size);
+void ft201x_write_buffer(uint8_t* array_data_pointer, uint8_t array_size);
 void ft201x_read_buffer(uint8_t* array_data, uint8_t array_size);
 void ft201x_flush_buffers(void);
 void ft201x_soft_reset(void);

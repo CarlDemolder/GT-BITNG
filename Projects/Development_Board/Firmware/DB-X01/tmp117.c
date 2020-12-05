@@ -157,13 +157,15 @@ void tmp117_set_operating_mode(uint8_t conversion_mode, uint8_t averaging_mode)
     register_data[2] = tmp117_config_value_2;
 
     i2c_write_registers(device_address, register_data, register_byte_count);
+    nrf_delay_ms(10);   // Wait 10 ms to allow the register to be written properly 
 }
 
 void tmp117_general_call_reset(void)
 {
     NRF_LOG_INFO("TMP117: General Call Reset");
     
-    uint8_t register_byte_count = 1;    
-    uint8_t register_data = TMP117_GENERAL_CALL_RESET; 
-    i2c_write_registers(GENERAL_CALL_ADDRESS, &register_data, register_byte_count);
+    uint8_t register_byte_count = 1;
+    uint8_t register_data[register_byte_count];    
+    register_data[0] = TMP117_GENERAL_CALL_RESET; 
+    i2c_write_registers(GENERAL_CALL_ADDRESS, register_data, register_byte_count);
 }

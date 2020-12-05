@@ -6,19 +6,20 @@
 #include <string.h>
 
 #include "fds.h"
-#include "nrf_sdh.h"
-#include "nrf_sdh_soc.h"
-#include "app_error.h"
-#include "boards.h"
+
 #include "nordic_common.h"
 #include "sdk_common.h"
+
+#include "app_error.h"
 #include "app_util_platform.h"
+
 #include "nrf.h"
 #include "nrf_delay.h"
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
+
 #include "nrfx_gpiote.h"
 
 
@@ -56,10 +57,14 @@ enum DB_X02_PIN_CONSTANTS
 
     NRESET_PIN = 21,                                    /** Pinout for nRESET pin for DB-X02 */ 
 
-    WB_V_OUT = 4,                                       /** Pinout for Wheatstone Bridge Analog pin for DB-X02 */ 
-};
+    WB_V_OUT = 4,                                       /** Pinout for Wheatstone Bridge Analog pin for DB-X02 */
+     
+    POWER_LDO_ON_DELAY = 1000,                          /** Power LDO ON Delay to allow it to startup */
 
-#define HARDWARE_VERSION_NUMBER         "DB-X02"
+    HARDWARE_VERSION = 1,                               /** Hardware version to document circuitry */  
+
+    FIRMWARE_VERSION = 1,                               /** Firmware version to document firmware changes */
+};
 
 
 #define ARRAY_LENGTH(x)                 sizeof(x)/sizeof(x[0])                /** Array length */ 
@@ -67,6 +72,7 @@ enum DB_X02_PIN_CONSTANTS
 #define LAST_ARRAY_ELEMENT(x)           (sizeof(x)/sizeof(x[0])-1)            /** Array index for the last element of the array */ 
 
 void gpiote_init(void);
+void gpiote_uninit(void);
 
 void log_init(void);
 void ldo_init(void);

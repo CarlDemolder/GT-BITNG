@@ -40,10 +40,10 @@ void ft201x_read_buffer(uint8_t* array_data, uint8_t array_size)
     }
 }
 
-void ft201x_write_buffer(uint8_t* array_data, uint8_t array_size)
+void ft201x_write_buffer(uint8_t* array_data_pointer, uint8_t array_size)
 {   
     NRF_LOG_INFO("ft201x_write_buffer");
-    i2c_write_registers(FT201X_DEVICE_ADDRESS, array_data, array_size);        // Write array data to FT201X
+    i2c_write_registers(FT201X_DEVICE_ADDRESS, array_data_pointer, array_size);        // Write array data to FT201X
 
     NRF_LOG_INFO("FT201X: writing data to transmitting buffer");
 }

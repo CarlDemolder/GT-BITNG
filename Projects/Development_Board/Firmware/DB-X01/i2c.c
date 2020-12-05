@@ -74,16 +74,15 @@ void twim_handler(nrfx_twim_evt_t const * p_event, void * p_context)
 }
 
 /*
- * Initialize I2C module, called Two Wire Interface (TWI)
- * Setting Pin P0.30 to SDA
- * Setting Pin P0.28 to SCL
- * Setting I2C frequency to 100 kHz
- * Giving it a low priority to not disturb BLE and Power Interrupts
- */
-void twim_init(void)
+* @Brief: Function: twim_setup() is used to setup the variables used for the TWIM
+* Initialize I2C module, called Two Wire Interface (TWI)
+* Setting Pin P0.30 to SDA
+* Setting Pin P0.28 to SCL
+* Setting I2C frequency to 100 kHz
+* Giving it a low priority to not disturb BLE and Power Interrupts 
+*/
+void twim_setup(void)
 {
-    NRF_LOG_INFO("twi_init");
-
     twim_configuration.twim_config.scl = I2C_SCL_PIN;
     twim_configuration.twim_config.sda = I2C_SDA_PIN;
     twim_configuration.twim_config.frequency = NRFX_TWIM_DEFAULT_CONFIG_FREQUENCY;
@@ -92,18 +91,57 @@ void twim_init(void)
 
     const nrfx_twim_t m_twim_0 = NRFX_TWIM_INSTANCE(TWIM_INSTANCE_ID);
     twim_configuration.nrfx_twim = m_twim_0;
-
-    twim_configuration.error_code = nrfx_twim_init(&twim_configuration.nrfx_twim, &twim_configuration.twim_config, twim_handler, NULL);
-    APP_ERROR_CHECK(twim_configuration.error_code);
-
-    twim_configuration.timeout = TWIM_TIMEOUT;
-    twim_configuration.twim_xfer_done = false; /* Indicates if operation on TWIM has ended. */
+    twim_configuration.initialization = 0;
 }
 
+void twim_disable(void)
+{
+    NRF_LOG_INFO("twim_disable");
+    if(NRFX_TWIM0_ENABLED)
+    {
+        nrfx_twim_disable(&twim_configuration.nrfx_twim);
+        NRF_LOG_INFO("nrfx_twim has been disabled");
+    }
+}
+
+void twim_enable(void)
+{
+    NRF_LOG_INFO("twim_enable");
+    if(!NRFX_TWIM0_ENABLED)
+    {
+        nrfx_twim_enable(&twim_configuration.nrfx_twim);
+        NRF_LOG_INFO("nrfx_twim has been enabled");
+    }
+}
+
+/*
+* @Brief: Function: twim_init() is used to initialize the TWIM pheripheral
+*/
+void twim_init(void)
+{
+    NRF_LOG_INFO("twim_init");
+    if(!twim_configuration.initialization)
+    {
+        twim_configuration.error_code = nrfx_twim_init(&twim_configuration.nrfx_twim, &twim_configuration.twim_config, twim_handler, NULL);
+        APP_ERROR_CHECK(twim_configuration.error_code);
+
+        twim_configuration.timeout = TWIM_TIMEOUT;
+        twim_configuration.twim_xfer_done = false; /* Indicates if operation on TWIM has ended. */
+        NRF_LOG_INFO("twim has been initialized.");
+    }
+}
+
+/*
+* @Brief: Function: twim_init() is used to uninitialize the TWIM pheripheral
+*/
 void twim_uninit(void)
 {
-    NRF_LOG_INFO("twim_uninit()");
-    nrfx_twim_uninit(&twim_configuration.nrfx_twim);
+    NRF_LOG_INFO("twim_uninit");
+    if(twim_configuration.initialization)
+    {
+        nrfx_twim_uninit(&twim_configuration.nrfx_twim);
+        NRF_LOG_INFO("twim has been initialized.");
+    }
 }
 
 void i2c_write_registers(uint8_t slave_address, uint8_t const* array_data, uint8_t array_size) 
@@ -193,26 +231,6 @@ uint8_t i2c_read_single_register(uint8_t device_address, uint8_t register_addres
     i2c_read_registers(device_address, register_address, &register_data, 1);
 
     return register_data;
-}
-
-void i2c_stop(void)
-{
-    NRF_LOG_INFO("i2c_stop");
-    if(NRFX_TWIM0_ENABLED)
-    {
-        NRF_LOG_INFO("nrfx_twim_disable");
-        nrfx_twim_disable(&twim_configuration.nrfx_twim);
-    }
-}
-
-void i2c_start(void)
-{
-    NRF_LOG_INFO("i2c_start");
-    if(NRFX_TWIM0_ENABLED)
-    {
-        NRF_LOG_INFO("nrfx_twim_enable");
-        nrfx_twim_enable(&twim_configuration.nrfx_twim);
-    }
 }
 
 void i2c_write_write_registers(uint8_t device_address, uint8_t* first_array_data, uint8_t first_array_data_size, uint8_t* second_array_data, uint8_t second_array_data_size)   

@@ -16,10 +16,12 @@ void power_manager_init(void)
 void sleep_mode_enter(void)
 {
     NRF_LOG_INFO("Entering Sleep Mode via System On");
-    ret_code_t err_code;
 
-    // Go to system-on mode
-//    err_code = sd_power_system_on();
+    // Without SoftDevice and With SoftDevice method to enter System On Sleep Mode
+    nrf_pwr_mgmt_run();
+
+    // SoftDevice Method to enter System On Sleep Mode  
+//    ret_code_t err_code = sd_power_system_on();
 //    APP_ERROR_CHECK(err_code);
 }
 
@@ -29,12 +31,15 @@ void sleep_mode_enter(void)
  */
 void deep_sleep_mode_enter(void)
 {
-    NRF_LOG_INFO("Entering Sleep Mode");
-    ret_code_t err_code;
+    NRF_LOG_INFO("deep_sleep_mode_enter");
 
-    // Go to system-off mode (this function will not return; wakeup will cause a reset).
-    err_code = sd_power_system_off();
-    APP_ERROR_CHECK(err_code);
+    // Without SoftDevice and With SoftDevice method to enter System OFF Sleep Mode
+    nrf_pwr_mgmt_shutdown_t shutdown_type = NRF_PWR_MGMT_SHUTDOWN_GOTO_SYSOFF;
+    nrf_pwr_mgmt_shutdown(shutdown_type);
+
+    // SoftDevice Method to enter System OFF Sleep Mode 
+//    ret_code_t err_code = sd_power_system_off();
+//    APP_ERROR_CHECK(err_code);
 }
 
 
@@ -46,7 +51,7 @@ void power_manager_handler(void)
 {
     if (NRF_LOG_PROCESS() == false)
     {
-        nrf_pwr_mgmt_run();
+        sleep_mode_enter();
     }
 }
   

@@ -1,16 +1,15 @@
 #include "bluetooth.h"
 
-#define DEVICE_NAME                     "DB-X01"                                /**< Name of device. Will be included in the advertising data. */
-#define MANUFACTURER_NAME               "GT-BITNG"                              /**< Manufacturer. Will be passed to Device Information Service. */
+
 #define APP_ADV_INTERVAL                320                                     /**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
 
 #define APP_ADV_DURATION                36000                                   /**< The advertising duration (180 seconds) in units of 10 milliseconds. */
 #define APP_BLE_OBSERVER_PRIO           3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
 
-#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(3995, UNIT_1_25_MS)        /**< Minimum acceptable connection interval (0.1 seconds). */
-#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(3995, UNIT_1_25_MS)        /**< Maximum acceptable connection interval (0.2 second). */
-#define SLAVE_LATENCY                   0                                        /**< Slave latency. */
+#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(3995, UNIT_1_25_MS)       /**< Minimum acceptable connection interval (0.1 seconds). */
+#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(3995, UNIT_1_25_MS)       /**< Maximum acceptable connection interval (0.2 second). */
+#define SLAVE_LATENCY                   0                                       /**< Slave latency. */
 #define CONN_SUP_TIMEOUT                MSEC_TO_UNITS(8000, UNIT_10_MS)         /**< Connection supervisory timeout (10 seconds). */
 
 #define FIRST_CONN_PARAMS_UPDATE_DELAY  RTC_TIMER_TICKS(5000)                   /**< Time from initiating event (connect or start of notification) to first time sd_ble_gap_conn_param_update is called (5 seconds). */
@@ -27,13 +26,23 @@
 #define SEC_PARAM_MAX_KEY_SIZE          16                                      /**< Maximum encryption key size. */
 
 
+#define DEVICE_NAME                     "LP-ECG"                                /**< Name of device. Will be included in the advertising data. */
+
+#define MANUFACTURER_NAME               "GT-BITNG"                              /**< Manufacturer. Will be passed to Device Information Service. */
+
+
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);                                                         /**< Context for the Queued Write module.*/
 
+BLE_CONFIGURATION_SERVICE_DEF(m_ble_configuration_service);                     /**< Declaring Configuration Service Structure for application */
 BLE_TEMPERATURE_SERVICE_DEF(m_ble_temperature_service);                         /**< Declaring Temperature Service Structure for application */
+BLE_ECG_SERVICE_DEF(m_ble_ecg_service);                                         /**< Declaring ECG Service Structure for application */
+
 BLE_ADVERTISING_DEF(m_advertising);                                             /**< Advertising module instance. */
 
-ble_temperature_service_init_t    ble_temperature_init = {0};
+ble_configuration_service_init_t ble_configuration_service_init = {0};
+ble_temperature_service_init_t ble_temperature_service_init = {0};
+ble_ecg_service_init_t ble_ecg_service_init = {0};
 
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
 
@@ -43,14 +52,47 @@ ble_uuid_t m_adv_uuids[] ={{TEMPERATURE_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN
 
 /**@brief Function for handling Queued Write Module errors.
  *
- * @details A pointer to this function will be passed to each service which may need to inform the
- *          application about an error.
+ * @details A pointer to this function will be passed to each service which may need to inform the application about an error.
  *
  * @param[in]   nrf_error   Error code containing information about what went wrong.
  */
 void nrf_qwr_error_handler(uint32_t nrf_error)
 {
     APP_ERROR_HANDLER(nrf_error);
+}
+
+/**@brief Function for the Peer Manager initialization.
+ */
+void peer_manager_init(void)
+{
+    NRF_LOG_DEBUG("Peer Manager Initialized");
+    ble_gap_sec_params_t sec_param;
+    ret_code_t err_code;
+
+    err_code = pm_init();
+    APP_ERROR_CHECK(err_code);
+
+    memset(&sec_param, 0, sizeof(ble_gap_sec_params_t));
+
+    // Security parameters to be used for all security procedures.
+    sec_param.bond = SEC_PARAM_BOND;
+    sec_param.mitm = SEC_PARAM_MITM;
+    sec_param.lesc = SEC_PARAM_LESC;
+    sec_param.keypress = SEC_PARAM_KEYPRESS;
+    sec_param.io_caps = SEC_PARAM_IO_CAPABILITIES;
+    sec_param.oob = SEC_PARAM_OOB;
+    sec_param.min_key_size = SEC_PARAM_MIN_KEY_SIZE;
+    sec_param.max_key_size = SEC_PARAM_MAX_KEY_SIZE;
+    sec_param.kdist_own.enc = 1;
+    sec_param.kdist_own.id = 1;
+    sec_param.kdist_peer.enc = 1;
+    sec_param.kdist_peer.id = 1;
+
+    err_code = pm_sec_params_set(&sec_param);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = pm_register(pm_evt_handler);
+    APP_ERROR_CHECK(err_code);
 }
 
 /**@brief Function for handling Peer Manager events.
@@ -71,9 +113,7 @@ void pm_evt_handler(pm_evt_t const * p_evt)
 
         case PM_EVT_CONN_SEC_SUCCEEDED:
             NRF_LOG_INFO("Connection secured: role: %d, conn_handle: 0x%x, procedure: %d.",
-                         ble_conn_state_role(p_evt->conn_handle),
-                         p_evt->conn_handle,
-                         p_evt->params.conn_sec_succeeded.procedure);
+            ble_conn_state_role(p_evt->conn_handle), p_evt->conn_handle, p_evt->params.conn_sec_succeeded.procedure);
             NRF_LOG_INFO("PM_EVT_CONN_SEC_SUCCEEDED");
             break;
 
@@ -112,40 +152,51 @@ void pm_evt_handler(pm_evt_t const * p_evt)
             NRF_LOG_INFO("PM_EVT_PEERS_DELETE_SUCCEEDED");
             advertising_start();
             break;
+
         case PM_EVT_PEER_DATA_UPDATE_FAILED:
             NRF_LOG_INFO("PM_EVT_PEER_DATA_UPDATE_FAILED");
             APP_ERROR_CHECK(p_evt->params.peer_data_update_failed.error);
             break;
+
         case PM_EVT_PEER_DELETE_FAILED:
             NRF_LOG_INFO("PM_EVT_PEER_DELETE_FAILED");
             APP_ERROR_CHECK(p_evt->params.peer_delete_failed.error);
             break;
+
         case PM_EVT_ERROR_UNEXPECTED:
             NRF_LOG_INFO("PM_EVT_PEER_UNEXPECTED");
             APP_ERROR_CHECK(p_evt->params.error_unexpected.error);
             break;
+
         case PM_EVT_CONN_SEC_START:
             NRF_LOG_INFO("PM_EVT_CONN_SEC_START");
             break;
+
         case PM_EVT_PEER_DATA_UPDATE_SUCCEEDED:
             NRF_LOG_INFO("PM_EVT_PEER_DATA_UPDATE_SUCCEEDED");
             break;
+
         case PM_EVT_PEER_DELETE_SUCCEEDED:
             NRF_LOG_INFO("PM_EVT_PEER_DELETE_SUCCEEDED");
             break;
+
         case PM_EVT_LOCAL_DB_CACHE_APPLIED:
             NRF_LOG_INFO("PM_EVT_LOCAL_DB_CACHE_APPLIED");
             break;
+
         case PM_EVT_LOCAL_DB_CACHE_APPLY_FAILED:
             // This can happen when the local DB has changed.
             NRF_LOG_INFO("PM_EVT_LOCAL_DB_CACHE_APPLY_FAILED");
             break;
+
         case PM_EVT_SERVICE_CHANGED_IND_SENT:
             NRF_LOG_INFO("PM_EVT_SERVICE_CHANGED_IND_SENT");
             break;
+
         case PM_EVT_SERVICE_CHANGED_IND_CONFIRMED:
             NRF_LOG_INFO("PM_EVT_SERVICE_CHANGED_IND_CONFIRMED");
             break;
+
         default:
           break;
     }
@@ -159,8 +210,8 @@ void pm_evt_handler(pm_evt_t const * p_evt)
 void gap_params_init(void)
 {
     NRF_LOG_DEBUG("Gap Parameters Initialized");
-    ret_code_t              err_code;
-    ble_gap_conn_params_t   gap_conn_params;
+    ret_code_t err_code;
+    ble_gap_conn_params_t gap_conn_params;
     ble_gap_conn_sec_mode_t sec_mode;
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
@@ -176,8 +227,8 @@ void gap_params_init(void)
 
     gap_conn_params.min_conn_interval = MIN_CONN_INTERVAL;
     gap_conn_params.max_conn_interval = MAX_CONN_INTERVAL;
-    gap_conn_params.slave_latency     = SLAVE_LATENCY;
-    gap_conn_params.conn_sup_timeout  = CONN_SUP_TIMEOUT;
+    gap_conn_params.slave_latency = SLAVE_LATENCY;
+    gap_conn_params.conn_sup_timeout = CONN_SUP_TIMEOUT;
 
     err_code = sd_ble_gap_ppcp_set(&gap_conn_params);
     APP_ERROR_CHECK(err_code);
@@ -194,15 +245,15 @@ void gap_params_init(void)
 void gap_params_update(uint16_t m_conn_handle)
 {
     NRF_LOG_DEBUG("Gap Parameters Initialized");
-    ret_code_t              err_code;
-    ble_gap_conn_params_t   gap_conn_params;
+    ret_code_t err_code;
+    ble_gap_conn_params_t gap_conn_params;
 
     memset(&gap_conn_params, 0, sizeof(gap_conn_params));
 
     gap_conn_params.min_conn_interval = MIN_CONN_INTERVAL;
     gap_conn_params.max_conn_interval = MAX_CONN_INTERVAL;
-    gap_conn_params.slave_latency     = SLAVE_LATENCY;
-    gap_conn_params.conn_sup_timeout  = CONN_SUP_TIMEOUT;
+    gap_conn_params.slave_latency = SLAVE_LATENCY;
+    gap_conn_params.conn_sup_timeout = CONN_SUP_TIMEOUT;
 
     err_code = ble_conn_params_change_conn_params(m_conn_handle, &gap_conn_params);
     APP_ERROR_CHECK(err_code);
@@ -215,90 +266,7 @@ void gap_params_update(uint16_t m_conn_handle)
         NRF_LOG_INFO("Procedure request failed: %d", err_code);
     }
 }
-/**@brief Function for initializing the GATT module.
- */
-void gatt_init(void)
-{
-    NRF_LOG_DEBUG("GATT Initialized");
-    ret_code_t err_code = nrf_ble_gatt_init(&m_gatt, NULL);
-    APP_ERROR_CHECK(err_code);
-}
 
-/**@brief Function for handling the Custom Service Service events.
- *
- * @details This function will be called for all Custom Service events which are passed to
- *          the application.
- *
- * @param[in]   p_cus_service  Custom Service structure.
- * @param[in]   p_evt          Event received from the Custom Service.
- *
- */
-void on_temperature_evt(ble_temperature_service_t * p_cus_service, temperature_evt_t * p_evt)
-{
-    ret_code_t err_code;
-    NRF_LOG_DEBUG("ON_TEMPERATURE_EVENT Occurred");
-    switch(p_evt->evt_type)
-    {
-        case TEMPERATURE_EVT_NOTIFICATION_ENABLED:
-            NRF_LOG_DEBUG("ON_TEMPERATURE_EVENT NOTIFICATION ENABLED");
-            gap_params_update(m_conn_handle);
-//            rtc_start();
-            break;
-
-        case TEMPERATURE_EVT_NOTIFICATION_DISABLED:
-            NRF_LOG_DEBUG("ON_TEMPERATURE_EVENT NOTIFICATION DISABLED");
-//            rtc_stop();
-//            disable_vcc_ldo();
-            break;
-
-        case TEMPERATURE_EVT_CONNECTED:
-            NRF_LOG_DEBUG("ON_TEMPERATURE_EVENT SERVICE CONNECTED");
-//            rtc_restart();    // Restart the RTC Timer if the phone and sensor are disconnected
-            break;
-
-        case TEMPERATURE_EVT_DISCONNECTED:
-            NRF_LOG_DEBUG("ON_TEMPERATURE_EVENT SERVICE DISCONNECTED");
-//            rtc_stop();
-            break;
-        
-        case TEMPERATURE_EVT_WRITE:
-            NRF_LOG_DEBUG("ON_TEMPERATURE_EVENT CHARACTERISTIC WRITTEN");
-            sampling_interval_value_update(p_cus_service, &ble_temperature_init.sampling_interval_value);
-//            rtc_stop();
-//            rtc_set_counter(ble_temperature_init.sampling_interval_value);
-
-        default:
-              break;
-    }
-}
-
-/**@brief Function for initializing services that will be used by the application.
- */
-void services_init(void)
-{
-    NRF_LOG_DEBUG("Service Initialized");
-    ret_code_t            err_code;
-    nrf_ble_qwr_init_t qwr_init = {0};
-    
-    // Initialize Queued Write Module.
-    qwr_init.error_handler = nrf_qwr_error_handler;
-
-    err_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
-    APP_ERROR_CHECK(err_code);
-
-    // Initialize Temperature Service
-    ble_temperature_init.evt_handler = on_temperature_evt;
-//    ble_temperature_init.sampling_interval_value = 0x38;    // Setting the initial Sampling interval to 8 seconds
-//    uint8_t init_temp_value[5] = {0};
-//    memcpy(ble_temperature_init.temperature_value, init_temp_value, 5);
-
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_init.custom_value_char_attr_md.cccd_write_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_init.custom_value_char_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_init.custom_value_char_attr_md.write_perm);
-
-    err_code = ble_temperature_service_initialize(&m_ble_temperature_service, &ble_temperature_init);
-    APP_ERROR_CHECK(err_code);
-}
 
 /**@brief Function for handling the Connection Parameters Module.
  *
@@ -337,19 +305,19 @@ void conn_params_error_handler(uint32_t nrf_error)
 void conn_params_init(void)
 {
     NRF_LOG_DEBUG("Connection Parameters Initialized");
-    ret_code_t             err_code;
+    ret_code_t err_code;
     ble_conn_params_init_t cp_init;
 
     memset(&cp_init, 0, sizeof(cp_init));
 
-    cp_init.p_conn_params                  = NULL;
+    cp_init.p_conn_params = NULL;
     cp_init.first_conn_params_update_delay = FIRST_CONN_PARAMS_UPDATE_DELAY;
-    cp_init.next_conn_params_update_delay  = NEXT_CONN_PARAMS_UPDATE_DELAY;
-    cp_init.max_conn_params_update_count   = MAX_CONN_PARAMS_UPDATE_COUNT;
-    cp_init.start_on_notify_cccd_handle    = BLE_GATT_HANDLE_INVALID;
-    cp_init.disconnect_on_fail             = false;
-    cp_init.evt_handler                    = on_conn_params_evt;
-    cp_init.error_handler                  = conn_params_error_handler;
+    cp_init.next_conn_params_update_delay = NEXT_CONN_PARAMS_UPDATE_DELAY;
+    cp_init.max_conn_params_update_count = MAX_CONN_PARAMS_UPDATE_COUNT;
+    cp_init.start_on_notify_cccd_handle = BLE_GATT_HANDLE_INVALID;
+    cp_init.disconnect_on_fail = false;
+    cp_init.evt_handler = on_conn_params_evt;
+    cp_init.error_handler = conn_params_error_handler;
 
     err_code = ble_conn_params_init(&cp_init);
     APP_ERROR_CHECK(err_code);
@@ -374,7 +342,6 @@ void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 
         case BLE_ADV_EVT_IDLE:
             NRF_LOG_INFO("BLE advertising idle.");
-//            disable_vcc_ldo();   // Disabling the LDO to kill the MCU
             break;
 
         default:
@@ -382,12 +349,91 @@ void on_adv_evt(ble_adv_evt_t ble_adv_evt)
     }
 }
 
+/**@brief Function for initializing the Advertising functionality.
+ */
+void advertising_init(void)
+{
+    NRF_LOG_DEBUG("Advertising Initialized");
+    ret_code_t err_code;
+    ble_advertising_init_t adv_init;
+
+    memset(&adv_init, 0, sizeof(adv_init));
+
+    adv_init.advdata.name_type = BLE_ADVDATA_FULL_NAME;
+    adv_init.advdata.include_appearance = true;
+    adv_init.advdata.flags = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
+//    adv_init.advdata.uuids_complete.uuid_cnt = sizeof(m_adv_uuids) / sizeof(m_adv_uuids[0]);
+//    adv_init.advdata.uuids_complete.p_uuids  = m_adv_uuids;
+
+    adv_init.config.ble_adv_fast_enabled = true;
+    adv_init.config.ble_adv_fast_interval = APP_ADV_INTERVAL;
+    adv_init.config.ble_adv_fast_timeout = APP_ADV_DURATION;
+
+    adv_init.evt_handler = on_adv_evt;
+
+    err_code = ble_advertising_init(&m_advertising, &adv_init);
+    APP_ERROR_CHECK(err_code);
+
+    ble_advertising_conn_cfg_tag_set(&m_advertising, APP_BLE_CONN_CFG_TAG);
+}
+
+/**@brief Function for setting the power level of the advertising
+ */
+void set_advertising_power(void)
+{
+    ret_code_t err_code = sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_ADV, m_advertising.adv_handle, 4);
+    APP_ERROR_CHECK(err_code);
+}
+
+/**@brief Function for starting advertising.
+ */
+void advertising_start(void)
+{
+    ret_code_t err_code = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
+    APP_ERROR_CHECK(err_code);
+}
+
+/**@brief Function for initializing the GATT module.
+ */
+void gatt_init(void)
+{
+    NRF_LOG_DEBUG("GATT Initialized");
+    ret_code_t err_code = nrf_ble_gatt_init(&m_gatt, NULL);
+    APP_ERROR_CHECK(err_code);
+}
+
+/**@brief Function for initializing the BLE stack
+ *
+ * @details Initializes the SoftDevice and the BLE event interrupt
+ */
+void ble_stack_init(void)
+{
+    NRF_LOG_DEBUG("Initializing BLE Stack");
+    ret_code_t err_code;
+
+    err_code = nrf_sdh_enable_request();
+    APP_ERROR_CHECK(err_code);
+
+    // Configure the BLE stack using the default settings.
+    // Fetch the start address of the application RAM.
+    uint32_t ram_start = 0;
+    err_code = nrf_sdh_ble_default_cfg_set(APP_BLE_CONN_CFG_TAG, &ram_start);
+    APP_ERROR_CHECK(err_code);
+
+    // Enable BLE stack.
+    err_code = nrf_sdh_ble_enable(&ram_start);
+    APP_ERROR_CHECK(err_code);
+
+    // Register a handler for BLE events.
+    NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
+}
+
 /**@brief Function for handling BLE events.
  *
  * @param[in]   p_ble_evt   Bluetooth stack event.
  * @param[in]   p_context   Unused.
  */
-void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
+void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
 {
     ret_code_t err_code = NRF_SUCCESS;
 
@@ -431,122 +477,231 @@ void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     }
 }
 
-/**@brief Function for initializing the BLE stack.
+
+/**@brief Function for handling the Configuration Service events.
  *
- * @details Initializes the SoftDevice and the BLE event interrupt.
+ * @details This function will be called for all Configuration Service events which are passed to
+ *          the application.
+ *
+ * @param[in]   p_cus_service  Configuration Service structure
+ * @param[in]   p_evt          Event received from the Configuration Service
+ *
  */
-void ble_stack_init(void)
+static void on_configuration_service_evt(ble_configuration_service_t *p_cus_service, configuration_service_evt_t *p_evt)
 {
-    NRF_LOG_DEBUG("Initializing BLE Stack");
     ret_code_t err_code;
+    NRF_LOG_DEBUG("on_configuration_service_evt");
+    switch(p_evt->evt_type)
+    {
+        case CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_ENABLED:
+            NRF_LOG_DEBUG("CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_ENABLED");
+            gap_params_update(m_conn_handle);
+            break;
 
-    err_code = nrf_sdh_enable_request();
-    APP_ERROR_CHECK(err_code);
+        case CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_DISABLED:
+            NRF_LOG_DEBUG("CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_DISABLED");
+            break;
 
-    // Configure the BLE stack using the default settings.
-    // Fetch the start address of the application RAM.
-    uint32_t ram_start = 0;
-    err_code = nrf_sdh_ble_default_cfg_set(APP_BLE_CONN_CFG_TAG, &ram_start);
-    APP_ERROR_CHECK(err_code);
+        case CONFIGURATION_SERVICE_EVT_CRC_CHAR_NOTIFICATION_ENABLED:
+            NRF_LOG_DEBUG("CONFIGURATION_SERVICE_EVT_CRC_CHAR_NOTIFICATION_ENABLED");
+            gap_params_update(m_conn_handle);
+            break;
 
-    // Enable BLE stack.
-    err_code = nrf_sdh_ble_enable(&ram_start);
-    APP_ERROR_CHECK(err_code);
+        case CONFIGURATION_SERVICE_EVT_CRC_CHAR_NOTIFICATION_DISABLED:
+            NRF_LOG_DEBUG("CONFIGURATION_SERVICE_EVT_CRC_CHAR_NOTIFICATION_DISABLED");
+            break;
 
-    // Register a handler for BLE events.
-    NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
+        case CONFIGURATION_SERVICE_EVT_CONNECTED:
+            NRF_LOG_DEBUG("CONFIGURATION_SERVICE_EVT_CONNECTED");
+            break;
+
+        case CONFIGURATION_SERVICE_EVT_DISCONNECTED:
+            NRF_LOG_DEBUG("CONFIGURATION_SERVICE_EVT_DISCONNECTED");
+            break;
+        
+        case CONFIGURATION_SERVICE_EVT_WRITE:
+            NRF_LOG_DEBUG("CONFIGURATION_SERVICE_EVT_WRITE");
+            break;
+
+        default:
+              break;
+    }
 }
 
-/**@brief Function for the Peer Manager initialization.
+/**@brief Function for handling the Temperature Service Service events.
+ *
+ * @details This function will be called for all Temperature Service events which are passed to
+ *          the application.
+ *
+ * @param[in]   p_cus_service  Temperature Service structure.
+ * @param[in]   p_evt          Event received from the Temperature Service.
+ *
  */
-void peer_manager_init(void)
+static void on_temperature_service_evt(ble_temperature_service_t *p_cus_service, temperature_service_evt_t *p_evt)
 {
-    NRF_LOG_DEBUG("Peer Manager Initialized");
-    ble_gap_sec_params_t sec_param;
-    ret_code_t           err_code;
+    ret_code_t err_code;
+    NRF_LOG_DEBUG("on_temperature_service_evt");
+    switch(p_evt->evt_type)
+    {
+        case TEMPERATURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_ENABLED:
+            NRF_LOG_DEBUG("TEMPERATURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_ENABLED");
+            gap_params_update(m_conn_handle);
+            break;
 
-    err_code = pm_init();
-    APP_ERROR_CHECK(err_code);
+        case TEMPERATURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_DISABLED:
+            NRF_LOG_DEBUG("TEMPERATURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_DISABLED");
+            break;
 
-    memset(&sec_param, 0, sizeof(ble_gap_sec_params_t));
+        case TEMPERATURE_SERVICE_EVT_CONNECTED:
+            NRF_LOG_DEBUG("TEMPERATURE_SERVICE_EVT_CONNECTED");
+            break;
 
-    // Security parameters to be used for all security procedures.
-    sec_param.bond           = SEC_PARAM_BOND;
-    sec_param.mitm           = SEC_PARAM_MITM;
-    sec_param.lesc           = SEC_PARAM_LESC;
-    sec_param.keypress       = SEC_PARAM_KEYPRESS;
-    sec_param.io_caps        = SEC_PARAM_IO_CAPABILITIES;
-    sec_param.oob            = SEC_PARAM_OOB;
-    sec_param.min_key_size   = SEC_PARAM_MIN_KEY_SIZE;
-    sec_param.max_key_size   = SEC_PARAM_MAX_KEY_SIZE;
-    sec_param.kdist_own.enc  = 1;
-    sec_param.kdist_own.id   = 1;
-    sec_param.kdist_peer.enc = 1;
-    sec_param.kdist_peer.id  = 1;
+        case TEMPERATURE_SERVICE_EVT_DISCONNECTED:
+            NRF_LOG_DEBUG("TEMPERATURE_SERVICE_EVT_DISCONNECTED");
+            break;
+        
+        case TEMPERATURE_SERVICE_EVT_WRITE:
+            NRF_LOG_DEBUG("TEMPERATURE_SERVICE_EVT_WRITE");
+            break;
 
-    err_code = pm_sec_params_set(&sec_param);
-    APP_ERROR_CHECK(err_code);
-
-    err_code = pm_register(pm_evt_handler);
-    APP_ERROR_CHECK(err_code);
+        default:
+              break;
+    }
 }
 
-/**@brief Function for initializing the Advertising functionality.
+/**@brief Function for handling the ECG Service Service events.
+ *
+ * @details This function will be called for all ECG Service events which are passed to
+ *          the application.
+ *
+ * @param[in]   p_cus_service  ECG Service structure
+ * @param[in]   p_evt          Event received from the ECG Service
+ *
  */
-void advertising_init(void)
+static void on_ecg_service_evt(ble_ecg_service_t *p_cus_service, ecg_service_evt_t *p_evt)
 {
-    NRF_LOG_DEBUG("Advertising Initialized");
-    ret_code_t                    err_code;
-    ble_advertising_init_t        adv_init;
+    ret_code_t err_code;
+    NRF_LOG_DEBUG("on_ecg_service_evt");
+    switch(p_evt->evt_type)
+    {
+        case ECG_SERVICE_EVT_ECG_CHAR_NOTIFICATION_ENABLED:
+            NRF_LOG_DEBUG("ECG_SERVICE_EVT_ECG_CHAR_NOTIFICATION_ENABLED");
+            gap_params_update(m_conn_handle);
+            break;
 
-    memset(&adv_init, 0, sizeof(adv_init));
+        case ECG_SERVICE_EVT_ECG_CHAR_NOTIFICATION_DISABLED:
+            NRF_LOG_DEBUG("ECG_SERVICE_EVT_ECG_CHAR_NOTIFICATION_DISABLED");
+            break;
 
-    adv_init.advdata.name_type               = BLE_ADVDATA_FULL_NAME;
-    adv_init.advdata.include_appearance      = true;
-    adv_init.advdata.flags                   = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
-//    adv_init.advdata.uuids_complete.uuid_cnt = sizeof(m_adv_uuids) / sizeof(m_adv_uuids[0]);
-//    adv_init.advdata.uuids_complete.p_uuids  = m_adv_uuids;
+        case ECG_SERVICE_EVT_CONNECTED:
+            NRF_LOG_DEBUG("ECG_SERVICE_EVT_CONNECTED");
+            break;
 
-    adv_init.config.ble_adv_fast_enabled  = true;
-    adv_init.config.ble_adv_fast_interval = APP_ADV_INTERVAL;
-    adv_init.config.ble_adv_fast_timeout  = APP_ADV_DURATION;
+        case ECG_SERVICE_EVT_DISCONNECTED:
+            NRF_LOG_DEBUG("ECG_SERVICE_EVT_DISCONNECTED");
+            break;
+        
+        case ECG_SERVICE_EVT_WRITE:
+            NRF_LOG_DEBUG("ECG_SERVICE_EVT_WRITE");
+            break;
 
-    adv_init.evt_handler = on_adv_evt;
-
-    err_code = ble_advertising_init(&m_advertising, &adv_init);
-    APP_ERROR_CHECK(err_code);
-
-    ble_advertising_conn_cfg_tag_set(&m_advertising, APP_BLE_CONN_CFG_TAG);
+        default:
+              break;
+    }
 }
 
-/**@brief Function for setting the power level of the advertising
+/**@brief Function for initializing services that will be used by the application.
  */
-void set_advertising_power(void)
+void services_init(void)
 {
-    ret_code_t err_code = sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_ADV, m_advertising.adv_handle, 4);
+    NRF_LOG_DEBUG("Service Initialized");
+    ret_code_t err_code;
+    nrf_ble_qwr_init_t qwr_init = {0};
+    
+    // Initialize Queued Write Module.
+    qwr_init.error_handler = nrf_qwr_error_handler;
+
+    err_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
+    APP_ERROR_CHECK(err_code);
+
+    ble_configuration_service_init.evt_handler = on_configuration_service_evt;    // Initialize Configuration Service
+    ble_temperature_service_init.evt_handler = on_temperature_service_evt;        // Initialize Temperature Service
+    ble_ecg_service_init.evt_handler = on_ecg_service_evt;                        // Initialize ECG Service
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.settings_char_attr_md.cccd_write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.settings_char_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.settings_char_attr_md.write_perm);
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.response_char_attr_md.cccd_write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.response_char_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.response_char_attr_md.write_perm);
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.crc_char_attr_md.cccd_write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.crc_char_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.crc_char_attr_md.write_perm);
+
+    err_code = ble_configuration_service_initialize(&m_ble_configuration_service, &ble_configuration_service_init);
+    APP_ERROR_CHECK(err_code);
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.temp_char_attr_md.cccd_write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.temp_char_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.temp_char_attr_md.write_perm);
+
+    err_code = ble_temperature_service_initialize(&m_ble_temperature_service, &ble_temperature_service_init);
+    APP_ERROR_CHECK(err_code);
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.cccd_write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.write_perm);
+
+    err_code = ble_temperature_service_initialize(&m_ble_temperature_service, &ble_temperature_service_init);
     APP_ERROR_CHECK(err_code);
 }
 
-/**@brief Function for starting advertising.
- */
-void advertising_start(void)
-{
-    ret_code_t err_code = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
-    APP_ERROR_CHECK(err_code);
-}
-
-void update_temperature_characteristic(uint8_t* tmp116_uint8_t)
+void update_configuration_service_response_char(uint8_t *response_char_data_array)
 {
     uint32_t err_code;
-    memcpy(ble_temperature_init.temperature_value, tmp116_uint8_t, 5);
-    err_code = temperature_custom_value_update(&m_ble_temperature_service, tmp116_uint8_t);   // Update the TMP116 Characteristic Value
+    memcpy(ble_configuration_service_init.response_char, response_char_data_array, 2);
+    err_code = response_char_update(&m_ble_configuration_service, response_char_data_array);   // Update the Response Characteristic
     APP_ERROR_CHECK(err_code);
 }
 
-void set_hardware_version(void)
+void update_configuration_service_crc_char(uint8_t *crc_char_data_array)
 {
     uint32_t err_code;
-    uint8_t hw_version[6] = HARDWARE_VERSION_NUMBER;
-    err_code = hardware_version_value_update(&m_ble_temperature_service, hw_version);   // Update the TMP116 Characteristic Value
+    memcpy(ble_configuration_service_init.crc_char, crc_char_data_array, 2);
+    err_code = response_char_update(&m_ble_configuration_service, crc_char_data_array);   // Update the CRC Characteristic
     APP_ERROR_CHECK(err_code);
+}
+
+void update_temperature_service_temp_char(uint8_t *temp_char_data_array)
+{
+    uint32_t err_code;
+    memcpy(ble_temperature_service_init.temp_char, temp_char_data_array, 250);
+    err_code = temp_char_update(&m_ble_temperature_service, temp_char_data_array);   // Update the Temp Characteristic
+    APP_ERROR_CHECK(err_code);
+}
+
+void update_ecg_service_ecg_char(uint8_t *ecg_char_data_array)
+{
+    uint32_t err_code;
+    memcpy(ble_ecg_service_init.ecg_char, ecg_char_data_array, 250);
+    err_code = ecg_char_update(&m_ble_ecg_service, ecg_char_data_array);   // Update the ECG Characteristic
+    APP_ERROR_CHECK(err_code);
+}
+
+void bluetooth_transmit_recording_session(void)
+{
+    NRF_LOG_INFO("bluetooth_transmit_recording_session");
+    uint8_t temp_data_array[64];
+    ecg_get_data_packet(temp_data_array, 64);
+
+    ecg_stop_data_recording();
+}
+
+uint8_t bluetooth_get_bytes_per_transmission(void)
+{
+    NRF_LOG_INFO("bluetooth_get_bytes_per_transmission");
+    uint8_t temp = 250;
+    return temp;
 }

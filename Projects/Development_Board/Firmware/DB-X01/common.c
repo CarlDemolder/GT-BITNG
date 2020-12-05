@@ -7,7 +7,7 @@ void log_init(void)
 {
     ret_code_t err_code = NRF_LOG_INIT(NULL);
     APP_ERROR_CHECK(err_code);
-
+    
     NRF_LOG_DEFAULT_BACKENDS_INIT();
     NRF_LOG_FLUSH();
     NRF_LOG_INFO("NRF Log Initialized");
@@ -15,10 +15,22 @@ void log_init(void)
 
 void gpiote_init(void)
 {
+    NRF_LOG_INFO("gpiote_init");
     if(!nrfx_gpiote_is_init())
     {
         ret_code_t error_code = nrfx_gpiote_init();
         APP_ERROR_CHECK(error_code);
+        NRF_LOG_INFO("gpiote initialized");
+    }
+}
+
+void gpiote_uninit(void)
+{
+    NRF_LOG_INFO("gpiote_uninit");
+    if(nrfx_gpiote_is_init())
+    {
+        nrfx_gpiote_uninit();
+        NRF_LOG_INFO("gpiote uninitialized");
     }
 }
 
@@ -54,6 +66,7 @@ void enable_vcc_ldo(void)
     nrf_gpio_pin_write(EN_VCC_LDO_PIN, 1);
     nrf_delay_ms(100);
     nrf_gpio_pin_write(EN_VCC_LDO_PIN, 0); 
+    nrf_delay_ms(POWER_LDO_ON_DELAY);
 }
 
 
@@ -67,6 +80,7 @@ void enable_max30102_led_ldo(void)
 {
     NRF_LOG_INFO("enable MAX30102 LED LDO");
     nrf_gpio_pin_write(EN_MAX30102_LED_LDO_PIN, 1);     // enable the MAX30102 LED LDO to provide power to the LED supply of the MAX30102
+    nrf_delay_ms(POWER_LDO_ON_DELAY);
 }
 
 
@@ -80,6 +94,7 @@ void enable_max30102_power_ldo(void)
 {
     NRF_LOG_INFO("enable MAX30102 POWER LDO");
     nrf_gpio_pin_write(EN_MAX30102_POWER_LDO_PIN, 1);     // enable the MAX30102 POWER LDO to provide power to the POWER supply of the MAX30102
+    nrf_delay_ms(POWER_LDO_ON_DELAY);
 }
 
 
@@ -93,6 +108,7 @@ void enable_max30003_power_ldo(void)
 {
     NRF_LOG_INFO("enable MAX30003 POWER LDO");
     nrf_gpio_pin_write(EN_MAX30003_POWER_LDO_PIN, 1);     // enable the MAX30003 POWER LDO to provide power to the POWER supply of the MAX30003
+    nrf_delay_ms(POWER_LDO_ON_DELAY);
 }
 
 

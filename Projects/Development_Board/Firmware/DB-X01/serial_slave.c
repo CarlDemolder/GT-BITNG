@@ -1,76 +1,238 @@
 #include "serial_slave.h"
 
-static void _disable_serial_slave_manager_handler(void)
+/*
+* @Brief: Function: startup_initialization() is used to initialize the NRF52, TMP117, MAX30003, and CY15B108QI
+*/
+void startup_initialization(void)
 {
-    uint8_t rtc_ft201x_stop_array_data[4] = {0x00, 0x00, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_FT201X_STOP};  // Stop the RTC for the FT201X
-    _nrf52_handler(rtc_ft201x_stop_array_data);
+    uint8_t nrf52_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, NRF52_INITIALIZATION_COMMAND};       
+    state_handler(nrf52_initialization_array_data); // Initialize NRF52 Module
 
-    uint8_t rtc_ft201x_uninit_array_data[4] = {0x00, 0x00, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_FT201X_UNINIT};  // Uninitialize the RTC for the FT201X
-    _nrf52_handler(rtc_ft201x_uninit_array_data);
+    uint8_t tmp117_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, TMP117_INITIALIZATION_COMMAND};       
+    state_handler(tmp117_initialization_array_data); // Initialize TMP117 Module
 
-    uint8_t lf_clock_stop_array_data[4] = {0x00, 0x00, NRF52_LF_CLOCK_COMMAND, NRF52_LF_CLOCK_STOP};   // Stop LF Clock
-    _nrf52_handler(lf_clock_stop_array_data); 
+    uint8_t max30003_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, MAX30003_INITIALIZATION_COMMAND};       
+    state_handler(max30003_initialization_array_data); // Initialize MAX30003 Module
+
+    uint8_t cy15b108qi_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, CY15B108QI_INITIALIZATION_COMMAND};       
+    state_handler(max30003_initialization_array_data); // Initialize CY15B108QI Module
+}
+
+/*
+*   @Brief: Function: _nrf52_initialization() is used to initialize common functionalities. 
+*/
+static void _nrf52_initialization(void)
+{
+    uint8_t log_array_data[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_LOG_INIT};       
+    state_handler(log_array_data); // Enable LOG Driver
+
+    uint8_t nrfx_clock_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_CLOCK_COMMAND, NRF52_NRFX_CLOCK_DRIVER_INIT};   
+    state_handler(nrfx_clock_init_array_data); // Init and Enable NRFX Clock 
+
+    uint8_t set_pin_array_data[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_INPUT_OUTPUT_INIT};       
+    state_handler(set_pin_array_data); // Initialize Input and Output Pins
+
+    uint8_t ldo_array_data[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_LDO_INIT};       
+    state_handler(ldo_array_data); // Enable LDO Drivers
+
+    uint8_t vcc_en_array_data[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_VCC_LDO_EN};   
+    state_handler(vcc_en_array_data); // Enable VCC LDO  
+
+    uint8_t power_manager_array_data[4] = {0x00, NRF52_MODULE, NRF52_POWER_COMMAND, NRF52_POWER_MANAGER_INIT};  
+    state_handler(power_manager_array_data); // Enable Power Manager
+
+    uint8_t hf_clock_start_array_data[4] = {0x00, NRF52_MODULE, NRF52_HF_CLOCK_COMMAND, NRF52_HF_CLOCK_START};   
+    state_handler(hf_clock_start_array_data); // Start HF Clock
+
+    uint8_t spim_setup_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SETUP};
+    state_handler(spim_setup_array_data); // Setup SPIM Module
+
+    uint8_t twim_setup_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_SETUP};  
+    state_handler(twim_setup_array_data); // Setup TWIM Module
+
+    uint8_t led_array_data[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_LED_INIT};  
+    state_handler(led_array_data); // Enable LED Driver
+
+    uint8_t medium_blink_led_array_data[5] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_LED_IND_BLINK, NRF52_LED_IND_MEDIUM_BLINK};  
+    state_handler(medium_blink_led_array_data); // IND LED Medium Blink
+}
+
+/*
+*   @Brief: Function: _tmp117_initialization() is used to initialize the TMP117 module
+*/
+static void _tmp117_initialization(void)
+{
+    NRF_LOG_INFO("_tmp117_initialization");
+
+    uint8_t i2c_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  
+    state_handler(i2c_init_array_data); // Init TWIM Driver
+
+    uint8_t i2c_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_ENABLE};  
+    state_handler(i2c_enable_array_data); // Enable TWIM Driver
+
+    uint8_t tmp117_shutdown_array_data[5] = {0x00, TMP117_MODULE, TMP117_INIT_COMMAND, TMP117_SHUTDOWN_MODE, TMP117_64_AVERAGED_MODE};  
+    state_handler(tmp117_shutdown_array_data); // Set the TMP117 to shutdown mode, no averaging mode
+
+    uint8_t i2c_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_DISABLE};  
+    state_handler(i2c_disable_array_data); // Disable TWIM Driver
+
+    uint8_t i2c_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  
+    state_handler(i2c_uninit_array_data); // Uninit TWIM Driver
+}
+
+/*
+*   @Brief: Function: _max30003_initialization() is used to initialize the MAX30003 module
+*/
+static void _max30003_initialization(void)
+{
+    NRF_LOG_INFO("_max30003_initialization");
+
+    uint8_t max30003_power_ldo_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_MAX30003_POWER_LDO_EN};
+    state_handler(max30003_power_ldo_enable_array_data); // Enable 1.8V Supply for MAX30003
+
+    uint8_t nrf52_gpiote_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_GPIOTE_INIT};
+    state_handler(nrf52_gpiote_init_array_data); // Initialize the GPIOTE Interrupt to detect the interupt from the MAX30003
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t spim_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+    state_handler(spim_enable_array_data); // Enable SPIM Module
+
+    uint8_t spim_init_cs_pin_array_data[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT_CS_PIN, MAX30003_CS_PIN};
+    state_handler(spim_init_cs_pin_array_data); // Initialize the Chip Select Pin for the MAX30003
+
+    uint8_t spim_select_cs_pin_array_data[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, MAX30003_CS_PIN};
+    state_handler(spim_select_cs_pin_array_data); // Select the Chip Select Pin for the MAX30003 for the SPIM Module
+
+    uint8_t spim_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
+    state_handler(spim_init_array_data); // Initialize SPIM Module
+ 
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t max30003_init_array_data[3] = {0x00, MAX30003_MODULE, MAX30003_INIT_COMMAND}; 
+    state_handler(max30003_init_array_data); // MAX30003: Init Command 
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t spim_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
+    state_handler(spim_uninit_array_data); // Uninitialize SPIM Module
+
+    uint8_t spim_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
+    state_handler(spim_disable_array_data); // Disable SPIM Module 
+}
+
+/*
+*   @Brief: Function: _cy15b108qi_initialization() is used to initialize the CY15B108QI module 
+*/
+static void _cy15b108qi_initialization(void)
+{
+    NRF_LOG_INFO("_cy15b108qi_initialization");
+
+    uint8_t spim_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+    state_handler(spim_enable_array_data); // Enable SPIM Module
+
+    uint8_t spim_init_cs_pin_array_data[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT_CS_PIN, CY15B108QI_CS_PIN};
+    state_handler(spim_init_cs_pin_array_data); // Initialize the Chip Select Pin for the CY15B108QI
+
+    uint8_t spim_select_cs_pin_array_data[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, CY15B108QI_CS_PIN};
+    state_handler(spim_select_cs_pin_array_data); // Select the Chip Select Pin for the MAX30003 for the SPIM Module
+
+    uint8_t spim_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
+    state_handler(spim_init_array_data); // Initialize SPIM Module
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t cy15b108qi_init_array_data[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_INIT_COMMAND}; 
+    state_handler(cy15b108qi_init_array_data); // CY15B108QI: Init Command    
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t spim_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
+    state_handler(spim_uninit_array_data); // Uninitialize SPIM Module
+
+    uint8_t spim_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
+    state_handler(spim_disable_array_data); // Disable SPIM Module 
+}
+
+/*
+*   @Brief: Function: _enable_bluetooth_handler() is used to enable the bluetooth handler 
+*   purposes.
+*/
+static void _enable_bluetooth_handler(void)
+{
+    NRF_LOG_INFO("_bluetooth_initialization");
+
+//    nrf52_handler(medium_blink_led_array_data);
+
+    uint8_t ecg_start_data_recording_array_data[3] = {0x00, ECG_MODULE, ECG_START_DATA_RECORDING};  
+    state_handler(ecg_start_data_recording_array_data); // Start Data Recording
+}
+
+/*
+*   @Brief: Function: enable_serial_slave_handler() is used to initialize the serial debugger to debug and communicate with the NRF52 
+*   using an I2C to USB Converter (FT201X). It creates a RTC so that an interrupt occurs every 1 second. When an RTC
+*/
+void enable_usb_handler(void)
+{
+    NRF_LOG_INFO("_enable_usb_handler");
+
+    uint8_t lf_clock_start_array_data[4] = {0x00, NRF52_MODULE, NRF52_LF_CLOCK_COMMAND, NRF52_LF_CLOCK_START};   
+    state_handler(lf_clock_start_array_data); // Start LF Clock 
+
+    uint8_t rtc_ft201x_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_FT201X_INIT};  
+    state_handler(rtc_ft201x_init_array_data); // Initialize the RTC for the FT201X
+
+    uint8_t rtc_ft201x_set_counter_array_data[6] = {0x00, NRF52_MODULE, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_FT201X_SET_COUNTER, 0x00, 0x08};  
+    state_handler(rtc_ft201x_set_counter_array_data); // Setting the counter for the RTC for the FT201X to 1 second
+
+    uint8_t i2c_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  
+    state_handler(i2c_init_array_data); // Init TWIM Driver
+
+    uint8_t i2c_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_ENABLE};  
+    state_handler(i2c_enable_array_data); // Enable TWIM Driver
+
+    uint8_t rtc_ft201x_start_array_data[4] = {0x00, NRF52_MODULE, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_FT201X_START};  
+    state_handler(rtc_ft201x_start_array_data); // Start the RTC for the FT201X
+}
+
+/*
+*   @Brief: Function: _disable_serial_slave_handler() is used to uninitialize the serial debugger since it is not available for debugging 
+*   purposes.
+*/
+static void _disable_usb_handler(void)
+{
+    NRF_LOG_INFO("_disable_usb_handler");
+
+    uint8_t rtc_ft201x_stop_array_data[4] = {0x00, NRF52_MODULE, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_FT201X_STOP};       
+    state_handler(rtc_ft201x_stop_array_data); // Stop the RTC for the FT201X
+
+    uint8_t rtc_ft201x_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_FT201X_UNINIT};   
+    state_handler(rtc_ft201x_uninit_array_data); // Uninitialize the RTC for the FT201X
+
+    uint8_t lf_clock_stop_array_data[4] = {0x00, NRF52_MODULE, NRF52_LF_CLOCK_COMMAND, NRF52_LF_CLOCK_STOP};            
+    state_handler(lf_clock_stop_array_data); // Stop LF Clock 
      
-    uint8_t i2c_stop_array_data[4] = {0x00, 0x00, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_STOP};  // Stop TWIM Driver
-    _nrf52_handler(i2c_stop_array_data);
+    uint8_t i2c_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_DISABLE};  
+    state_handler(i2c_disable_array_data); // Disable TWIM Driver
 
-    uint8_t i2c_uninit_array_data[4] = {0x00, 0x00, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  // Uninitialize the TWIM Driver
-    _nrf52_handler(i2c_uninit_array_data);
+    uint8_t i2c_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  
+    state_handler(i2c_uninit_array_data); // Uninit TWIM Driver
 }
 
-void enable_serial_slave_handler(void)
+/*
+*   @Brief: Function: usb_handler() is used to handle the incoming messages over USB for debugging
+*   purposes.
+*/
+void usb_handler(void)
 {
-    uint8_t log_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LOG_INIT};       // Enable LOG Driver
-    _nrf52_handler(log_array_data);
+    NRF_LOG_INFO("_usb_handler");
 
-    uint8_t nrfx_clock_init_array_data[4] = {0x00, 0x00, NRF52_CLOCK_COMMAND, NRF52_NRFX_CLOCK_DRIVER_INIT};   // Init and Enable NRFX Clock
-    _nrf52_handler(nrfx_clock_init_array_data);  
+    uint8_t i2c_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  
+    state_handler(i2c_init_array_data); // Init TWIM Driver
 
-    uint8_t set_pin_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_INPUT_OUTPUT_INIT};       // Initialize Input and Output Pins
-    _nrf52_handler(set_pin_array_data);
+    uint8_t i2c_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_ENABLE};  
+    state_handler(i2c_enable_array_data); // Enable TWIM Driver
 
-    uint8_t ldo_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LDO_INIT};       // Enable LDO Drivers
-    _nrf52_handler(ldo_array_data);
-
-    uint8_t vcc_en_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_VCC_LDO_EN};   // Enable VCC LDO
-    _nrf52_handler(vcc_en_array_data);  
-
-    uint8_t power_manager_array_data[4] = {0x00, 0x00, NRF52_POWER_COMMAND, NRF52_POWER_MANAGER_INIT};  // Enable Power Manager
-    _nrf52_handler(power_manager_array_data);
-
-    uint8_t led_array_data[4] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LED_INIT};  // Enable LED Driver
-    _nrf52_handler(led_array_data);
-
-    uint8_t long_blink_led_array_data[5] = {0x00, 0x00, NRF52_COMMON_COMMAND, NRF52_LED_IND_BLINK, NRF52_LED_IND_LONG_BLINK};  // IND LED Long Blink
-    _nrf52_handler(long_blink_led_array_data);
-
-    uint8_t i2c_init_array_data[4] = {0x00, 0x00, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  // Enable TWIM Driver
-    _nrf52_handler(i2c_init_array_data);
-
-    uint8_t i2c_start_array_data[4] = {0x00, 0x00, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_START};  // Start TWIM Driver
-    _nrf52_handler(i2c_start_array_data);
-
-    uint8_t lf_clock_start_array_data[4] = {0x00, 0x00, NRF52_LF_CLOCK_COMMAND, NRF52_LF_CLOCK_START};   // Start LF Clock
-    _nrf52_handler(lf_clock_start_array_data);  
-
-    uint8_t rtc_ft201x_init_array_data[4] = {0x00, 0x00, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_FT201X_INIT};  // Initialize the RTC for the FT201X
-    _nrf52_handler(rtc_ft201x_init_array_data);
-
-    uint8_t rtc_ft201x_set_counter_array_data[6] = {0x00, 0x00, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_FT201X_SET_COUNTER, 0x00, 0x08};  // Setting the counter for the RTC for the FT201X to 1 second
-    _nrf52_handler(rtc_ft201x_set_counter_array_data);
-
-    uint8_t rtc_ft201x_start_array_data[4] = {0x00, 0x00, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_FT201X_START};  // Start the RTC for the FT201X
-    _nrf52_handler(rtc_ft201x_start_array_data);
-}
-
-static void _enable_bluetooth_manager_handler(void)
-{
-    
-
-}
-
-void serial_slave_manager_handler(void)
-{
     if(FT201X_USB_NORMAL == ft201x_check_usb_state())
     {
         uint8_t ft201x_data_bytes_available = ft201x_available();
@@ -81,42 +243,7 @@ void serial_slave_manager_handler(void)
 
               if(serial_array_data[0] == USB_COMMAND_HEADER && serial_array_data[LAST_ARRAY_ELEMENT(serial_array_data)] == USB_COMMAND_FOOTER)
               {
-                  switch(serial_array_data[1])
-                  {
-                      case NRF52_MODULE:
-                          NRF_LOG_INFO("SERIAL HANDLER: NRF52_MODULE");
-                          _nrf52_handler(serial_array_data);
-                          break;
-
-                      case FT201X_MODULE:
-                          NRF_LOG_INFO("SERIAL HANDLER: FT201X_MODULE");
-                          _ft201x_handler(serial_array_data);
-                          break;
-
-                      case BMI160_MODULE:
-                          NRF_LOG_INFO("SERIAL HANDLER: BMI160_MODULE");
-                          _bmi160_handler(serial_array_data);
-                          break;
-
-                      case MAX30003_MODULE:
-                          NRF_LOG_INFO("SERIAL HANDLER: MAX30003_MODULE");
-                          _max30003_handler(serial_array_data);
-                          break;    
-
-                      case TMP117_MODULE:
-                          NRF_LOG_INFO("SERIAL HANDLER: TMP117_MODULE");
-                          _tmp117_handler(serial_array_data);
-                          break;
-
-                      case BLE_MODULE:
-                          NRF_LOG_INFO("SERIAL HANDLER: BLE_MODULE");
-                          _ble_handler(serial_array_data);
-                          break;
-
-                      default:
-                          ft201x_flush_buffers();
-                          break;
-                  }
+                  state_handler(serial_array_data);
               }
               else
               {
@@ -126,17 +253,129 @@ void serial_slave_manager_handler(void)
     }
     else
     {
-        _disable_serial_slave_manager_handler();
-        _enable_bluetooth_manager_handler();
+        uint8_t disable_usb_handler_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, DISABLE_USB_HANDLER_COMMAND};
+        state_handler(disable_usb_handler_array_data);  // Disable USB handler
+
+        uint8_t enable_bluetooth_handler_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, ENABLE_BLUETOOTH_HANDLER_COMMAND};
+        state_handler(enable_bluetooth_handler_array_data);  // Enable Bluetooth Handler
+
+        return;
+    }
+
+    uint8_t i2c_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_DISABLE};  
+    state_handler(i2c_disable_array_data); // Disable TWIM Driver
+
+    uint8_t i2c_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  
+    state_handler(i2c_uninit_array_data); // Uninit TWIM Driver
+}
+
+/*
+*   @Brief: Function: state_handler() is used to handle the different possible states that a command can use to control something.
+*/
+void state_handler(uint8_t *serial_array_data)
+{
+    NRF_LOG_INFO("_state_handler");
+
+    switch(serial_array_data[1])
+    {
+        case NRF52_MODULE:
+            NRF_LOG_INFO("SERIAL HANDLER: NRF52_MODULE");
+            _nrf52_handler(serial_array_data);
+            break;
+
+        case FT201X_MODULE:
+            NRF_LOG_INFO("SERIAL HANDLER: FT201X_MODULE");
+            _ft201x_handler(serial_array_data);
+            break;
+
+        case BMI160_MODULE:
+            NRF_LOG_INFO("SERIAL HANDLER: BMI160_MODULE");
+            _bmi160_handler(serial_array_data);
+            break;
+
+        case MAX30003_MODULE:
+            NRF_LOG_INFO("SERIAL HANDLER: MAX30003_MODULE");
+            _max30003_handler(serial_array_data);
+            break;    
+
+        case TMP117_MODULE:
+            NRF_LOG_INFO("SERIAL HANDLER: TMP117_MODULE");
+            _tmp117_handler(serial_array_data);
+            break;
+
+        case BLUETOOTH_MODULE:
+            NRF_LOG_INFO("SERIAL HANDLER: BLUETOOTH_MODULE");
+            _bluetooth_handler(serial_array_data);
+            break;
+
+        case ECG_MODULE:
+            NRF_LOG_INFO("SERIAL HANDLER: ECG_MODULE");
+            _ecg_handler(serial_array_data);
+            break;
+
+        case CY15B108QI_MODULE:
+            NRF_LOG_INFO("SERIAL HANDLER: CY15B108QI_MODULE");
+            _cy15b108qi_handler(serial_array_data);
+            break;
+
+        case SERIAL_SLAVE_MODULE:
+            NRF_LOG_INFO("SERIAL HANDLER: SERIAL_SLAVE_MODULE");
+            _serial_slave_handler(serial_array_data);
+            break;
+
+        default:
+            NRF_LOG_INFO("default");
+            ft201x_flush_buffers();
+            break;
+    }
+
+}
+
+static void _serial_slave_handler(uint8_t *serial_array_data)
+{
+    NRF_LOG_INFO("_serial_slave_handler");
+
+    switch(serial_array_data[2])
+    {
+        case NRF52_INITIALIZATION_COMMAND:
+            NRF_LOG_INFO("SERIAL_SLAVE_MODULE: NRF52_INITIALIZATION_COMMAND");
+            _nrf52_initialization();
+            break;
+
+        case TMP117_INITIALIZATION_COMMAND:
+            NRF_LOG_INFO("SERIAL_SLAVE_MODULE: TMP117_INITIALIZATION_COMMAND");
+            _tmp117_initialization();
+            break;
+
+        case CY15B108QI_INITIALIZATION_COMMAND:
+            NRF_LOG_INFO("SERIAL_SLAVE_MODULE: CY15B108QI_INITIALIZATION_COMMAND");
+            _cy15b108qi_initialization();
+            break;
+
+        case STARTUP_INITIALIZATION_COMMAND:
+            NRF_LOG_INFO("SERIAL_SLAVE_MODULE: STARTUP_INITIALIZATION_COMMAND");
+            startup_initialization();
+            break;
+
+        case ENABLE_BLUETOOTH_HANDLER_COMMAND:
+            NRF_LOG_INFO("SERIAL_SLAVE_MODULE: ENABLE_BLUETOOTH_HANDLER");
+            _enable_bluetooth_handler();
+            break;
+
+        default:
+            break;
     }
 }
 
-void _nrf52_handler(uint8_t *serial_array_data)
+static void _nrf52_handler(uint8_t *serial_array_data)
 {
+    NRF_LOG_INFO("_nrf52_handler");
+
     switch(serial_array_data[2])
     {
         case NRF52_HF_CLOCK_COMMAND:
             NRF_LOG_INFO("NRF52_MODULE: NRF52_HF_CLOCK_COMMAND");
+
             switch(serial_array_data[3])
             {
                 case NRF52_HF_CLOCK_START:  
@@ -154,6 +393,7 @@ void _nrf52_handler(uint8_t *serial_array_data)
 
         case NRF52_LF_CLOCK_COMMAND:
             NRF_LOG_INFO("NRF52_MODULE: NRF52_LF_CLOCK_COMMAND");
+
             switch(serial_array_data[3])
             {
                 case NRF52_LF_CLOCK_START:  
@@ -171,6 +411,7 @@ void _nrf52_handler(uint8_t *serial_array_data)
 
         case NRF52_CLOCK_COMMAND:
             NRF_LOG_INFO("NRF52_MODULE: NRF52_CLOCK_COMMAND");
+
             switch(serial_array_data[3])
             {
                 case NRF52_NRFX_CLOCK_DRIVER_INIT:  
@@ -188,6 +429,7 @@ void _nrf52_handler(uint8_t *serial_array_data)
 
         case NRF52_RTC_CLOCK_COMMAND:
             NRF_LOG_INFO("NRF52_MODULE: NRF52_RTC_CLOCK_COMMAND");
+
             switch(serial_array_data[3])
             {
                 case NRF52_RTC_FT201X_INIT:
@@ -250,6 +492,7 @@ void _nrf52_handler(uint8_t *serial_array_data)
 
         case NRF52_POWER_COMMAND:
             NRF_LOG_INFO("NRF52_MODULE: NRF52_POWER_COMMAND");
+
             switch(serial_array_data[3])
             {
                 case NRF52_POWER_DCDC_CONVERTER_ENABLE:
@@ -283,6 +526,7 @@ void _nrf52_handler(uint8_t *serial_array_data)
 
         case NRF52_COMMON_COMMAND:
             NRF_LOG_INFO("NRF52_MODULE: NRF52_COMMON_COMMAND");
+
             switch(serial_array_data[3])
             {
                 case NRF52_LED_INIT:
@@ -355,6 +599,14 @@ void _nrf52_handler(uint8_t *serial_array_data)
                     enable_vcc_ldo();
                     break;
 
+                case NRF52_MAX30003_POWER_LDO_EN:
+                    enable_max30003_power_ldo();
+                    break;
+
+                case NRF52_GPIOTE_INIT:
+                    gpiote_init();
+                    break;
+
                 default:
                     break;
             }
@@ -362,6 +614,7 @@ void _nrf52_handler(uint8_t *serial_array_data)
 
         case NRF52_I2C_COMMAND:
             NRF_LOG_INFO("NRF52_MODULE: NRF52_I2C_COMMAND");
+
             switch(serial_array_data[3])
             {
                 case NRF52_I2C_TWIM_INIT:
@@ -372,12 +625,12 @@ void _nrf52_handler(uint8_t *serial_array_data)
                     twim_uninit();
                     break;
 
-                case NRF52_I2C_TWIM_STOP:
-                    i2c_stop();
+                case NRF52_I2C_TWIM_ENABLE:
+                    twim_enable();
                     break;
 
-                case NRF52_I2C_TWIM_START:
-                    i2c_start();
+                case NRF52_I2C_TWIM_DISABLE:
+                    twim_disable();
                     break;
 
                 default:
@@ -387,6 +640,7 @@ void _nrf52_handler(uint8_t *serial_array_data)
 
         case NRF52_SPI_COMMAND:
             NRF_LOG_INFO("NRF52_MODULE: NRF52_SPIM_COMMAND");
+
             switch(serial_array_data[3])
             {
                 case NRF52_SPI_SPIM_INIT:
@@ -405,6 +659,18 @@ void _nrf52_handler(uint8_t *serial_array_data)
                     spim_uninit();
                     break;
 
+                case NRF52_SPI_SPIM_SELECT_CS_PIN:
+                    spim_select_cs_pin(serial_array_data[4]);
+                    break;
+
+                case NRF52_SPI_SPIM_INIT_CS_PIN:
+                    spim_init_cs_pin(serial_array_data[4]);
+                    break;                    
+
+                case NRF52_SPI_SPIM_SETUP:
+                    spim_setup();
+                    break;
+
                 default:
                     break;
             }
@@ -417,6 +683,8 @@ void _nrf52_handler(uint8_t *serial_array_data)
 
 static void _ft201x_handler(uint8_t *serial_array_data)
 {
+    NRF_LOG_INFO("_ft201x_handler");
+
     switch(serial_array_data[2])
     {
         case FT201X_READ_CHIP_ID_COMMAND:
@@ -435,8 +703,9 @@ static void _ft201x_handler(uint8_t *serial_array_data)
             NRF_LOG_INFO("FT201X_MODULE: FT201X_WRITE_EEPROM_COMMAND");
             break;
 
-        case FT201X_WRITE_DATA_COMMAND:
-            NRF_LOG_INFO("FT201X_MODULE: FT201X_WRITE_DATA_COMMAND");
+        case FT201X_WRITE_DATA_ARRAY_COMMAND:
+            NRF_LOG_INFO("FT201X_MODULE: FT201X_WRITE_DATA_ARRAY_COMMAND");
+//            ft201x_write_buffer(&serial_array_data[3], serial_array_data[4]);   // Pointer to Data Array, Number of elements in Data Array
             break;
         
         case FT201X_READ_DATA_COMMAND:
@@ -450,6 +719,8 @@ static void _ft201x_handler(uint8_t *serial_array_data)
 
 static void _bmi160_handler(uint8_t *serial_array_data)
 {
+    NRF_LOG_INFO("_bmi160_handler");
+
     switch(serial_array_data[2])
     {
         case BMI160_READ_CHIP_ID_COMMAND:
@@ -471,20 +742,22 @@ static void _bmi160_handler(uint8_t *serial_array_data)
 
 static void _tmp117_handler(uint8_t *serial_array_data)
 {
+    NRF_LOG_INFO("_tmp117_handler");
+
     switch(serial_array_data[2])
     {
         case TMP117_READ_CHIP_ID_COMMAND:
             NRF_LOG_INFO("tmp117_MODULE: TMP117_READ_CHIP_ID_COMMAND");
             uint16_t tmp117_chip_id = tmp117_read_chip_id();
-            uint8_t tmp117_chip_id_array_data[5] = {0x00, 0x00, FT201X_WRITE_DATA_COMMAND, (tmp117_chip_id & 0xF0), (tmp117_chip_id & 0x0F)};  // Write TMP117 Chip ID
-            _ft201x_handler(tmp117_chip_id_array_data);
+            uint8_t tmp117_chip_id_array_data[5] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, (tmp117_chip_id & 0xF0), (tmp117_chip_id & 0x0F)};  // Write TMP117 Chip ID
+            state_handler(tmp117_chip_id_array_data);
             break;
 
         case TMP117_READ_REVISION_NUMBER_COMMAND:
             NRF_LOG_INFO("TMP117_MODULE: TMP117_READ_CHIP_ID_COMMAND");
             uint8_t tmp117_revision_number = tmp117_read_revision_number();
-            uint8_t tmp117_revision_number_array_data[4] = {0x00, 0x00, FT201X_WRITE_DATA_COMMAND, tmp117_chip_id};  // Write TMP117 Chip ID
-            _ft201x_handler(tmp117_revision_number_array_data);
+            uint8_t tmp117_revision_number_array_data[4] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, tmp117_chip_id};  // Write TMP117 Chip ID
+            state_handler(tmp117_revision_number_array_data);
             break;
 
         case TMP117_UNLOCK_EEPROM_COMMAND:
@@ -510,17 +783,17 @@ static void _tmp117_handler(uint8_t *serial_array_data)
         case TMP117_TEMP_UINT16_COMMAND:
             NRF_LOG_INFO("TMP117_MODULE: TMP117_UINT16_COMMAND");
             uint16_t tmp117_temp_value = tmp117_get_uint16_t();
-            uint8_t tmp117_temp_value_array_data[5] = {0x00, 0x00, FT201X_WRITE_DATA_COMMAND, (tmp117_temp_value & 0xF0), (tmp117_temp_value & 0x0F)};  // Write TMP117 Temperature Value
-            _ft201x_handler(tmp117_temp_value_array_data);             
+            uint8_t tmp117_temp_value_array_data[5] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, (tmp117_temp_value & 0xF0), (tmp117_temp_value & 0x0F)};  // Write TMP117 Temperature Value
+            state_handler(tmp117_temp_value_array_data);             
             break;
 
         case TMP117_TEMP_CHAR_ARRAY_COMMAND:
             NRF_LOG_INFO("TMP117_MODULE: TMP117_TEMP_CHAR_ARRAY_COMMAND");    
             uint8_t tmp117_uint8_t[5];
             tmp117_get_uint8_t(tmp117_uint8_t);
-            uint8_t tmp117_uint8_t_array_data[8] = {0x00, 0x00, FT201X_WRITE_DATA_COMMAND, tmp117_uint8_t[4], tmp117_uint8_t[3],
+            uint8_t tmp117_uint8_t_array_data[8] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, tmp117_uint8_t[4], tmp117_uint8_t[3],
             tmp117_uint8_t[2], tmp117_uint8_t[1], tmp117_uint8_t[0]};  // Write TMP117 Temperature Value
-            _ft201x_handler(tmp117_uint8_t_array_data);           
+            state_handler(tmp117_uint8_t_array_data);           
             break;
 
         default:
@@ -528,54 +801,301 @@ static void _tmp117_handler(uint8_t *serial_array_data)
     }
 }
 
+static void _ecg_handler(uint8_t *serial_array_data)
+{
+    NRF_LOG_INFO("_ecg_handler");
+
+    switch(serial_array_data[2])
+    {
+        case ECG_INIT:
+            NRF_LOG_INFO("ECG_MODULE: ECG_INIT");
+            ecg_init();
+            break;
+
+        case ECG_START_DATA_RECORDING:
+            NRF_LOG_INFO("ECG_MODULE: ECG_START_DATA_RECORDING");
+            ecg_start_data_recording();
+        default:
+            break;
+    }
+
+}
+
+static void _cy15b108qi_handler(uint8_t *serial_array_data)
+{
+    NRF_LOG_INFO("_cy15b108qi_handler");
+
+    switch(serial_array_data[2])
+    {
+        case CY15B108QI_INIT_COMMAND:
+            NRF_LOG_INFO("CY15B108QI_MODULE: CY15B108QI_INIT");
+            cy15b108qi_init();
+            break;
+        
+        case CY15B108QI_UNINIT_COMMAND:
+            NRF_LOG_INFO("CY15B108QI_MODULE: CY15B108QI_UNINIT");
+            cy15b108qi_uninit();
+            break;
+
+        case CY15B108QI_ENTER_DEEP_POWER_DOWN_MODE_COMMAND:
+            NRF_LOG_INFO("CY15B108QI_MODULE: ENTER_DEEP_POWER_DOWN_MODE");
+            cy15b108qi_enter_deep_power_down_mode_command();
+            break;
+
+        case CY15B108QI_EXIT_DEEP_POWER_DOWN_MODE_COMMAND:
+            NRF_LOG_INFO("CY15B108QI_MODULE: EXIT_DEEP_POWER_DOWN_MODE");
+            cy15b108qi_exit_deep_power_down_mode_command();
+            break;
+
+        case CY15B108QI_ENTER_HIBERNATION_MODE_COMMAND:
+            NRF_LOG_INFO("CY15B108QI_MODULE: ENTER_HIBERNATION_MODE");
+            cy15b108qi_enter_hibernation_mode_command();
+            break;
+
+        case CY15B108QI_EXIT_HIBERNATION_MODE_COMMAND:
+            NRF_LOG_INFO("CY15B108QI_MODULE: EXIT_HIBERNATION_MODE");
+            cy15b108qi_exit_hibernation_mode_command();
+            break;
+
+        case CY15B108QI_SET_WRITE_ENABLE_LATCH_COMMAND:
+            NRF_LOG_INFO("CY15B108QI_MODULE: SET_WRITE_ENABLE_LATCH");
+            cy15b108qi_set_write_enable_latch_command();
+            break;
+
+        case CY15B108QI_RESET_WRITE_ENABLE_LATCH_COMMAND:
+            NRF_LOG_INFO("CY15B108QI_MODULE: RESET_WRITE_ENABLE_LATCH");
+            cy15b108qi_reset_write_enable_latch_command();
+            break;
+
+        case CY15B108QI_READ_DEVICE_ID_COMMAND:
+            NRF_LOG_INFO("CY15B108QI_MODULE: READ_DEVICE_ID");
+            cy15b108qi_read_device_id_command();
+            break;
+
+        case CY15B108QI_READ_UNIQUE_ID_COMMAND:
+            NRF_LOG_INFO("CY15B108QI_MODULE: READ_UNIQUE_ID");
+            cy15b108qi_read_unique_id_command();
+            break;
+
+        case CY15B108QI_WRITE_STATUS_REGISTER_COMMAND:
+            NRF_LOG_INFO("CY15B108QI_MODULE: WRITE_STATUS_REGISTER");
+            cy15b108qi_write_status_register();
+            break;
+
+        case CY15B108QI_READ_STATUS_REGISTER_COMMAND:
+            NRF_LOG_INFO("CY15B108QI_MODULE: READ_STATUS_REGISTER");
+            cy15b108qi_read_status_register();
+            break;
+
+        default:
+            break;
+    }
+}
 
 static void _max30003_handler(uint8_t *serial_array_data)
 {
+    NRF_LOG_INFO("_max30003_handler");
+
     switch(serial_array_data[2])
     {
-        case MAX30003_READ_CHIP_ID_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_CHIP_ID_COMMAND");            
+        case MAX30003_READ_INFO_REGISTER_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_INFO_REGISTER_COMMAND");
+            max30003_read_info_register();
             break;
 
-        case MAX30003_INIT_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_INIT_COMMAND");
+        case MAX30003_READ_STATUS_REGISTER_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_STATUS_REGISTER_COMMAND");
+            max30003_read_status_register();
             break;
+
+        case MAX30003_READ_GENERAL_CONFIGURATION_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_GENERAL_CONFIGURATION_COMMAND");
+            max30003_read_general_configuration_register();
+            break;
+
+        case MAX30003_WRITE_GENERAL_CONFIGURATION_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_GENERAL_CONFIGURATION_COMMAND");
+            max30003_write_general_configuration_register();
+            break;
+
+        case MAX30003_READ_CALIBRATION_CONFIGURATION_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_CALIBRATION_CONFIGURATION_COMMAND");
+            max30003_read_calibration_configuration_register();
+            break;
+
+        case MAX30003_WRITE_CALIBRATION_CONFIGURATION_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_CALIBRATION_CONFIGURATION_COMMAND");
+            max30003_write_calibration_configuration_register();
+            break;
+
+        case MAX30003_READ_INPUT_MULTIPLEXER_CONFIGURATION_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_INPUT_MULTIPLEXER_CONFIGURATION_COMMAND");
+            max30003_read_input_multiplexer_configuration_register();
+            break;
+
+        case MAX30003_WRITE_INPUT_MULTIPLEXER_CONFIGURATION_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_INPUT_MULTIPLEXER_CONFIGURATION_COMMAND");
+            max30003_write_input_multiplexer_configuration_register();
+            break;
+
+        case MAX30003_READ_ECG_CONFIGURATION_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_ECG_CONFIGURATION_COMMAND");
+            max30003_read_ecg_configuration_register();
+            break;
+
+        case MAX30003_WRITE_ECG_CONFIGURATION_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_ECG_CONFIGURATION_COMMAND");
+            max30003_write_ecg_configuration_register();
+            break;
+
+        case MAX30003_READ_RTOR1_CONFIGURATION_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_RTOR1_CONFIGURATION_COMMAND");
+            max30003_read_rtor1_configuration_register();
+            break;
+
+        case MAX30003_WRITE_RTOR1_CONFIGURATION_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_RTOR1_CONFIGURATION_COMMAND");
+            max30003_write_rtor1_configuration_register();
+            break;
+
+        case MAX30003_READ_RTOR2_CONFIGURATION_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_RTOR2_CONFIGURATION_COMMAND");
+            max30003_read_rtor2_configuration_register();
+            break;
+
+        case MAX30003_WRITE_RTOR2_CONFIGURATION_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_RTOR2_CONFIGURATION_COMMAND");
+            max30003_write_rtor2_configuration_register();
+            break;
+
+        case MAX30003_READ_ECG_FIFO_MEMORY_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_ECG_FIFO_MEMORY_COMMAND");
+            max30003_read_ecg_fifo_memory_register();
+            break;
+
+        case MAX30003_SOFT_RESET_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_SOFT_RESET_COMMAND");
+            max30003_soft_reset();
+            break;
+
+        case MAX30003_SYNC_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_SYNC_COMMAND");
+            max30003_sync(); 
+            break;
+
+        case MAX30003_INIT_INTERRUPT_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_INIT_INTERRUPT_COMMAND");
+            max30003_init_pin_interrupt(); 
+            break;
+            
+        case MAX30003_ENABLE_PIN_INTERRUPT_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_ENABLE_PIN_INTERRUPT_COMMAND");
+            max30003_enable_pin_interrupt(); 
+            break;
+
+        case MAX30003_DISABLE_PIN_INTERRUPT_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_DISABLE_PIN_INTERRUPT_COMMAND");
+            max30003_disable_pin_interrupt(); 
+            break;
+
+        case MAX30003_INTERRUPT1_DISABLE_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_INTERRUPT1_DISABLE_COMMAND");
+            max30003_interrupt1_disable();
+            break;
+
+        case MAX30003_GET_ECG_VOLTAGE_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_GET_ECG_VOLTAGE_COMMAND");
+//            uint16_t max30003_data_array[MAX30003_MAX_FIFO_WORDS];
+//            max30003_get_ecg_voltage(max30003_data_array, ARRAY_LENGTH(max30003_data_array)); 
+            break;
+
+      case MAX30003_READ_INTERRUPT1_REGISTER_COMMAND:
+          NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_INTERRUPT1_REGISTER_COMMAND");
+          max30003_read_interrupt1_register();
+          break;
+
+      case MAX30003_WRITE_INTERRUPT1_REGISTER_COMMAND:
+          NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_INTERRUPT1_REGISTER_COMMAND");
+          max30003_write_interrupt1_register();
+          break;
+
+      case MAX30003_READ_INTERRUPT2_REGISTER_COMMAND:
+          NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_INTERRUPT2_REGISTER_COMMAND");
+          max30003_read_interrupt2_register();
+          break;
+
+      case MAX30003_WRITE_INTERRUPT2_REGISTER_COMMAND:
+          NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_INTERRUPT2_REGISTER_COMMAND");
+          max30003_write_interrupt2_register();
+          break;
+          
+      case MAX30003_READ_INTERRUPT_MANAGER_REGISTER_COMMAND:
+          NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_INTERRUPT_MANAGER_REGISTER_COMMAND");
+          max30003_read_interrupt_manager_register();
+          break;
+
+      case MAX30003_WRITE_INTERRUPT_MANAGER_REGISTER_COMMAND:
+          NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_INTERRUPT_MANAGER_REGISTER_COMMAND");
+          max30003_write_interrupt_manager_register();
+          break;
+          
+      case MAX30003_INIT_COMMAND:
+          NRF_LOG_INFO("MAX30003_MODULE: MAX30003_INIT_COMMAND");
+          max30003_init();
+          break;
+
+      case MAX30003_START_RECORDING_COMMAND:
+          NRF_LOG_INFO("MAX30003_MODULE: START_RECORDING");
+          max30003_start_recording();
+          break;
+
+      case MAX30003_WRITE_FIFO_RESET_REGISTER_COMMAND:
+          NRF_LOG_INFO("MAX30003_MODULE: WRITE_FIFO_RESET_REGISTER");
+          max30003_write_fifo_reset_register();
+          break;
 
         default:
             break;
     }
 }
 
-static void _ble_handler(uint8_t *serial_array_data)
+static void _bluetooth_handler(uint8_t *serial_array_data)
 {
+    NRF_LOG_INFO("_bluetooth_handler");
+
     switch(serial_array_data[2])
     {
-        case BLE_INIT_GAP_PARAMS_COMMAND:
-            NRF_LOG_INFO("BLE_MODULE: BLE_INIT_GAP_PARAMS_COMMAND");            
+        case BLUETOOTH_INIT_GAP_PARAMS_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: BLUETOOTH_INIT_GAP_PARAMS_COMMAND");            
             break;
 
-        case BLE_UPDATE_GAP_PARAMS_COMMAND:
-            NRF_LOG_INFO("BLE_MODULE: BLE_UPDATE_GAP_PARAMS_COMMAND");
+        case BLUETOOTH_UPDATE_GAP_PARAMS_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: BLUETOOTH_UPDATE_GAP_PARAMS_COMMAND");
             break;
 
-        case BLE_INIT_GATT_COMMAND:
-            NRF_LOG_INFO("BLE_MODULE: BLE_INIT_GATT_COMMAND");
+        case BLUETOOTH_INIT_GATT_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: BLUETOOTH_INIT_GATT_COMMAND");
             break;
 
-        case BLE_INIT_SERVICES_COMMAND:
-            NRF_LOG_INFO("BLE_MODULE: BLE_INIT_SERVICES_COMMAND");
+        case BLUETOOTH_INIT_SERVICES_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: BLUETOOTH_INIT_SERVICES_COMMAND");
             break;
 
-        case BLE_INIT_CONN_PARAMS_COMMAND:
-            NRF_LOG_INFO("BLE_MODULE: BLE_INIT_CONN_PARAMS_COMMAND");    
+        case BLUETOOTH_INIT_CONN_PARAMS_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: BLUETOOTH_INIT_CONN_PARAMS_COMMAND");    
             break;
 
-        case BLE_INIT_PEER_MANAGER_COMMAND:
-            NRF_LOG_INFO("BLE_MODULE: BLE_INIT_PEER_MANAGER_COMMAND");    
+        case BLUETOOTH_INIT_PEER_MANAGER_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: BLUETOOTH_INIT_PEER_MANAGER_COMMAND");    
             break;
 
-        case BLE_INIT_ADVERTISING_COMMAND:
-            NRF_LOG_INFO("BLE_MODULE: BLE_INIT_ADVERTISING_COMMAND");    
+        case BLUETOOTH_INIT_ADVERTISING_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: INIT_ADVERTISING");    
+            break;
+
+        case BLUETOOTH_TRANSMIT_RECORDING_SESSION_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: TRANSMIT_RECORDING_SESSION");
+            bluetooth_transmit_recording_session();
             break;
 
         default:

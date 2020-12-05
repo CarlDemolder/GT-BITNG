@@ -122,7 +122,7 @@ void rtc_ft201x_handler(nrfx_rtc_int_type_t int_type)
         nrfx_rtc_counter_clear(&rtc_ft201x_configuration.nrfx_rtc);
         nrfx_rtc_int_enable(&rtc_ft201x_configuration.nrfx_rtc, NRF_RTC_INT_COMPARE2_MASK);
 
-        serial_slave_manager_handler();
+        usb_handler();
     }
 }
 
@@ -246,7 +246,6 @@ void rtc_tmp117_handler(nrfx_rtc_int_type_t int_type)
         nrfx_rtc_counter_clear(&rtc_tmp117_configuration.nrfx_rtc);
         nrfx_rtc_int_enable(&rtc_tmp117_configuration.nrfx_rtc, NRF_RTC_INT_COMPARE2_MASK);
 
-        serial_slave_manager_handler();
     }
 }
 

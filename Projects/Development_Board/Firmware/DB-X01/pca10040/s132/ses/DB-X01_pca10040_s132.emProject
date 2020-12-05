@@ -120,6 +120,11 @@
       <file file_name="../../../tmp117.h" />
       <file file_name="../../../ecg.c" />
       <file file_name="../../../ecg.h" />
+      <file file_name="../../../cy15b108qi.c" />
+      <file file_name="../../../cy15b108qi.h" />
+      <file file_name="../../../ble_ecg_service.h" />
+      <file file_name="../../../ble_ecg_service.c" />
+      <file file_name="../../../ble_service.h" />
     </folder>
     <folder Name="nRF_Segger_RTT">
       <file file_name="$(SDK)/external/segger_rtt/SEGGER_RTT.c" />
