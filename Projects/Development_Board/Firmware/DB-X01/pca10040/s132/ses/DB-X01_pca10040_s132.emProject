@@ -71,6 +71,8 @@
       <file file_name="$(SDK)/components/libraries/sortlist/nrf_sortlist.c" />
       <file file_name="$(SDK)/components/libraries/strerror/nrf_strerror.c" />
       <file file_name="$(SDK)/components/libraries/sensorsim/sensorsim.c" />
+      <file file_name="../../../../../../../../../Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/libraries/timer/app_timer.h" />
+      <file file_name="../../../../../../../../../Nordic_SDK/nRF5_SDK_17.0.0_9d13099/components/libraries/timer/app_timer2.c" />
     </folder>
     <folder Name="None">
       <file file_name="$(SDK)/modules/nrfx/mdk/ses_startup_nrf52.s" />

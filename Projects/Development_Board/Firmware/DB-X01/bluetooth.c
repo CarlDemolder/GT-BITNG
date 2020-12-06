@@ -255,7 +255,7 @@ void gap_params_update(uint16_t m_conn_handle)
     gap_conn_params.slave_latency = SLAVE_LATENCY;
     gap_conn_params.conn_sup_timeout = CONN_SUP_TIMEOUT;
 
-    err_code = ble_conn_params_change_conn_params(m_conn_handle, &gap_conn_params);
+//    err_code = ble_conn_params_change_conn_params(m_conn_handle, &gap_conn_params);
     APP_ERROR_CHECK(err_code);
     if(err_code == NRF_SUCCESS)
     {

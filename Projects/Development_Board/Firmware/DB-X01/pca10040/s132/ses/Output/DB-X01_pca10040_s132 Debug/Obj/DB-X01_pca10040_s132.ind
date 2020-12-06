@@ -29,6 +29,7 @@
 "Output/DB-X01_pca10040_s132 Debug/Obj/nrf_sortlist.o"
 "Output/DB-X01_pca10040_s132 Debug/Obj/nrf_strerror.o"
 "Output/DB-X01_pca10040_s132 Debug/Obj/sensorsim.o"
+"Output/DB-X01_pca10040_s132 Debug/Obj/app_timer2.o"
 "Output/DB-X01_pca10040_s132 Debug/Obj/ses_startup_nrf52.o"
 "Output/DB-X01_pca10040_s132 Debug/Obj/ses_startup_nrf_common.o"
 "Output/DB-X01_pca10040_s132 Debug/Obj/system_nrf52.o"

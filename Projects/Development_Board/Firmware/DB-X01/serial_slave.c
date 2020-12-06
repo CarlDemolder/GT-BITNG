@@ -155,17 +155,44 @@ static void _cy15b108qi_initialization(void)
 }
 
 /*
-*   @Brief: Function: _enable_bluetooth_handler() is used to enable the bluetooth handler 
+*   @Brief: Function: enable_bluetooth_handler() is used to enable the bluetooth handler 
 *   purposes.
 */
-static void _enable_bluetooth_handler(void)
+void enable_bluetooth_handler(void)
 {
-    NRF_LOG_INFO("_bluetooth_initialization");
+    NRF_LOG_INFO("enable_bluetooth_handler");
 
 //    nrf52_handler(medium_blink_led_array_data);
 
-    uint8_t ecg_start_data_recording_array_data[3] = {0x00, ECG_MODULE, ECG_START_DATA_RECORDING};  
-    state_handler(ecg_start_data_recording_array_data); // Start Data Recording
+    uint8_t bluetooth_ble_stack_init_array_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_INIT_BLE_STACK_COMMAND};
+    state_handler(bluetooth_ble_stack_init_array_data); // Initialize the BLE stack for Bluetooth
+
+    uint8_t bluetooth_gap_params_init_array_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_INIT_GAP_PARAMS_COMMAND};
+    state_handler(bluetooth_gap_params_init_array_data); // Initialize the GAP Parameters for Bluetooth communication
+
+    uint8_t bluetooth_gatt_init_array_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_INIT_GATT_COMMAND};
+    state_handler(bluetooth_gatt_init_array_data); // Initialize the BLE GATT Stack
+
+    uint8_t bluetooth_services_init_array_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_INIT_SERVICES_COMMAND};
+    state_handler(bluetooth_services_init_array_data); // Initialize the services inside the BLE stack
+
+    uint8_t bluetooth_advertising_init_array_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_INIT_ADVERTISING_COMMAND};
+    state_handler(bluetooth_advertising_init_array_data); // Initialize the Advertising Module for Bluetooth
+
+    uint8_t bluetooth_set_advertising_power_array_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_SET_ADVERTISING_POWER_COMMAND};
+    state_handler(bluetooth_set_advertising_power_array_data); // Set the Advertising Power for the Bluetooth Module
+
+    uint8_t bluetooth_conn_params_init_array_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_INIT_CONN_PARAMS_COMMAND};
+    state_handler(bluetooth_conn_params_init_array_data); // Initialize the Connection Parameters Between the GATT Server and Client
+
+    uint8_t bluetooth_peer_manager_init_array_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_INIT_PEER_MANAGER_COMMAND};
+    state_handler(bluetooth_peer_manager_init_array_data); // Initialize the Peer Manager to control the interaction between the GATT Server and Client
+
+    uint8_t bluetooth_advertising_start_array_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_START_ADVERTISING_COMMAND};
+    state_handler(bluetooth_conn_params_init_array_data); // Start advertising data between the GATT Server and Client
+
+//    uint8_t ecg_start_data_recording_array_data[3] = {0x00, ECG_MODULE, ECG_START_DATA_RECORDING};  
+//    state_handler(ecg_start_data_recording_array_data); // Start Data Recording
 }
 
 /*
@@ -359,7 +386,7 @@ static void _serial_slave_handler(uint8_t *serial_array_data)
 
         case ENABLE_BLUETOOTH_HANDLER_COMMAND:
             NRF_LOG_INFO("SERIAL_SLAVE_MODULE: ENABLE_BLUETOOTH_HANDLER");
-            _enable_bluetooth_handler();
+            enable_bluetooth_handler();
             break;
 
         default:
@@ -1066,31 +1093,43 @@ static void _bluetooth_handler(uint8_t *serial_array_data)
     switch(serial_array_data[2])
     {
         case BLUETOOTH_INIT_GAP_PARAMS_COMMAND:
-            NRF_LOG_INFO("BLUETOOTH_MODULE: BLUETOOTH_INIT_GAP_PARAMS_COMMAND");            
-            break;
-
-        case BLUETOOTH_UPDATE_GAP_PARAMS_COMMAND:
-            NRF_LOG_INFO("BLUETOOTH_MODULE: BLUETOOTH_UPDATE_GAP_PARAMS_COMMAND");
+            NRF_LOG_INFO("BLUETOOTH_MODULE: INIT_GAP_PARAMS");
+            gap_params_init();
             break;
 
         case BLUETOOTH_INIT_GATT_COMMAND:
-            NRF_LOG_INFO("BLUETOOTH_MODULE: BLUETOOTH_INIT_GATT_COMMAND");
+            NRF_LOG_INFO("BLUETOOTH_MODULE: INIT_GATT");
+            gatt_init();
             break;
 
         case BLUETOOTH_INIT_SERVICES_COMMAND:
-            NRF_LOG_INFO("BLUETOOTH_MODULE: BLUETOOTH_INIT_SERVICES_COMMAND");
+            NRF_LOG_INFO("BLUETOOTH_MODULE: INIT_SERVICES");
+            services_init();
             break;
 
         case BLUETOOTH_INIT_CONN_PARAMS_COMMAND:
-            NRF_LOG_INFO("BLUETOOTH_MODULE: BLUETOOTH_INIT_CONN_PARAMS_COMMAND");    
+            NRF_LOG_INFO("BLUETOOTH_MODULE: INIT_CONN_PARAMS");
+            conn_params_init();
             break;
 
         case BLUETOOTH_INIT_PEER_MANAGER_COMMAND:
-            NRF_LOG_INFO("BLUETOOTH_MODULE: BLUETOOTH_INIT_PEER_MANAGER_COMMAND");    
+            NRF_LOG_INFO("BLUETOOTH_MODULE: INIT_PEER_MANAGER");
+            peer_manager_init();
             break;
 
         case BLUETOOTH_INIT_ADVERTISING_COMMAND:
-            NRF_LOG_INFO("BLUETOOTH_MODULE: INIT_ADVERTISING");    
+            NRF_LOG_INFO("BLUETOOTH_MODULE: INIT_ADVERTISING");
+            advertising_init();
+            break;
+
+        case BLUETOOTH_SET_ADVERTISING_POWER_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: SET_ADVERTISING_POWER");
+            set_advertising_power();
+            break;
+
+        case BLUETOOTH_START_ADVERTISING_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: START_ADVERTISING");
+            advertising_start();
             break;
 
         case BLUETOOTH_TRANSMIT_RECORDING_SESSION_COMMAND:
