@@ -47,7 +47,7 @@ ble_ecg_service_init_t ble_ecg_service_init = {0};
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
 
 // YOUR_JOB: Use UUIDs for service(s) used in your application.
-ble_uuid_t m_adv_uuids[] ={{TEMPERATURE_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}};  /**< Universally unique service identifiers. */
+ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {TEMPERATURE_SERVICE_UUID}, {ECG_SERVICE_UUID}};  /**< Universally unique service identifiers. */
 
 
 /**@brief Function for handling Queued Write Module errors.
@@ -65,7 +65,7 @@ void nrf_qwr_error_handler(uint32_t nrf_error)
  */
 void peer_manager_init(void)
 {
-    NRF_LOG_DEBUG("Peer Manager Initialized");
+    NRF_LOG_INFO("peer_manager_init");
     ble_gap_sec_params_t sec_param;
     ret_code_t err_code;
 
@@ -101,7 +101,7 @@ void peer_manager_init(void)
  */
 void pm_evt_handler(pm_evt_t const * p_evt)
 {
-    NRF_LOG_INFO("Peer Management Event Handler");
+    NRF_LOG_INFO("pm_evt_handler");
 
     ret_code_t err_code;
 
@@ -209,7 +209,7 @@ void pm_evt_handler(pm_evt_t const * p_evt)
  */
 void gap_params_init(void)
 {
-    NRF_LOG_DEBUG("Gap Parameters Initialized");
+    NRF_LOG_INFO("gap_params_init");
     ret_code_t err_code;
     ble_gap_conn_params_t gap_conn_params;
     ble_gap_conn_sec_mode_t sec_mode;
@@ -244,7 +244,7 @@ void gap_params_init(void)
 
 void gap_params_update(uint16_t m_conn_handle)
 {
-    NRF_LOG_DEBUG("Gap Parameters Initialized");
+    NRF_LOG_INFO("gap_params_update");
     ret_code_t err_code;
     ble_gap_conn_params_t gap_conn_params;
 
@@ -255,7 +255,7 @@ void gap_params_update(uint16_t m_conn_handle)
     gap_conn_params.slave_latency = SLAVE_LATENCY;
     gap_conn_params.conn_sup_timeout = CONN_SUP_TIMEOUT;
 
-//    err_code = ble_conn_params_change_conn_params(m_conn_handle, &gap_conn_params);
+    err_code = ble_conn_params_change_conn_params(m_conn_handle, &gap_conn_params);
     APP_ERROR_CHECK(err_code);
     if(err_code == NRF_SUCCESS)
     {
@@ -280,12 +280,12 @@ void gap_params_update(uint16_t m_conn_handle)
  */
 void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
 {
-    NRF_LOG_DEBUG("On Connection Parameters Events");
+    NRF_LOG_INFO("on_conn_params_evt");
     ret_code_t err_code;
 
     if (p_evt->evt_type == BLE_CONN_PARAMS_EVT_FAILED)
     {
-        NRF_LOG_DEBUG("On Connection Parameters Failed");
+        NRF_LOG_INFO("On Connection Parameters Failed");
         err_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_CONN_INTERVAL_UNACCEPTABLE);
         APP_ERROR_CHECK(err_code);
     }
@@ -304,7 +304,7 @@ void conn_params_error_handler(uint32_t nrf_error)
  */
 void conn_params_init(void)
 {
-    NRF_LOG_DEBUG("Connection Parameters Initialized");
+    NRF_LOG_INFO("conn_params_init");
     ret_code_t err_code;
     ble_conn_params_init_t cp_init;
 
@@ -331,7 +331,7 @@ void conn_params_init(void)
  */
 void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 {
-    NRF_LOG_DEBUG("On Advertising Event");
+    NRF_LOG_INFO("on_adv_evt");
     ret_code_t err_code;
 
     switch (ble_adv_evt)
@@ -353,7 +353,7 @@ void on_adv_evt(ble_adv_evt_t ble_adv_evt)
  */
 void advertising_init(void)
 {
-    NRF_LOG_DEBUG("Advertising Initialized");
+    NRF_LOG_INFO("advertising_init");
     ret_code_t err_code;
     ble_advertising_init_t adv_init;
 
@@ -381,6 +381,7 @@ void advertising_init(void)
  */
 void set_advertising_power(void)
 {
+    NRF_LOG_INFO("set_advertising_power");
     ret_code_t err_code = sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_ADV, m_advertising.adv_handle, 4);
     APP_ERROR_CHECK(err_code);
 }
@@ -389,15 +390,26 @@ void set_advertising_power(void)
  */
 void advertising_start(void)
 {
+    NRF_LOG_INFO("advertising_start");
     ret_code_t err_code = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
     APP_ERROR_CHECK(err_code);
 }
+
+/**@brief Function to stop advertising.
+ */
+void advertising_stop(void)
+{
+    NRF_LOG_INFO("advertising_stop");
+    ret_code_t err_code = sd_ble_gap_adv_stop(m_advertising.adv_handle);
+    APP_ERROR_CHECK(err_code);
+}
+
 
 /**@brief Function for initializing the GATT module.
  */
 void gatt_init(void)
 {
-    NRF_LOG_DEBUG("GATT Initialized");
+    NRF_LOG_INFO("gatt_init");
     ret_code_t err_code = nrf_ble_gatt_init(&m_gatt, NULL);
     APP_ERROR_CHECK(err_code);
 }
@@ -408,8 +420,17 @@ void gatt_init(void)
  */
 void ble_stack_init(void)
 {
-    NRF_LOG_DEBUG("Initializing BLE Stack");
+    NRF_LOG_INFO("ble_stack_init");
     ret_code_t err_code;
+    
+    if(nrf_sdh_is_enabled())
+    {
+        NRF_LOG_INFO("SOFT DEVICE IS ENABLED");
+    }
+    else
+    {
+        NRF_LOG_INFO("SOFT DEVICE IS DISABLED");
+    }
 
     err_code = nrf_sdh_enable_request();
     APP_ERROR_CHECK(err_code);
@@ -451,7 +472,7 @@ void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
             break;
 
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
-            NRF_LOG_DEBUG("BLE_EVT_PHY update request.");
+            NRF_LOG_INFO("BLE_EVT_PHY update request.");
             ble_gap_phys_t const phys = {.rx_phys = BLE_GAP_PHY_AUTO, .tx_phys = BLE_GAP_PHY_AUTO};
             err_code = sd_ble_gap_phy_update(p_ble_evt->evt.gap_evt.conn_handle, &phys);
             APP_ERROR_CHECK(err_code);
@@ -459,14 +480,14 @@ void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
 
         case BLE_GATTC_EVT_TIMEOUT:
             // Disconnect on GATT Client timeout event.
-            NRF_LOG_DEBUG("BLE_EVT_GATT Client Timeout.");
+            NRF_LOG_INFO("BLE_EVT_GATT Client Timeout.");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
             APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_GATTS_EVT_TIMEOUT:
             // Disconnect on GATT Server timeout event.
-            NRF_LOG_DEBUG("BLE_EVT_GATT Server Timeout.");
+            NRF_LOG_INFO("BLE_EVT_GATT Server Timeout.");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
             APP_ERROR_CHECK(err_code);
             break;
@@ -490,37 +511,36 @@ void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
 static void on_configuration_service_evt(ble_configuration_service_t *p_cus_service, configuration_service_evt_t *p_evt)
 {
     ret_code_t err_code;
-    NRF_LOG_DEBUG("on_configuration_service_evt");
+    NRF_LOG_INFO("on_configuration_service_evt");
     switch(p_evt->evt_type)
     {
         case CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_ENABLED:
-            NRF_LOG_DEBUG("CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_ENABLED");
-            gap_params_update(m_conn_handle);
+            NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_ENABLED");
+            gap_params_update(m_conn_handle); // Once all Services have been discovered, change the GAP Connection Parameters
             break;
 
         case CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_DISABLED:
-            NRF_LOG_DEBUG("CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_DISABLED");
+            NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_DISABLED");
             break;
 
         case CONFIGURATION_SERVICE_EVT_CRC_CHAR_NOTIFICATION_ENABLED:
-            NRF_LOG_DEBUG("CONFIGURATION_SERVICE_EVT_CRC_CHAR_NOTIFICATION_ENABLED");
-            gap_params_update(m_conn_handle);
+            NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_CRC_CHAR_NOTIFICATION_ENABLED");
             break;
 
         case CONFIGURATION_SERVICE_EVT_CRC_CHAR_NOTIFICATION_DISABLED:
-            NRF_LOG_DEBUG("CONFIGURATION_SERVICE_EVT_CRC_CHAR_NOTIFICATION_DISABLED");
+            NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_CRC_CHAR_NOTIFICATION_DISABLED");
             break;
 
         case CONFIGURATION_SERVICE_EVT_CONNECTED:
-            NRF_LOG_DEBUG("CONFIGURATION_SERVICE_EVT_CONNECTED");
+            NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_CONNECTED");
             break;
 
         case CONFIGURATION_SERVICE_EVT_DISCONNECTED:
-            NRF_LOG_DEBUG("CONFIGURATION_SERVICE_EVT_DISCONNECTED");
+            NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_DISCONNECTED");
             break;
         
         case CONFIGURATION_SERVICE_EVT_WRITE:
-            NRF_LOG_DEBUG("CONFIGURATION_SERVICE_EVT_WRITE");
+            NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_WRITE");
             break;
 
         default:
@@ -540,28 +560,27 @@ static void on_configuration_service_evt(ble_configuration_service_t *p_cus_serv
 static void on_temperature_service_evt(ble_temperature_service_t *p_cus_service, temperature_service_evt_t *p_evt)
 {
     ret_code_t err_code;
-    NRF_LOG_DEBUG("on_temperature_service_evt");
+    NRF_LOG_INFO("on_temperature_service_evt");
     switch(p_evt->evt_type)
     {
         case TEMPERATURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_ENABLED:
-            NRF_LOG_DEBUG("TEMPERATURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_ENABLED");
-            gap_params_update(m_conn_handle);
+            NRF_LOG_INFO("TEMPERATURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_ENABLED");
             break;
 
         case TEMPERATURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_DISABLED:
-            NRF_LOG_DEBUG("TEMPERATURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_DISABLED");
+            NRF_LOG_INFO("TEMPERATURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_DISABLED");
             break;
 
         case TEMPERATURE_SERVICE_EVT_CONNECTED:
-            NRF_LOG_DEBUG("TEMPERATURE_SERVICE_EVT_CONNECTED");
+            NRF_LOG_INFO("TEMPERATURE_SERVICE_EVT_CONNECTED");
             break;
 
         case TEMPERATURE_SERVICE_EVT_DISCONNECTED:
-            NRF_LOG_DEBUG("TEMPERATURE_SERVICE_EVT_DISCONNECTED");
+            NRF_LOG_INFO("TEMPERATURE_SERVICE_EVT_DISCONNECTED");
             break;
         
         case TEMPERATURE_SERVICE_EVT_WRITE:
-            NRF_LOG_DEBUG("TEMPERATURE_SERVICE_EVT_WRITE");
+            NRF_LOG_INFO("TEMPERATURE_SERVICE_EVT_WRITE");
             break;
 
         default:
@@ -581,28 +600,27 @@ static void on_temperature_service_evt(ble_temperature_service_t *p_cus_service,
 static void on_ecg_service_evt(ble_ecg_service_t *p_cus_service, ecg_service_evt_t *p_evt)
 {
     ret_code_t err_code;
-    NRF_LOG_DEBUG("on_ecg_service_evt");
+    NRF_LOG_INFO("on_ecg_service_evt");
     switch(p_evt->evt_type)
     {
         case ECG_SERVICE_EVT_ECG_CHAR_NOTIFICATION_ENABLED:
-            NRF_LOG_DEBUG("ECG_SERVICE_EVT_ECG_CHAR_NOTIFICATION_ENABLED");
-            gap_params_update(m_conn_handle);
+            NRF_LOG_INFO("ECG_SERVICE_EVT_ECG_CHAR_NOTIFICATION_ENABLED");
             break;
 
         case ECG_SERVICE_EVT_ECG_CHAR_NOTIFICATION_DISABLED:
-            NRF_LOG_DEBUG("ECG_SERVICE_EVT_ECG_CHAR_NOTIFICATION_DISABLED");
+            NRF_LOG_INFO("ECG_SERVICE_EVT_ECG_CHAR_NOTIFICATION_DISABLED");
             break;
 
         case ECG_SERVICE_EVT_CONNECTED:
-            NRF_LOG_DEBUG("ECG_SERVICE_EVT_CONNECTED");
+            NRF_LOG_INFO("ECG_SERVICE_EVT_CONNECTED");
             break;
 
         case ECG_SERVICE_EVT_DISCONNECTED:
-            NRF_LOG_DEBUG("ECG_SERVICE_EVT_DISCONNECTED");
+            NRF_LOG_INFO("ECG_SERVICE_EVT_DISCONNECTED");
             break;
         
         case ECG_SERVICE_EVT_WRITE:
-            NRF_LOG_DEBUG("ECG_SERVICE_EVT_WRITE");
+            NRF_LOG_INFO("ECG_SERVICE_EVT_WRITE");
             break;
 
         default:
@@ -614,7 +632,7 @@ static void on_ecg_service_evt(ble_ecg_service_t *p_cus_service, ecg_service_evt
  */
 void services_init(void)
 {
-    NRF_LOG_DEBUG("Service Initialized");
+    NRF_LOG_INFO("services_init");
     ret_code_t err_code;
     nrf_ble_qwr_init_t qwr_init = {0};
     
@@ -654,12 +672,13 @@ void services_init(void)
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.write_perm);
 
-    err_code = ble_temperature_service_initialize(&m_ble_temperature_service, &ble_temperature_service_init);
+    err_code = ble_ecg_service_initialize(&m_ble_ecg_service, &ble_ecg_service_init);
     APP_ERROR_CHECK(err_code);
 }
 
 void update_configuration_service_response_char(uint8_t *response_char_data_array)
 {
+    NRF_LOG_INFO("update_configuration_service_response_char");
     uint32_t err_code;
     memcpy(ble_configuration_service_init.response_char, response_char_data_array, 2);
     err_code = response_char_update(&m_ble_configuration_service, response_char_data_array);   // Update the Response Characteristic
@@ -668,6 +687,7 @@ void update_configuration_service_response_char(uint8_t *response_char_data_arra
 
 void update_configuration_service_crc_char(uint8_t *crc_char_data_array)
 {
+    NRF_LOG_INFO("update_configuration_service_crc_char");
     uint32_t err_code;
     memcpy(ble_configuration_service_init.crc_char, crc_char_data_array, 2);
     err_code = response_char_update(&m_ble_configuration_service, crc_char_data_array);   // Update the CRC Characteristic
@@ -676,6 +696,7 @@ void update_configuration_service_crc_char(uint8_t *crc_char_data_array)
 
 void update_temperature_service_temp_char(uint8_t *temp_char_data_array)
 {
+    NRF_LOG_INFO("update_temperature_service_temp_char");
     uint32_t err_code;
     memcpy(ble_temperature_service_init.temp_char, temp_char_data_array, 250);
     err_code = temp_char_update(&m_ble_temperature_service, temp_char_data_array);   // Update the Temp Characteristic
@@ -684,6 +705,7 @@ void update_temperature_service_temp_char(uint8_t *temp_char_data_array)
 
 void update_ecg_service_ecg_char(uint8_t *ecg_char_data_array)
 {
+    NRF_LOG_INFO("update_ecg_service_ecg_char");
     uint32_t err_code;
     memcpy(ble_ecg_service_init.ecg_char, ecg_char_data_array, 250);
     err_code = ecg_char_update(&m_ble_ecg_service, ecg_char_data_array);   // Update the ECG Characteristic

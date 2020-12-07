@@ -8,14 +8,14 @@ void startup_initialization(void)
     uint8_t nrf52_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, NRF52_INITIALIZATION_COMMAND};       
     state_handler(nrf52_initialization_array_data); // Initialize NRF52 Module
 
-    uint8_t tmp117_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, TMP117_INITIALIZATION_COMMAND};       
-    state_handler(tmp117_initialization_array_data); // Initialize TMP117 Module
-
-    uint8_t max30003_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, MAX30003_INITIALIZATION_COMMAND};       
-    state_handler(max30003_initialization_array_data); // Initialize MAX30003 Module
-
-    uint8_t cy15b108qi_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, CY15B108QI_INITIALIZATION_COMMAND};       
-    state_handler(max30003_initialization_array_data); // Initialize CY15B108QI Module
+//    uint8_t tmp117_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, TMP117_INITIALIZATION_COMMAND};       
+//    state_handler(tmp117_initialization_array_data); // Initialize TMP117 Module
+//
+//    uint8_t max30003_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, MAX30003_INITIALIZATION_COMMAND};       
+//    state_handler(max30003_initialization_array_data); // Initialize MAX30003 Module
+//
+//    uint8_t cy15b108qi_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, CY15B108QI_INITIALIZATION_COMMAND};       
+//    state_handler(max30003_initialization_array_data); // Initialize CY15B108QI Module
 }
 
 /*
@@ -162,7 +162,8 @@ void enable_bluetooth_handler(void)
 {
     NRF_LOG_INFO("enable_bluetooth_handler");
 
-//    nrf52_handler(medium_blink_led_array_data);
+    uint8_t lf_clock_start_array_data[4] = {0x00, NRF52_MODULE, NRF52_LF_CLOCK_COMMAND, NRF52_LF_CLOCK_START};   
+    state_handler(lf_clock_start_array_data); // Start LF Clock 
 
     uint8_t bluetooth_ble_stack_init_array_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_INIT_BLE_STACK_COMMAND};
     state_handler(bluetooth_ble_stack_init_array_data); // Initialize the BLE stack for Bluetooth
@@ -188,8 +189,11 @@ void enable_bluetooth_handler(void)
     uint8_t bluetooth_peer_manager_init_array_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_INIT_PEER_MANAGER_COMMAND};
     state_handler(bluetooth_peer_manager_init_array_data); // Initialize the Peer Manager to control the interaction between the GATT Server and Client
 
+    uint8_t enable_dcdc_converter_array_data[4] = {0x00, NRF52_MODULE, NRF52_POWER_COMMAND, NRF52_POWER_DCDC_CONVERTER_ENABLE};
+    state_handler(enable_dcdc_converter_array_data); // Enable the DCDC Converter to reduce power consumption during BLE transmission
+
     uint8_t bluetooth_advertising_start_array_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_START_ADVERTISING_COMMAND};
-    state_handler(bluetooth_conn_params_init_array_data); // Start advertising data between the GATT Server and Client
+    state_handler(bluetooth_advertising_start_array_data); // Start advertising data between the GATT Server and Client
 
 //    uint8_t ecg_start_data_recording_array_data[3] = {0x00, ECG_MODULE, ECG_START_DATA_RECORDING};  
 //    state_handler(ecg_start_data_recording_array_data); // Start Data Recording
@@ -306,47 +310,47 @@ void state_handler(uint8_t *serial_array_data)
     switch(serial_array_data[1])
     {
         case NRF52_MODULE:
-            NRF_LOG_INFO("SERIAL HANDLER: NRF52_MODULE");
+            NRF_LOG_INFO("STATE HANDLER: NRF52_MODULE");
             _nrf52_handler(serial_array_data);
             break;
 
         case FT201X_MODULE:
-            NRF_LOG_INFO("SERIAL HANDLER: FT201X_MODULE");
+            NRF_LOG_INFO("STATE HANDLER: FT201X_MODULE");
             _ft201x_handler(serial_array_data);
             break;
 
         case BMI160_MODULE:
-            NRF_LOG_INFO("SERIAL HANDLER: BMI160_MODULE");
+            NRF_LOG_INFO("STATE HANDLER: BMI160_MODULE");
             _bmi160_handler(serial_array_data);
             break;
 
         case MAX30003_MODULE:
-            NRF_LOG_INFO("SERIAL HANDLER: MAX30003_MODULE");
+            NRF_LOG_INFO("STATE HANDLER: MAX30003_MODULE");
             _max30003_handler(serial_array_data);
             break;    
 
         case TMP117_MODULE:
-            NRF_LOG_INFO("SERIAL HANDLER: TMP117_MODULE");
+            NRF_LOG_INFO("STATE HANDLER: TMP117_MODULE");
             _tmp117_handler(serial_array_data);
             break;
 
         case BLUETOOTH_MODULE:
-            NRF_LOG_INFO("SERIAL HANDLER: BLUETOOTH_MODULE");
+            NRF_LOG_INFO("STATE HANDLER: BLUETOOTH_MODULE");
             _bluetooth_handler(serial_array_data);
             break;
 
         case ECG_MODULE:
-            NRF_LOG_INFO("SERIAL HANDLER: ECG_MODULE");
+            NRF_LOG_INFO("STATE HANDLER: ECG_MODULE");
             _ecg_handler(serial_array_data);
             break;
 
         case CY15B108QI_MODULE:
-            NRF_LOG_INFO("SERIAL HANDLER: CY15B108QI_MODULE");
+            NRF_LOG_INFO("STATE HANDLER: CY15B108QI_MODULE");
             _cy15b108qi_handler(serial_array_data);
             break;
 
         case SERIAL_SLAVE_MODULE:
-            NRF_LOG_INFO("SERIAL HANDLER: SERIAL_SLAVE_MODULE");
+            NRF_LOG_INFO("STATE HANDLER: SERIAL_SLAVE_MODULE");
             _serial_slave_handler(serial_array_data);
             break;
 
@@ -1100,6 +1104,11 @@ static void _bluetooth_handler(uint8_t *serial_array_data)
         case BLUETOOTH_INIT_GATT_COMMAND:
             NRF_LOG_INFO("BLUETOOTH_MODULE: INIT_GATT");
             gatt_init();
+            break;
+
+        case BLUETOOTH_INIT_BLE_STACK_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: INIT_BLE_STACK");
+            ble_stack_init();
             break;
 
         case BLUETOOTH_INIT_SERVICES_COMMAND:

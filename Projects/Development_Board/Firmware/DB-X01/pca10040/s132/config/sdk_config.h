@@ -623,7 +623,7 @@
 // <7=> 7 
 
 #ifndef NRFX_CLOCK_CONFIG_IRQ_PRIORITY
-#define NRFX_CLOCK_CONFIG_IRQ_PRIORITY 6
+#define NRFX_CLOCK_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_CLOCK_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -762,7 +762,7 @@
 // <7=> 7 
 
 #ifndef NRFX_COMP_CONFIG_IRQ_PRIORITY
-#define NRFX_COMP_CONFIG_IRQ_PRIORITY 6
+#define NRFX_COMP_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_COMP_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -840,7 +840,7 @@
 // <7=> 7 
 
 #ifndef NRFX_GPIOTE_CONFIG_IRQ_PRIORITY
-#define NRFX_GPIOTE_CONFIG_IRQ_PRIORITY 6
+#define NRFX_GPIOTE_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_GPIOTE_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -1035,7 +1035,7 @@
 // <7=> 7 
 
 #ifndef NRFX_I2S_CONFIG_IRQ_PRIORITY
-#define NRFX_I2S_CONFIG_IRQ_PRIORITY 6
+#define NRFX_I2S_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_I2S_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -1164,7 +1164,7 @@
 // <7=> 7 
 
 #ifndef NRFX_LPCOMP_CONFIG_IRQ_PRIORITY
-#define NRFX_LPCOMP_CONFIG_IRQ_PRIORITY 6
+#define NRFX_LPCOMP_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_LPCOMP_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -1237,7 +1237,7 @@
 // <7=> 7 
 
 #ifndef NRFX_NFCT_CONFIG_IRQ_PRIORITY
-#define NRFX_NFCT_CONFIG_IRQ_PRIORITY 6
+#define NRFX_NFCT_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_NFCT_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -1338,7 +1338,7 @@
 // <7=> 7 
 
 #ifndef NRFX_PDM_CONFIG_IRQ_PRIORITY
-#define NRFX_PDM_CONFIG_IRQ_PRIORITY 6
+#define NRFX_PDM_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_PDM_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -1410,7 +1410,7 @@
 // <7=> 7 
 
 #ifndef NRFX_POWER_CONFIG_IRQ_PRIORITY
-#define NRFX_POWER_CONFIG_IRQ_PRIORITY 6
+#define NRFX_POWER_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <q> NRFX_POWER_CONFIG_DEFAULT_DCDCEN  - The default configuration of main DCDC regulator
@@ -1699,7 +1699,7 @@
 // <7=> 7 
 
 #ifndef NRFX_PWM_DEFAULT_CONFIG_IRQ_PRIORITY
-#define NRFX_PWM_DEFAULT_CONFIG_IRQ_PRIORITY 6
+#define NRFX_PWM_DEFAULT_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_PWM_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -1879,7 +1879,7 @@
 // <7=> 7 
 
 #ifndef NRFX_QDEC_CONFIG_IRQ_PRIORITY
-#define NRFX_QDEC_CONFIG_IRQ_PRIORITY 6
+#define NRFX_QDEC_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_QDEC_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -1959,7 +1959,7 @@
 // <7=> 7 
 
 #ifndef NRFX_RNG_CONFIG_IRQ_PRIORITY
-#define NRFX_RNG_CONFIG_IRQ_PRIORITY 6
+#define NRFX_RNG_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_RNG_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -2072,7 +2072,7 @@
 // <7=> 7 
 
 #ifndef NRFX_RTC_DEFAULT_CONFIG_IRQ_PRIORITY
-#define NRFX_RTC_DEFAULT_CONFIG_IRQ_PRIORITY 6
+#define NRFX_RTC_DEFAULT_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_RTC_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -2179,7 +2179,7 @@
 // <7=> 7 
 
 #ifndef NRFX_SAADC_CONFIG_IRQ_PRIORITY
-#define NRFX_SAADC_CONFIG_IRQ_PRIORITY 6
+#define NRFX_SAADC_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_SAADC_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -2283,7 +2283,7 @@
 // <7=> 7 
 
 #ifndef NRFX_SPIM_DEFAULT_CONFIG_IRQ_PRIORITY
-#define NRFX_SPIM_DEFAULT_CONFIG_IRQ_PRIORITY 6
+#define NRFX_SPIM_DEFAULT_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_SPIM_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -2391,7 +2391,7 @@
 // <7=> 7 
 
 #ifndef NRFX_SPIS_DEFAULT_CONFIG_IRQ_PRIORITY
-#define NRFX_SPIS_DEFAULT_CONFIG_IRQ_PRIORITY 6
+#define NRFX_SPIS_DEFAULT_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <o> NRFX_SPIS_DEFAULT_DEF - SPIS default DEF character  <0-255> 
@@ -2523,7 +2523,7 @@
 // <7=> 7 
 
 #ifndef NRFX_SPI_DEFAULT_CONFIG_IRQ_PRIORITY
-#define NRFX_SPI_DEFAULT_CONFIG_IRQ_PRIORITY 6
+#define NRFX_SPI_DEFAULT_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_SPI_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -2582,13 +2582,13 @@
 // <e> NRFX_SWI_ENABLED - nrfx_swi - SWI/EGU peripheral allocator
 //==========================================================
 #ifndef NRFX_SWI_ENABLED
-#define NRFX_SWI_ENABLED 0
+#define NRFX_SWI_ENABLED 1
 #endif
 // <q> NRFX_EGU_ENABLED  - Enable EGU support
  
 
 #ifndef NRFX_EGU_ENABLED
-#define NRFX_EGU_ENABLED 0
+#define NRFX_EGU_ENABLED 1
 #endif
 
 // <q> NRFX_SWI0_DISABLED  - Exclude SWI0 from being utilized by the driver
@@ -2775,7 +2775,7 @@
 // <7=> 7 
 
 #ifndef NRFX_TIMER_DEFAULT_CONFIG_IRQ_PRIORITY
-#define NRFX_TIMER_DEFAULT_CONFIG_IRQ_PRIORITY 6
+#define NRFX_TIMER_DEFAULT_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_TIMER_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -2879,7 +2879,7 @@
 // <7=> 7 
 
 #ifndef NRFX_TWIM_DEFAULT_CONFIG_IRQ_PRIORITY
-#define NRFX_TWIM_DEFAULT_CONFIG_IRQ_PRIORITY 6
+#define NRFX_TWIM_DEFAULT_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_TWIM_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -3027,7 +3027,7 @@
 // <7=> 7 
 
 #ifndef NRFX_TWIS_DEFAULT_CONFIG_IRQ_PRIORITY
-#define NRFX_TWIS_DEFAULT_CONFIG_IRQ_PRIORITY 6
+#define NRFX_TWIS_DEFAULT_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_TWIS_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -3131,7 +3131,7 @@
 // <7=> 7 
 
 #ifndef NRFX_TWI_DEFAULT_CONFIG_IRQ_PRIORITY
-#define NRFX_TWI_DEFAULT_CONFIG_IRQ_PRIORITY 6
+#define NRFX_TWI_DEFAULT_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_TWI_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -3252,7 +3252,7 @@
 // <7=> 7 
 
 #ifndef NRFX_UARTE_DEFAULT_CONFIG_IRQ_PRIORITY
-#define NRFX_UARTE_DEFAULT_CONFIG_IRQ_PRIORITY 6
+#define NRFX_UARTE_DEFAULT_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_UARTE_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -3373,7 +3373,7 @@
 // <7=> 7 
 
 #ifndef NRFX_UART_DEFAULT_CONFIG_IRQ_PRIORITY
-#define NRFX_UART_DEFAULT_CONFIG_IRQ_PRIORITY 6
+#define NRFX_UART_DEFAULT_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_UART_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -3473,7 +3473,7 @@
 // <7=> 7 
 
 #ifndef NRFX_WDT_CONFIG_IRQ_PRIORITY
-#define NRFX_WDT_CONFIG_IRQ_PRIORITY 6
+#define NRFX_WDT_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <e> NRFX_WDT_CONFIG_LOG_ENABLED - Enables logging in the module.
@@ -3546,7 +3546,7 @@
 // <7=> 7 
 
 #ifndef USBD_CONFIG_IRQ_PRIORITY
-#define USBD_CONFIG_IRQ_PRIORITY 6
+#define USBD_CONFIG_IRQ_PRIORITY 7
 #endif
 
 // <o> USBD_CONFIG_DMASCHEDULER_MODE  - USBD SMA scheduler working scheme
@@ -6533,145 +6533,146 @@
 // <h> nrf_log in nRF_Libraries 
 
 //==========================================================
-
+//
 // <e> APP_TIMER_ENABLED - app_timer - Application timer functionality
 //==========================================================
-#ifndef APP_TIMER_ENABLED
-#define APP_TIMER_ENABLED 0
-#endif
-// <o> APP_TIMER_CONFIG_RTC_FREQUENCY  - Configure RTC prescaler.
- 
-// <0=> 32768 Hz 
-// <1=> 16384 Hz 
-// <3=> 8192 Hz 
-// <7=> 4096 Hz 
-// <15=> 2048 Hz 
-// <31=> 1024 Hz 
-
-#ifndef APP_TIMER_CONFIG_RTC_FREQUENCY
-#define APP_TIMER_CONFIG_RTC_FREQUENCY 0
-#endif
-
-// <o> APP_TIMER_CONFIG_IRQ_PRIORITY  - Interrupt priority
- 
-
-// <i> Priorities 0,2 (nRF51) and 0,1,4,5 (nRF52) are reserved for SoftDevice
-// <0=> 0 (highest) 
-// <1=> 1 
-// <2=> 2 
-// <3=> 3 
-// <4=> 4 
-// <5=> 5 
-// <6=> 6 
-// <7=> 7 
-
-#ifndef APP_TIMER_CONFIG_IRQ_PRIORITY
-#define APP_TIMER_CONFIG_IRQ_PRIORITY 6
-#endif
-
-// <o> APP_TIMER_CONFIG_OP_QUEUE_SIZE - Capacity of timer requests queue. 
-// <i> Size of the queue depends on how many timers are used
-// <i> in the system, how often timers are started and overall
-// <i> system latency. If queue size is too small app_timer calls
-// <i> will fail.
-
-#ifndef APP_TIMER_CONFIG_OP_QUEUE_SIZE
-#define APP_TIMER_CONFIG_OP_QUEUE_SIZE 10
-#endif
-
-// <q> APP_TIMER_CONFIG_USE_SCHEDULER  - Enable scheduling app_timer events to app_scheduler
- 
-
-#ifndef APP_TIMER_CONFIG_USE_SCHEDULER
-#define APP_TIMER_CONFIG_USE_SCHEDULER 0
-#endif
-
-// <q> APP_TIMER_KEEPS_RTC_ACTIVE  - Enable RTC always on
- 
-
-// <i> If option is enabled RTC is kept running even if there is no active timers.
-// <i> This option can be used when app_timer is used for timestamping.
-
-#ifndef APP_TIMER_KEEPS_RTC_ACTIVE
-#define APP_TIMER_KEEPS_RTC_ACTIVE 0
-#endif
-
-// <o> APP_TIMER_SAFE_WINDOW_MS - Maximum possible latency (in milliseconds) of handling app_timer event. 
-// <i> Maximum possible timeout that can be set is reduced by safe window.
-// <i> Example: RTC frequency 16384 Hz, maximum possible timeout 1024 seconds - APP_TIMER_SAFE_WINDOW_MS.
-// <i> Since RTC is not stopped when processor is halted in debugging session, this value
-// <i> must cover it if debugging is needed. It is possible to halt processor for APP_TIMER_SAFE_WINDOW_MS
-// <i> without corrupting app_timer behavior.
-
-#ifndef APP_TIMER_SAFE_WINDOW_MS
-#define APP_TIMER_SAFE_WINDOW_MS 300000
-#endif
-
-
-// <e> APP_TIMER_CONFIG_LOG_ENABLED - Enables logging in the module.
-//==========================================================
-#ifndef APP_TIMER_CONFIG_LOG_ENABLED
-#define APP_TIMER_CONFIG_LOG_ENABLED 0
-#endif
-// <o> APP_TIMER_CONFIG_LOG_LEVEL  - Default Severity level
- 
-// <0=> Off 
-// <1=> Error 
-// <2=> Warning 
-// <3=> Info 
-// <4=> Debug 
-
-#ifndef APP_TIMER_CONFIG_LOG_LEVEL
-#define APP_TIMER_CONFIG_LOG_LEVEL 3
-#endif
-
-// <o> APP_TIMER_CONFIG_INITIAL_LOG_LEVEL  - Initial severity level if dynamic filtering is enabled.
- 
-
-// <i> If module generates a lot of logs, initial log level can
-// <i> be decreased to prevent flooding. Severity level can be
-// <i> increased on instance basis.
-// <0=> Off 
-// <1=> Error 
-// <2=> Warning 
-// <3=> Info 
-// <4=> Debug 
-
-#ifndef APP_TIMER_CONFIG_INITIAL_LOG_LEVEL
-#define APP_TIMER_CONFIG_INITIAL_LOG_LEVEL 3
-#endif
-
-// <o> APP_TIMER_CONFIG_INFO_COLOR  - ANSI escape code prefix.
- 
-// <0=> Default 
-// <1=> Black 
-// <2=> Red 
-// <3=> Green 
-// <4=> Yellow 
-// <5=> Blue 
-// <6=> Magenta 
-// <7=> Cyan 
-// <8=> White 
-
-#ifndef APP_TIMER_CONFIG_INFO_COLOR
-#define APP_TIMER_CONFIG_INFO_COLOR 0
-#endif
-
-// <o> APP_TIMER_CONFIG_DEBUG_COLOR  - ANSI escape code prefix.
- 
-// <0=> Default 
-// <1=> Black 
-// <2=> Red 
-// <3=> Green 
-// <4=> Yellow 
-// <5=> Blue 
-// <6=> Magenta 
-// <7=> Cyan 
-// <8=> White 
-
-#ifndef APP_TIMER_CONFIG_DEBUG_COLOR
-#define APP_TIMER_CONFIG_DEBUG_COLOR 0
-#endif
+//#ifndef APP_TIMER_ENABLED
+//#define APP_TIMER_ENABLED 0
+//#endif
+//// <o> APP_TIMER_CONFIG_RTC_FREQUENCY  - Configure RTC prescaler.
+// 
+//// <0=> 32768 Hz 
+//// <1=> 16384 Hz 
+//// <3=> 8192 Hz 
+//// <7=> 4096 Hz 
+//// <15=> 2048 Hz 
+//// <31=> 1024 Hz 
+//
+//#ifndef APP_TIMER_CONFIG_RTC_FREQUENCY
+//#define APP_TIMER_CONFIG_RTC_FREQUENCY 0
+//#endif
+//
+//// <o> APP_TIMER_CONFIG_IRQ_PRIORITY  - Interrupt priority
+// 
+//
+//// <i> Priorities 0,2 (nRF51) and 0,1,4,5 (nRF52) are reserved for SoftDevice
+//// <0=> 0 (highest) 
+//// <1=> 1 
+//// <2=> 2 
+//// <3=> 3 
+//// <4=> 4 
+//// <5=> 5 
+//// <6=> 6 
+//// <7=> 7 
+//
+//#ifndef APP_TIMER_CONFIG_IRQ_PRIORITY
+//#define APP_TIMER_CONFIG_IRQ_PRIORITY 6
+//#endif
+//
+//// <o> APP_TIMER_CONFIG_OP_QUEUE_SIZE - Capacity of timer requests queue. 
+//// <i> Size of the queue depends on how many timers are used
+//// <i> in the system, how often timers are started and overall
+//// <i> system latency. If queue size is too small app_timer calls
+//// <i> will fail.
+//
+//#ifndef APP_TIMER_CONFIG_OP_QUEUE_SIZE
+//#define APP_TIMER_CONFIG_OP_QUEUE_SIZE 10
+//#endif
+//
+//// <q> APP_TIMER_CONFIG_USE_SCHEDULER  - Enable scheduling app_timer events to app_scheduler
+// 
+//
+//#ifndef APP_TIMER_CONFIG_USE_SCHEDULER
+//#define APP_TIMER_CONFIG_USE_SCHEDULER 0
+//#endif
+//
+//// <q> APP_TIMER_KEEPS_RTC_ACTIVE  - Enable RTC always on
+// 
+//
+//// <i> If option is enabled RTC is kept running even if there is no active timers.
+//// <i> This option can be used when app_timer is used for timestamping.
+//
+//#ifndef APP_TIMER_KEEPS_RTC_ACTIVE
+//#define APP_TIMER_KEEPS_RTC_ACTIVE 0
+//#endif
+//
+//// <o> APP_TIMER_SAFE_WINDOW_MS - Maximum possible latency (in milliseconds) of handling app_timer event. 
+//// <i> Maximum possible timeout that can be set is reduced by safe window.
+//// <i> Example: RTC frequency 16384 Hz, maximum possible timeout 1024 seconds - APP_TIMER_SAFE_WINDOW_MS.
+//// <i> Since RTC is not stopped when processor is halted in debugging session, this value
+//// <i> must cover it if debugging is needed. It is possible to halt processor for APP_TIMER_SAFE_WINDOW_MS
+//// <i> without corrupting app_timer behavior.
+//
+////#ifndef APP_TIMER_SAFE_WINDOW_MS
+////#define APP_TIMER_SAFE_WINDOW_MS 300000
+////#endif
+//
+//
+//// <e> APP_TIMER_CONFIG_LOG_ENABLED - Enables logging in the module.
+////==========================================================
+//#ifndef APP_TIMER_CONFIG_LOG_ENABLED
+//#define APP_TIMER_CONFIG_LOG_ENABLED 0
+//#endif
+//
+//// <o> APP_TIMER_CONFIG_LOG_LEVEL  - Default Severity level
+// 
+//// <0=> Off 
+//// <1=> Error 
+//// <2=> Warning 
+//// <3=> Info 
+//// <4=> Debug 
+//
+//#ifndef APP_TIMER_CONFIG_LOG_LEVEL
+//#define APP_TIMER_CONFIG_LOG_LEVEL 3
+//#endif
+//
+//// <o> APP_TIMER_CONFIG_INITIAL_LOG_LEVEL  - Initial severity level if dynamic filtering is enabled.
+// 
+//
+//// <i> If module generates a lot of logs, initial log level can
+//// <i> be decreased to prevent flooding. Severity level can be
+//// <i> increased on instance basis.
+//// <0=> Off 
+//// <1=> Error 
+//// <2=> Warning 
+//// <3=> Info 
+//// <4=> Debug 
+//
+//#ifndef APP_TIMER_CONFIG_INITIAL_LOG_LEVEL
+//#define APP_TIMER_CONFIG_INITIAL_LOG_LEVEL 3
+//#endif
+//
+//// <o> APP_TIMER_CONFIG_INFO_COLOR  - ANSI escape code prefix.
+// 
+//// <0=> Default 
+//// <1=> Black 
+//// <2=> Red 
+//// <3=> Green 
+//// <4=> Yellow 
+//// <5=> Blue 
+//// <6=> Magenta 
+//// <7=> Cyan 
+//// <8=> White 
+//
+//#ifndef APP_TIMER_CONFIG_INFO_COLOR
+//#define APP_TIMER_CONFIG_INFO_COLOR 0
+//#endif
+//
+//// <o> APP_TIMER_CONFIG_DEBUG_COLOR  - ANSI escape code prefix.
+// 
+//// <0=> Default 
+//// <1=> Black 
+//// <2=> Red 
+//// <3=> Green 
+//// <4=> Yellow 
+//// <5=> Blue 
+//// <6=> Magenta 
+//// <7=> Cyan 
+//// <8=> White 
+//
+//#ifndef APP_TIMER_CONFIG_DEBUG_COLOR
+//#define APP_TIMER_CONFIG_DEBUG_COLOR 0
+//#endif
 
 // </e>
 
@@ -8788,7 +8789,7 @@
 
 // <o> NRF_SDH_BLE_GATT_MAX_MTU_SIZE - Static maximum MTU size. 
 #ifndef NRF_SDH_BLE_GATT_MAX_MTU_SIZE
-#define NRF_SDH_BLE_GATT_MAX_MTU_SIZE 23
+#define NRF_SDH_BLE_GATT_MAX_MTU_SIZE 250
 #endif
 
 // <o> NRF_SDH_BLE_GATTS_ATTR_TAB_SIZE - Attribute Table size in bytes. The size must be a multiple of 4. 
@@ -8798,14 +8799,14 @@
 
 // <o> NRF_SDH_BLE_VS_UUID_COUNT - The number of vendor-specific UUIDs. 
 #ifndef NRF_SDH_BLE_VS_UUID_COUNT
-#define NRF_SDH_BLE_VS_UUID_COUNT 0
+#define NRF_SDH_BLE_VS_UUID_COUNT 3
 #endif
 
 // <q> NRF_SDH_BLE_SERVICE_CHANGED  - Include the Service Changed characteristic in the Attribute Table.
  
 
 #ifndef NRF_SDH_BLE_SERVICE_CHANGED
-#define NRF_SDH_BLE_SERVICE_CHANGED 1
+#define NRF_SDH_BLE_SERVICE_CHANGED 0
 #endif
 
 // </h> 

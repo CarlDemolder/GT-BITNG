@@ -18,7 +18,7 @@ void nrf52_nrfx_clock_init(void)
     // Initialize Clock module.
     ret_code_t err_code = nrfx_clock_init(nrfx_clock_event_handler);
     APP_ERROR_CHECK(err_code);
-    nrfx_clock_enable();
+//    nrfx_clock_enable();
 }
 
 void nrf52_nrfx_clock_uninit(void)
@@ -88,7 +88,8 @@ void rtc_ft201x_init(void)
     const nrfx_rtc_t nrfx_rtc_ft201x = NRFX_RTC_INSTANCE(2); /**< Declaring an instance of nrfx_rtc using RTC2 for FT201X.*/
     rtc_ft201x_configuration.nrfx_rtc = nrfx_rtc_ft201x;
     
-    rtc_ft201x_configuration.nrfx_rtc_config = (nrfx_rtc_config_t) NRFX_RTC_DEFAULT_CONFIG;  
+    rtc_ft201x_configuration.nrfx_rtc_config = (nrfx_rtc_config_t) NRFX_RTC_DEFAULT_CONFIG;
+    rtc_ft201x_configuration.nrfx_rtc_config.interrupt_priority = 7;
     rtc_ft201x_configuration.nrfx_rtc_config.prescaler = RTC_TIMER_CLOCK_FREQ/rtc_ft201x_configuration.rtc_frequency - 1;
     NRF_LOG_INFO("prescaler %u", rtc_ft201x_configuration.nrfx_rtc_config.prescaler);
 
@@ -212,7 +213,8 @@ void rtc_tmp117_init(void)
     const nrfx_rtc_t nrfx_rtc_tmp117 = NRFX_RTC_INSTANCE(2); /**< Declaring an instance of nrfx_rtc using RTC2 for tmp117.*/
     rtc_tmp117_configuration.nrfx_rtc = nrfx_rtc_tmp117;
     
-    rtc_tmp117_configuration.nrfx_rtc_config = (nrfx_rtc_config_t) NRFX_RTC_DEFAULT_CONFIG;  
+    rtc_tmp117_configuration.nrfx_rtc_config = (nrfx_rtc_config_t) NRFX_RTC_DEFAULT_CONFIG;
+    rtc_tmp117_configuration.nrfx_rtc_config.interrupt_priority = 7;
     rtc_tmp117_configuration.nrfx_rtc_config.prescaler = RTC_TIMER_CLOCK_FREQ/rtc_tmp117_configuration.rtc_frequency - 1;
     NRF_LOG_INFO("prescaler %u", rtc_tmp117_configuration.nrfx_rtc_config.prescaler);
 

@@ -26,6 +26,7 @@ void peer_manager_init(void);
 void advertising_init(void);
 void set_advertising_power(void);
 void advertising_start(void);
+void advertising_stop(void);
 
 void update_configuration_service_response_char(uint8_t *response_char_data_array);
 void update_configuration_service_crc_char(uint8_t *crc_char_data_array);
