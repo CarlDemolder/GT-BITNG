@@ -33,12 +33,11 @@
 
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);                                                         /**< Context for the Queued Write module.*/
+BLE_ADVERTISING_DEF(m_advertising);                                             /**< Advertising module instance. */
 
 BLE_CONFIGURATION_SERVICE_DEF(m_ble_configuration_service);                     /**< Declaring Configuration Service Structure for application */
 BLE_TEMPERATURE_SERVICE_DEF(m_ble_temperature_service);                         /**< Declaring Temperature Service Structure for application */
 BLE_ECG_SERVICE_DEF(m_ble_ecg_service);                                         /**< Declaring ECG Service Structure for application */
-
-BLE_ADVERTISING_DEF(m_advertising);                                             /**< Advertising module instance. */
 
 ble_configuration_service_init_t ble_configuration_service_init = {0};
 ble_temperature_service_init_t ble_temperature_service_init = {0};
@@ -456,23 +455,25 @@ void ble_stack_init(void)
  */
 void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
 {
+    NRF_LOG_INFO("ble_evt_handler");
     ret_code_t err_code = NRF_SUCCESS;
+    NRF_LOG_INFO("BLE Configuration Service Event Received. Event type = %d", p_ble_evt->header.evt_id); 
 
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_DISCONNECTED:
-            NRF_LOG_INFO("BLE_EVT_Disconnected.");
+            NRF_LOG_INFO("BLE_GAP_EVT_DISCONNECTED");
             break;
 
         case BLE_GAP_EVT_CONNECTED:
-            NRF_LOG_INFO("BLE_EVT_Connected.");
+            NRF_LOG_INFO("BLE_GAP_EVT_CONNECTED");
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
             APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
-            NRF_LOG_INFO("BLE_EVT_PHY update request.");
+            NRF_LOG_INFO("BLE_GAP_EVT_PHY_UPDATE_REQUEST");
             ble_gap_phys_t const phys = {.rx_phys = BLE_GAP_PHY_AUTO, .tx_phys = BLE_GAP_PHY_AUTO};
             err_code = sd_ble_gap_phy_update(p_ble_evt->evt.gap_evt.conn_handle, &phys);
             APP_ERROR_CHECK(err_code);
@@ -480,16 +481,20 @@ void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
 
         case BLE_GATTC_EVT_TIMEOUT:
             // Disconnect on GATT Client timeout event.
-            NRF_LOG_INFO("BLE_EVT_GATT Client Timeout.");
+            NRF_LOG_INFO("BLE_GATTC_EVT_TIMEOUT");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
             APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_GATTS_EVT_TIMEOUT:
             // Disconnect on GATT Server timeout event.
-            NRF_LOG_INFO("BLE_EVT_GATT Server Timeout.");
+            NRF_LOG_INFO("BLE_GATTS_EVT_TIMEOUT");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
             APP_ERROR_CHECK(err_code);
+            break;
+
+        case BLE_GATTS_EVT_WRITE:
+            NRF_LOG_INFO("BLE_GATTS_EVT_WRITE");
             break;
 
         default:
@@ -516,7 +521,7 @@ static void on_configuration_service_evt(ble_configuration_service_t *p_cus_serv
     {
         case CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_ENABLED:
             NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_ENABLED");
-            gap_params_update(m_conn_handle); // Once all Services have been discovered, change the GAP Connection Parameters
+//            gap_params_update(m_conn_handle); // Once all Services have been discovered, change the GAP Connection Parameters
             break;
 
         case CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_DISABLED:
@@ -530,17 +535,14 @@ static void on_configuration_service_evt(ble_configuration_service_t *p_cus_serv
         case CONFIGURATION_SERVICE_EVT_CRC_CHAR_NOTIFICATION_DISABLED:
             NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_CRC_CHAR_NOTIFICATION_DISABLED");
             break;
-
-        case CONFIGURATION_SERVICE_EVT_CONNECTED:
-            NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_CONNECTED");
-            break;
-
-        case CONFIGURATION_SERVICE_EVT_DISCONNECTED:
-            NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_DISCONNECTED");
-            break;
         
-        case CONFIGURATION_SERVICE_EVT_WRITE:
-            NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_WRITE");
+        case CONFIGURATION_SERVICE_EVT_SETTINGS_CHAR_WRITE:
+            NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_SETTINGS_CHAR_WRITE");
+            configuration_service_settings_char_read(p_cus_service, ble_configuration_service_init.settings_char);
+            bluetooth_configuration_service_settings_char_read(ble_configuration_service_init.settings_char);
+            uint8_t response_char_ack_data_array[10] = {BLUETOOTH_COMMAND_HEADER, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, 
+                0X00, BLUETOOTH_RESPONSE_CHAR_MESSAGE_RECEIVED, 0X00, 0X00, 0X00, 0X00, BLUETOOTH_COMMAND_FOOTER};
+            bluetooth_handler(response_char_ack_data_array);
             break;
 
         default:
@@ -656,59 +658,65 @@ void services_init(void)
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.crc_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.crc_char_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.crc_char_attr_md.write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.response_char_attr_md.write_perm);
 
     err_code = ble_configuration_service_initialize(&m_ble_configuration_service, &ble_configuration_service_init);
     APP_ERROR_CHECK(err_code);
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.temp_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.temp_char_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.temp_char_attr_md.write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.response_char_attr_md.write_perm);
 
     err_code = ble_temperature_service_initialize(&m_ble_temperature_service, &ble_temperature_service_init);
     APP_ERROR_CHECK(err_code);
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.response_char_attr_md.write_perm);
 
     err_code = ble_ecg_service_initialize(&m_ble_ecg_service, &ble_ecg_service_init);
     APP_ERROR_CHECK(err_code);
 }
 
-void update_configuration_service_response_char(uint8_t *response_char_data_array)
+void bluetooth_configuration_service_settings_char_read(uint8_t *settings_char_data_array)
 {
-    NRF_LOG_INFO("update_configuration_service_response_char");
+    NRF_LOG_INFO("bluetooth_configuration_service_settings_char_read");
+    bluetooth_handler(settings_char_data_array);
+}
+
+void bluetooth_configuration_service_response_char_write(uint8_t *response_char_data_array)
+{
+    NRF_LOG_INFO("bluetooth_configuration_service_response_char_write");
     uint32_t err_code;
-    memcpy(ble_configuration_service_init.response_char, response_char_data_array, 2);
-    err_code = response_char_update(&m_ble_configuration_service, response_char_data_array);   // Update the Response Characteristic
+    memcpy(ble_configuration_service_init.response_char, response_char_data_array, CONFIGURATION_SERVICE_RESPONSE_CHAR_LENGTH);
+    err_code = configuration_service_response_char_write(&m_ble_configuration_service, response_char_data_array);   // Update the Response Characteristic
     APP_ERROR_CHECK(err_code);
 }
 
-void update_configuration_service_crc_char(uint8_t *crc_char_data_array)
+void bluetooth_configuration_service_crc_char_write(uint8_t *crc_char_data_array)
 {
-    NRF_LOG_INFO("update_configuration_service_crc_char");
+    NRF_LOG_INFO("bluetooth_configuration_service_crc_char_write");
     uint32_t err_code;
-    memcpy(ble_configuration_service_init.crc_char, crc_char_data_array, 2);
-    err_code = response_char_update(&m_ble_configuration_service, crc_char_data_array);   // Update the CRC Characteristic
+    memcpy(ble_configuration_service_init.crc_char, crc_char_data_array, CONFIGURATION_SERVICE_CRC_CHAR_LENGTH);
+    err_code = configuration_service_crc_char_write(&m_ble_configuration_service, crc_char_data_array);   // Update the CRC Characteristic
     APP_ERROR_CHECK(err_code);
 }
 
-void update_temperature_service_temp_char(uint8_t *temp_char_data_array)
+void bluetooth_temperature_service_temp_char_write(uint8_t *temp_char_data_array)
 {
-    NRF_LOG_INFO("update_temperature_service_temp_char");
+    NRF_LOG_INFO("bluetooth_temperature_service_temp_char_write");
     uint32_t err_code;
-    memcpy(ble_temperature_service_init.temp_char, temp_char_data_array, 250);
-    err_code = temp_char_update(&m_ble_temperature_service, temp_char_data_array);   // Update the Temp Characteristic
+    memcpy(ble_temperature_service_init.temp_char, temp_char_data_array, TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH);
+    err_code = temperature_service_temp_char_write(&m_ble_temperature_service, temp_char_data_array);   // Update the Temp Characteristic
     APP_ERROR_CHECK(err_code);
 }
 
-void update_ecg_service_ecg_char(uint8_t *ecg_char_data_array)
+void bluetooth_ecg_service_ecg_char_write(uint8_t *ecg_char_data_array)
 {
-    NRF_LOG_INFO("update_ecg_service_ecg_char");
+    NRF_LOG_INFO("bluetooth_ecg_service_ecg_char_write");
     uint32_t err_code;
-    memcpy(ble_ecg_service_init.ecg_char, ecg_char_data_array, 250);
-    err_code = ecg_char_update(&m_ble_ecg_service, ecg_char_data_array);   // Update the ECG Characteristic
+    memcpy(ble_ecg_service_init.ecg_char, ecg_char_data_array, ECG_SERVICE_ECG_CHAR_LENGTH);
+    err_code = ecg_service_ecg_char_write(&m_ble_ecg_service, ecg_char_data_array);   // Update the ECG Characteristic
     APP_ERROR_CHECK(err_code);
 }
 

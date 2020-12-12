@@ -40,7 +40,7 @@ uint32_t ble_temperature_service_initialize(ble_temperature_service_t *p_cus, co
         return err_code;
     }
 
-    err_code = temp_char_add(p_cus, p_cus_init);
+    err_code = temperature_service_temp_char_add(p_cus, p_cus_init);
     if (err_code != NRF_SUCCESS)
     {
         NRF_LOG_INFO("DID NOT CREATE TEMPERATURE CHARACTERISTIC PROPERLY");
@@ -55,9 +55,9 @@ uint32_t ble_temperature_service_initialize(ble_temperature_service_t *p_cus, co
  *
  * @return      NRF_SUCCESS on success, otherwise an error code.
  */
-uint32_t temp_char_add(ble_temperature_service_t *p_cus, const ble_temperature_service_init_t *p_cus_init)
+uint32_t temperature_service_temp_char_add(ble_temperature_service_t *p_cus, const ble_temperature_service_init_t *p_cus_init)
 {
-    NRF_LOG_INFO("temp_char_add");
+    NRF_LOG_INFO("temperature_service_temp_char_add");
     
     // Local Variables to the function
     uint32_t err_code;
@@ -121,9 +121,9 @@ uint32_t temp_char_add(ble_temperature_service_t *p_cus, const ble_temperature_s
     return NRF_SUCCESS;
 }
 
-uint32_t temp_char_update(ble_temperature_service_t *p_cus, uint8_t *new_temp_char_array)
+uint32_t temperature_service_temp_char_write(ble_temperature_service_t *p_cus, uint8_t *new_temp_char_array)
 {
-    NRF_LOG_INFO("temp_char_update"); 
+    NRF_LOG_INFO("temperature_service_temp_char_write"); 
     if (p_cus == NULL)
     {
         return NRF_ERROR_NULL;
@@ -177,7 +177,7 @@ void ble_temperature_service_on_ble_evt(ble_evt_t const *p_ble_evt, void *p_cont
 {
     ble_temperature_service_t *p_cus = (ble_temperature_service_t *) p_context;
     
-    NRF_LOG_INFO("BLE Temperature Service Event Received. Event type = %d\r\n", p_ble_evt->header.evt_id); 
+    NRF_LOG_INFO("BLE Temperature Service Event Received. Event type = %d", p_ble_evt->header.evt_id); 
     if (p_cus == NULL || p_ble_evt == NULL)
     {
         return;

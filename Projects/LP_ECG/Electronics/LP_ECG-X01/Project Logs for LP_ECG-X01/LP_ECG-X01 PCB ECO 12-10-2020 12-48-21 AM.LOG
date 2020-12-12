@@ -1,0 +1,6 @@
+Change Component Designator: OldDesignator=C? NewDesignator=C42
+Change Component Designator: OldDesignator=C? NewDesignator=C43
+Change Component Designator: OldDesignator=C? NewDesignator=C44
+Change Net Name : Old Net Name=NetC?_2 New Net Name=NetC42_2
+Added Member To Class: ClassName=LP_ECG_Power-X01 Member=Component C43 10uF
+Added Member To Class: ClassName=LP_ECG_Power-X01 Member=Component C44 10uF

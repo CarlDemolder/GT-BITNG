@@ -1,0 +1,3 @@
+Removed Pin From Net: NetName=VCC Pin=TP6-2
+Removed Member From Class: ClassName=LP_ECG_ECG-X01 Member=TP6
+Added Pin To Net: NetName=VCC Pin=U11-19

@@ -1,0 +1,7 @@
+Added Pin To Net: NetName=ENABLE_LDO Pin=U2-B1
+Change Net Name : Old Net Name=ENABLE_1.8V New Net Name=MCU_ENABLE_1.8V
+Added Pin To Net: NetName=MCU_ENABLE_VCC Pin=R11-1
+Added Pin To Net: NetName=MCU_ENABLE_VCC Pin=U1-23
+Added Pin To Net: NetName=MCU_ENABLE_VCC Pin=U6-2
+Added Net: Name=MCU_ENABLE_VCC
+Added Member To Class: ClassName=LP_ECG_Main-X01 Member=Component R5 10kR

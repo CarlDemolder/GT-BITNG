@@ -28,10 +28,11 @@ void set_advertising_power(void);
 void advertising_start(void);
 void advertising_stop(void);
 
-void update_configuration_service_response_char(uint8_t *response_char_data_array);
-void update_configuration_service_crc_char(uint8_t *crc_char_data_array);
-void update_temperature_service_temp_char(uint8_t *temp_char_data_array);
-void update_ecg_service_ecg_char(uint8_t *ecg_char_data_array);
+void bluetooth_configuration_service_settings_char_read(uint8_t *settings_char_data_array);
+void bluetooth_configuration_service_response_char_write(uint8_t *response_char_data_array);
+void bluetooth_configuration_service_crc_char_write(uint8_t *crc_char_data_array);
+void bluetooth_temperature_service_temp_char_write(uint8_t *temp_char_data_array);
+void bluetooth_ecg_service_ecg_char_write(uint8_t *ecg_char_data_array);
 
 void bluetooth_transmit_recording_session(void);
 uint8_t bluetooth_get_bytes_per_transmission(void);

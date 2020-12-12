@@ -40,21 +40,21 @@ uint32_t ble_configuration_service_initialize(ble_configuration_service_t *p_cus
         return err_code;
     }
 
-    err_code = settings_char_add(p_cus, p_cus_init);
+    err_code = configuration_service_settings_char_add(p_cus, p_cus_init);
     if (err_code != NRF_SUCCESS)
     {
         NRF_LOG_INFO("DID NOT CREATE SETTINGS CHARACTERISTIC PROPERLY");
         return err_code;
     }
 
-    err_code = response_char_add(p_cus, p_cus_init);
+    err_code = configuration_service_response_char_add(p_cus, p_cus_init);
     if (err_code != NRF_SUCCESS)
     {
         NRF_LOG_INFO("DID NOT CREATE RESPONSE CHARACTERISTIC PROPERLY");
         return err_code;
     }
 
-    err_code = crc_char_add(p_cus, p_cus_init);
+    err_code = configuration_service_crc_char_add(p_cus, p_cus_init);
     if (err_code != NRF_SUCCESS)
     {
         NRF_LOG_INFO("DID NOT CREATE CRC CHARACTERISTIC PROPERLY");
@@ -69,9 +69,9 @@ uint32_t ble_configuration_service_initialize(ble_configuration_service_t *p_cus
  *
  * @return      NRF_SUCCESS on success, otherwise an error code.
  */
-uint32_t settings_char_add(ble_configuration_service_t *p_cus, const ble_configuration_service_init_t *p_cus_init)
+uint32_t configuration_service_settings_char_add(ble_configuration_service_t *p_cus, const ble_configuration_service_init_t *p_cus_init)
 {
-    NRF_LOG_INFO("settings_char_add");
+    NRF_LOG_INFO("configuration_service_settings_char_add");
     // Local Variables to the function
     uint32_t err_code;
     ble_gatts_char_md_t char_md;
@@ -115,9 +115,9 @@ uint32_t settings_char_add(ble_configuration_service_t *p_cus, const ble_configu
 
     attr_char_value.p_uuid = &ble_uuid;
     attr_char_value.p_attr_md = &attr_md;
-    attr_char_value.init_len = sizeof(uint8_t)*10;
+    attr_char_value.init_len = sizeof(uint8_t)*ARRAY_LENGTH(p_cus_init->settings_char);
     attr_char_value.init_offs = 0;
-    attr_char_value.max_len = sizeof(uint8_t)*10;
+    attr_char_value.max_len = sizeof(uint8_t)*ARRAY_LENGTH(p_cus_init->settings_char);
 
     err_code = sd_ble_gatts_characteristic_add(p_cus->service_handle, &char_md, &attr_char_value, &p_cus->settings_char_handles);
     if(err_code != NRF_SUCCESS)
@@ -134,9 +134,9 @@ uint32_t settings_char_add(ble_configuration_service_t *p_cus, const ble_configu
  *
  * @return      NRF_SUCCESS on success, otherwise an error code.
  */
-uint32_t response_char_add(ble_configuration_service_t *p_cus, const ble_configuration_service_init_t *p_cus_init)
+uint32_t configuration_service_response_char_add(ble_configuration_service_t *p_cus, const ble_configuration_service_init_t *p_cus_init)
 {
-    NRF_LOG_INFO("response_char_add");
+    NRF_LOG_INFO("configuration_service_response_char_add");
     // Local Variables to the function
     uint32_t err_code;
     ble_gatts_char_md_t char_md;
@@ -180,9 +180,9 @@ uint32_t response_char_add(ble_configuration_service_t *p_cus, const ble_configu
 
     attr_char_value.p_uuid = &ble_uuid;
     attr_char_value.p_attr_md = &attr_md;
-    attr_char_value.init_len = sizeof(uint8_t)*2;
+    attr_char_value.init_len = sizeof(uint8_t)*ARRAY_LENGTH(p_cus_init->response_char);
     attr_char_value.init_offs = 0;
-    attr_char_value.max_len = sizeof(uint8_t)*2;
+    attr_char_value.max_len = sizeof(uint8_t)*ARRAY_LENGTH(p_cus_init->response_char);
 
     err_code = sd_ble_gatts_characteristic_add(p_cus->service_handle, &char_md, &attr_char_value, &p_cus->response_char_handles);
     if (err_code != NRF_SUCCESS)
@@ -199,9 +199,9 @@ uint32_t response_char_add(ble_configuration_service_t *p_cus, const ble_configu
  *
  * @return      NRF_SUCCESS on success, otherwise an error code.
  */
-uint32_t crc_char_add(ble_configuration_service_t *p_cus, const ble_configuration_service_init_t *p_cus_init)
+uint32_t configuration_service_crc_char_add(ble_configuration_service_t *p_cus, const ble_configuration_service_init_t *p_cus_init)
 {
-    NRF_LOG_INFO("crc_char_add");
+    NRF_LOG_INFO("configuration_service_crc_char_add");
     // Local Variables to the function
     uint32_t err_code;
     ble_gatts_char_md_t char_md;
@@ -245,9 +245,9 @@ uint32_t crc_char_add(ble_configuration_service_t *p_cus, const ble_configuratio
 
     attr_char_value.p_uuid = &ble_uuid;
     attr_char_value.p_attr_md = &attr_md;
-    attr_char_value.init_len = sizeof(uint8_t)*2;
+    attr_char_value.init_len = sizeof(uint8_t)*ARRAY_LENGTH(p_cus_init->crc_char);
     attr_char_value.init_offs = 0;
-    attr_char_value.max_len = sizeof(uint8_t)*2;
+    attr_char_value.max_len = sizeof(uint8_t)*ARRAY_LENGTH(p_cus_init->crc_char);
 
     err_code = sd_ble_gatts_characteristic_add(p_cus->service_handle, &char_md, &attr_char_value, &p_cus->crc_char_handles);
     if (err_code != NRF_SUCCESS)
@@ -257,9 +257,9 @@ uint32_t crc_char_add(ble_configuration_service_t *p_cus, const ble_configuratio
     return NRF_SUCCESS;
 }
 
-uint32_t settings_char_update(ble_configuration_service_t *p_cus, uint8_t *new_settings_char_array)
+uint32_t configuration_service_settings_char_read(ble_configuration_service_t *p_cus, uint8_t *new_settings_char_array)
 {
-    NRF_LOG_INFO("settings_char_update"); 
+    NRF_LOG_INFO("configuration_service_settings_char_read"); 
     if (p_cus == NULL)
     {
         return NRF_ERROR_NULL;
@@ -271,7 +271,7 @@ uint32_t settings_char_update(ble_configuration_service_t *p_cus, uint8_t *new_s
     // Initialize value struct.
     memset(&gatts_value, 0, sizeof(gatts_value));
 
-    gatts_value.len = sizeof(uint8_t)*10;
+    gatts_value.len = sizeof(uint8_t)*CONFIGURATION_SERVICE_SETTINGS_CHAR_LENGTH;
     gatts_value.offset = 0;
     gatts_value.p_value = new_settings_char_array;
 
@@ -279,14 +279,14 @@ uint32_t settings_char_update(ble_configuration_service_t *p_cus, uint8_t *new_s
     err_code = sd_ble_gatts_value_get(p_cus->conn_handle, p_cus->settings_char_handles.value_handle, &gatts_value);
     if (err_code != NRF_SUCCESS)
     {
+        NRF_LOG_INFO("Characteristic could not be read from database");
         return err_code;
     }
-    NRF_LOG_INFO(" Characteristic Written %X", *new_settings_char_array);
 }
 
-uint32_t response_char_update(ble_configuration_service_t *p_cus, uint8_t *new_response_char_array)
+uint32_t configuration_service_response_char_write(ble_configuration_service_t *p_cus, uint8_t *new_response_char_array)
 {
-    NRF_LOG_INFO("response_char_update"); 
+    NRF_LOG_INFO("configuration_service_response_char_write"); 
     if (p_cus == NULL)
     {
         return NRF_ERROR_NULL;
@@ -298,7 +298,7 @@ uint32_t response_char_update(ble_configuration_service_t *p_cus, uint8_t *new_r
     // Initialize value struct
     memset(&gatts_value, 0, sizeof(gatts_value));
 
-    gatts_value.len = sizeof(uint8_t)*2;
+    gatts_value.len = sizeof(uint8_t)*CONFIGURATION_SERVICE_RESPONSE_CHAR_LENGTH;
     gatts_value.offset = 0;
     gatts_value.p_value = new_response_char_array;
 
@@ -306,6 +306,7 @@ uint32_t response_char_update(ble_configuration_service_t *p_cus, uint8_t *new_r
     err_code = sd_ble_gatts_value_set(p_cus->conn_handle, p_cus->response_char_handles.value_handle, &gatts_value);
     if (err_code != NRF_SUCCESS)
     {
+        NRF_LOG_INFO("Characteristic could not be set");
         return err_code;
     }
 
@@ -323,20 +324,20 @@ uint32_t response_char_update(ble_configuration_service_t *p_cus, uint8_t *new_r
         hvx_params.p_data = gatts_value.p_value;
 
         err_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
-        NRF_LOG_INFO("sd_ble_gatts_hvx result: %x. \r\n", err_code); 
+        NRF_LOG_INFO("sd_ble_gatts_hvx result: %x", err_code);
+        NRF_LOG_INFO("Response Char Written: %X %X", new_response_char_array[0], new_response_char_array[1]);
     }
     else
     {
         err_code = NRF_ERROR_INVALID_STATE;
-        NRF_LOG_INFO("sd_ble_gatts_hvx result: NRF_ERROR_INVALID_STATE. \r\n"); 
+        NRF_LOG_INFO("sd_ble_gatts_hvx result: NRF_ERROR_INVALID_STATE"); 
     }
-    NRF_LOG_INFO(" Characteristic Written %X %X", new_response_char_array[0], new_response_char_array[1]);
     return err_code;
 }
 
-uint32_t crc_value_update(ble_configuration_service_t *p_cus, uint8_t *new_crc_char_array)
+uint32_t configuration_service_crc_char_write(ble_configuration_service_t *p_cus, uint8_t *new_crc_char_array)
 {
-    NRF_LOG_INFO("crc_char_update"); 
+    NRF_LOG_INFO("configuration_service_crc_char_write"); 
     if (p_cus == NULL)
     {
         return NRF_ERROR_NULL;
@@ -348,7 +349,7 @@ uint32_t crc_value_update(ble_configuration_service_t *p_cus, uint8_t *new_crc_c
     // Initialize value struct
     memset(&gatts_value, 0, sizeof(gatts_value));
 
-    gatts_value.len = sizeof(uint8_t)*2;
+    gatts_value.len = sizeof(uint8_t)*CONFIGURATION_SERVICE_CRC_CHAR_LENGTH;
     gatts_value.offset = 0;
     gatts_value.p_value = new_crc_char_array;
 
@@ -356,6 +357,7 @@ uint32_t crc_value_update(ble_configuration_service_t *p_cus, uint8_t *new_crc_c
     err_code = sd_ble_gatts_value_set(p_cus->conn_handle, p_cus->crc_char_handles.value_handle, &gatts_value);
     if (err_code != NRF_SUCCESS)
     {
+        NRF_LOG_INFO("Characteristic could not be set");
         return err_code;
     }
 
@@ -373,14 +375,14 @@ uint32_t crc_value_update(ble_configuration_service_t *p_cus, uint8_t *new_crc_c
         hvx_params.p_data = gatts_value.p_value;
 
         err_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
-        NRF_LOG_INFO("sd_ble_gatts_hvx result: %x. \r\n", err_code); 
+        NRF_LOG_INFO("sd_ble_gatts_hvx result: %x", err_code);
+        NRF_LOG_INFO("CRC Char Written: %X %X", new_crc_char_array[0], new_crc_char_array[1]);
     }
     else
     {
         err_code = NRF_ERROR_INVALID_STATE;
-        NRF_LOG_INFO("sd_ble_gatts_hvx result: NRF_ERROR_INVALID_STATE. \r\n"); 
+        NRF_LOG_INFO("sd_ble_gatts_hvx result: NRF_ERROR_INVALID_STATE"); 
     }
-    NRF_LOG_INFO(" Characteristic Written %X %X", new_crc_char_array[0], new_crc_char_array[1]);
     return err_code;
 }
 
@@ -389,13 +391,15 @@ uint32_t crc_value_update(ble_configuration_service_t *p_cus, uint8_t *new_crc_c
 */
 void ble_configuration_service_on_ble_evt(ble_evt_t const *p_ble_evt, void *p_context)
 {
+    NRF_LOG_INFO("ble_configuration_service_on_ble_evt");
     ble_configuration_service_t *p_cus = (ble_configuration_service_t *) p_context;
-    
-    NRF_LOG_INFO("BLE Configuration Service Event Received. Event type = %d\r\n", p_ble_evt->header.evt_id); 
     if (p_cus == NULL || p_ble_evt == NULL)
     {
         return;
     }
+
+    NRF_LOG_INFO("BLE Configuration Service Event Received. Event type = %d", p_ble_evt->header.evt_id); 
+
     
     switch (p_ble_evt->header.evt_id)
     {
@@ -466,16 +470,16 @@ static void _configuration_service_on_disconnect(ble_configuration_service_t *p_
  */
 static void _configuration_service_on_write(ble_configuration_service_t *p_cus, ble_evt_t const *p_ble_evt)
 {
-    NRF_LOG_INFO("configuration_service_on_write");
+    NRF_LOG_INFO("_configuration_service_on_write");
     ble_gatts_evt_write_t const * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
     
     // Settings Value Characteristic Has Changed
     if (p_evt_write->handle == p_cus->settings_char_handles.value_handle)
     {
         configuration_service_evt_t evt;
-        evt.evt_type = CONFIGURATION_SERVICE_EVT_WRITE;
+        evt.evt_type = CONFIGURATION_SERVICE_EVT_SETTINGS_CHAR_WRITE;
 
-        NRF_LOG_INFO("Settings Characteristic has been Written");
+        NRF_LOG_INFO("CONFIGURATION_SERVICE_ON_WRITE: SETTINGS_CHAR");
         p_cus->evt_handler(p_cus, &evt);
     }
 

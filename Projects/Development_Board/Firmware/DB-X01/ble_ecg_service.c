@@ -40,7 +40,7 @@ uint32_t ble_ecg_service_initialize(ble_ecg_service_t *p_cus, const ble_ecg_serv
         return err_code;
     }
 
-    err_code = ecg_char_add(p_cus, p_cus_init);
+    err_code = ecg_service_ecg_char_add(p_cus, p_cus_init);
     if (err_code != NRF_SUCCESS)
     {
         NRF_LOG_INFO("DID NOT CREATE ECG VALUE CHARACTERISTIC PROPERLY");
@@ -55,9 +55,9 @@ uint32_t ble_ecg_service_initialize(ble_ecg_service_t *p_cus, const ble_ecg_serv
  *
  * @return      NRF_SUCCESS on success, otherwise an error code.
  */
-uint32_t ecg_char_add(ble_ecg_service_t *p_cus, const ble_ecg_service_init_t *p_cus_init)
+uint32_t ecg_service_ecg_char_add(ble_ecg_service_t *p_cus, const ble_ecg_service_init_t *p_cus_init)
 {
-    NRF_LOG_INFO("ecg_char_add");
+    NRF_LOG_INFO("ecg_service_ecg_char_add");
     // Local Variables to the function
     uint32_t err_code;
     ble_gatts_char_md_t char_md;
@@ -113,9 +113,9 @@ uint32_t ecg_char_add(ble_ecg_service_t *p_cus, const ble_ecg_service_init_t *p_
     return NRF_SUCCESS;
 }
 
-uint32_t ecg_char_update(ble_ecg_service_t *p_cus, uint8_t *new_ecg_char_array)
+uint32_t ecg_service_ecg_char_write(ble_ecg_service_t *p_cus, uint8_t *new_ecg_char_array)
 {
-    NRF_LOG_INFO("ecg_char_update"); 
+    NRF_LOG_INFO("ecg_service_ecg_char_update"); 
     if (p_cus == NULL)
     {
         return NRF_ERROR_NULL;
@@ -170,7 +170,7 @@ void ble_ecg_service_on_ble_evt(ble_evt_t const *p_ble_evt, void *p_context)
 {
     ble_ecg_service_t *p_cus = (ble_ecg_service_t *) p_context;
     
-    NRF_LOG_INFO("BLE ECG Service Event Received. Event type = %d\r\n", p_ble_evt->header.evt_id); 
+    NRF_LOG_INFO("BLE ECG Service Event Received. Event type = %d", p_ble_evt->header.evt_id); 
     if (p_cus == NULL || p_ble_evt == NULL)
     {
         return;

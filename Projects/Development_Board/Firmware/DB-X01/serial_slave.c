@@ -199,6 +199,23 @@ void enable_bluetooth_handler(void)
 //    state_handler(ecg_start_data_recording_array_data); // Start Data Recording
 }
 
+void bluetooth_handler(uint8_t *settings_char_data_array)
+{
+    NRF_LOG_INFO("bluetooth_handler");
+    if(settings_char_data_array[0] == BLUETOOTH_COMMAND_HEADER && settings_char_data_array[CONFIGURATION_SERVICE_SETTINGS_CHAR_LENGTH-1] == BLUETOOTH_COMMAND_FOOTER)
+    {
+        state_handler(settings_char_data_array);
+    }
+    else
+    {
+        NRF_LOG_INFO("Command Header and Footer are incorrect");
+        NRF_LOG_INFO("Header: %X", settings_char_data_array[0]);
+        NRF_LOG_INFO("Footer: %X", settings_char_data_array[CONFIGURATION_SERVICE_SETTINGS_CHAR_LENGTH-1]);
+        uint8_t incorrect_handler_footer_response_array_data[5] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, 0x00, BLUETOOTH_RESPONSE_CHAR_HEADER_FOOTER_INCORRECT};
+        state_handler(incorrect_handler_footer_response_array_data);
+    }
+}
+
 /*
 *   @Brief: Function: enable_serial_slave_handler() is used to initialize the serial debugger to debug and communicate with the NRF52 
 *   using an I2C to USB Converter (FT201X). It creates a RTC so that an interrupt occurs every 1 second. When an RTC
@@ -1144,6 +1161,30 @@ static void _bluetooth_handler(uint8_t *serial_array_data)
         case BLUETOOTH_TRANSMIT_RECORDING_SESSION_COMMAND:
             NRF_LOG_INFO("BLUETOOTH_MODULE: TRANSMIT_RECORDING_SESSION");
             bluetooth_transmit_recording_session();
+            break;
+
+        case BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: WRITE_RESPONSE_CHAR");
+            uint8_t response_char_data_array[2] = {serial_array_data[3], serial_array_data[4]};
+            bluetooth_configuration_service_response_char_write(response_char_data_array);
+            break;
+
+        case BLUETOOTH_WRITE_CRC_CHAR_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: WRITE_CRC_CHAR");
+            uint8_t crc_char_data_array[2] = {serial_array_data[3], serial_array_data[4]};
+            bluetooth_configuration_service_response_char_write(crc_char_data_array);            
+            break;
+
+        case BLUETOOTH_WRITE_TEMP_CHAR_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: WRITE_TEMP_CHAR");
+            uint8_t temp_char_array[250] = {0};
+            bluetooth_temperature_service_temp_char_write(temp_char_array);
+            break;
+
+        case BLUETOOTH_WRITE_ECG_CHAR_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: WRITE_ECG_CHAR");
+            uint8_t ecg_char_array[250] = {0};
+            bluetooth_ecg_service_ecg_char_write(ecg_char_array);
             break;
 
         default:

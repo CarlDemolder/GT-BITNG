@@ -5,9 +5,15 @@
 #include "serial_slave.h"
 
 // Macro for defining a ble instance
-#define BLE_TEMPERATURE_SERVICE_DEF(_name) static ble_temperature_service_t _name; NRF_SDH_BLE_OBSERVER(_name ## _obs, BLE_HRS_BLE_OBSERVER_PRIO, ble_temperature_service_on_ble_evt, &_name)
+#define BLE_TEMPERATURE_SERVICE_DEF(_name) static ble_temperature_service_t _name; \
+NRF_SDH_BLE_OBSERVER(_name ## _obs, BLE_HRS_BLE_OBSERVER_PRIO, ble_temperature_service_on_ble_evt, &_name)
 
 #define TEMPERATURE_SERVICE_UUID_BASE {0xCE, 0x13, 0x10, 0xB0, 0xF0, 0x74, 0x3E, 0xA1, 0xEE, 0x45, 0x30, 0x38, 0x96, 0x6B, 0xAD, 0x8A}
+
+enum TEMPERATURE_SERVICE_CHAR_LENGTHS
+{
+    TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH = 250
+};
 
 // Defining the custom service 16 bit UUID
 enum TEMPERATURE_SERVICE_UUID
@@ -54,7 +60,7 @@ struct ble_temperature_service_s
 typedef struct
 {
     temperature_service_evt_handler_t evt_handler;                    /**< Event handler to be called for handling events in the Custom Service. */
-    uint8_t temp_char[250];                                           /**< Temp Characteristic */
+    uint8_t temp_char[TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH];          /**< Temp Characteristic */
     ble_srv_cccd_security_mode_t temp_char_attr_md;                   /**< Initial security level for Temp characteristics attribute */
 } ble_temperature_service_init_t;
 
@@ -62,9 +68,9 @@ void ble_temperature_service_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_co
 
 uint32_t ble_temperature_service_initialize(ble_temperature_service_t *p_cus, const ble_temperature_service_init_t *p_cus_init);
 
-uint32_t temp_char_add(ble_temperature_service_t *p_cus, const ble_temperature_service_init_t *p_cus_init);
+uint32_t temperature_service_temp_char_add(ble_temperature_service_t *p_cus, const ble_temperature_service_init_t *p_cus_init);
 
-uint32_t temp_char_update(ble_temperature_service_t *p_cus, uint8_t *new_temp_char_array);
+uint32_t temperature_service_temp_char_write(ble_temperature_service_t *p_cus, uint8_t *new_temp_char_array);
 
 static void temperature_service_on_connect(ble_temperature_service_t *p_cus, ble_evt_t const *p_ble_evt);
 

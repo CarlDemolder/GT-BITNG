@@ -1,0 +1,11 @@
+Removed Pin From Net: NetName=GND Pin=C33-1
+Removed Pin From Net: NetName=GND Pin=C38-2
+Removed Pin From Net: NetName=NetJ3_1 Pin=R11-1
+Removed Pin From Net: NetName=NetJ4_1 Pin=R12-1
+Removed Member From Class: ClassName=LP_ECG_ECG-X01 Member=C33
+Removed Member From Class: ClassName=LP_ECG_ECG-X01 Member=C36
+Removed Member From Class: ClassName=LP_ECG_ECG-X01 Member=C38
+Removed Member From Class: ClassName=LP_ECG_ECG-X01 Member=R11
+Removed Member From Class: ClassName=LP_ECG_ECG-X01 Member=R12
+Added Pin To Net: NetName=NetJ4_1 Pin=U10-6
+Added Pin To Net: NetName=NetJ3_1 Pin=U10-7
