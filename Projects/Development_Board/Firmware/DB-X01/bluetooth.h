@@ -3,9 +3,15 @@
 
 #include "common.h"
 
+#if TMP117
 #include "ble_temperature_service.h"
+#endif
+
 #include "ble_configuration_service.h"
+
+#if ECG
 #include "ble_ecg_service.h"
+#endif
 
 #include "serial_slave.h"
 
@@ -31,8 +37,14 @@ void advertising_stop(void);
 void bluetooth_configuration_service_settings_char_read(uint8_t *settings_char_data_array);
 void bluetooth_configuration_service_response_char_write(uint8_t *response_char_data_array);
 void bluetooth_configuration_service_crc_char_write(uint8_t *crc_char_data_array);
+
+#if TMP117
 void bluetooth_temperature_service_temp_char_write(uint8_t *temp_char_data_array);
+#endif
+
+#if ECG
 void bluetooth_ecg_service_ecg_char_write(uint8_t *ecg_char_data_array);
+#endif
 
 void bluetooth_transmit_recording_session(void);
 uint8_t bluetooth_get_bytes_per_transmission(void);

@@ -7,15 +7,21 @@ void startup_initialization(void)
 {
     uint8_t nrf52_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, NRF52_INITIALIZATION_COMMAND};       
     state_handler(nrf52_initialization_array_data); // Initialize NRF52 Module
+    
+    #if TMP117
+    uint8_t tmp117_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, TMP117_INITIALIZATION_COMMAND};       
+    state_handler(tmp117_initialization_array_data); // Initialize TMP117 Module
+    #endif
 
-//    uint8_t tmp117_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, TMP117_INITIALIZATION_COMMAND};       
-//    state_handler(tmp117_initialization_array_data); // Initialize TMP117 Module
-//
-//    uint8_t max30003_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, MAX30003_INITIALIZATION_COMMAND};       
-//    state_handler(max30003_initialization_array_data); // Initialize MAX30003 Module
-//
-//    uint8_t cy15b108qi_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, CY15B108QI_INITIALIZATION_COMMAND};       
-//    state_handler(max30003_initialization_array_data); // Initialize CY15B108QI Module
+    #if MAX30003
+    uint8_t max30003_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, MAX30003_INITIALIZATION_COMMAND};       
+    state_handler(max30003_initialization_array_data); // Initialize MAX30003 Module
+    #endif
+
+    #if CY15B108QI
+    uint8_t cy15b108qi_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, CY15B108QI_INITIALIZATION_COMMAND};       
+    state_handler(cy15b108qi_initialization_array_data); // Initialize CY15B108QI Module
+    #endif
 }
 
 /*
@@ -44,11 +50,15 @@ static void _nrf52_initialization(void)
     uint8_t hf_clock_start_array_data[4] = {0x00, NRF52_MODULE, NRF52_HF_CLOCK_COMMAND, NRF52_HF_CLOCK_START};   
     state_handler(hf_clock_start_array_data); // Start HF Clock
 
+    #if SPI
     uint8_t spim_setup_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SETUP};
     state_handler(spim_setup_array_data); // Setup SPIM Module
+    #endif
 
+    #if I2C
     uint8_t twim_setup_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_SETUP};  
     state_handler(twim_setup_array_data); // Setup TWIM Module
+    #endif
 
     uint8_t led_array_data[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_LED_INIT};  
     state_handler(led_array_data); // Enable LED Driver
@@ -60,6 +70,7 @@ static void _nrf52_initialization(void)
 /*
 *   @Brief: Function: _tmp117_initialization() is used to initialize the TMP117 module
 */
+#if TMP117
 static void _tmp117_initialization(void)
 {
     NRF_LOG_INFO("_tmp117_initialization");
@@ -79,10 +90,12 @@ static void _tmp117_initialization(void)
     uint8_t i2c_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  
     state_handler(i2c_uninit_array_data); // Uninit TWIM Driver
 }
+#endif
 
 /*
 *   @Brief: Function: _max30003_initialization() is used to initialize the MAX30003 module
 */
+#if MAX30003
 static void _max30003_initialization(void)
 {
     NRF_LOG_INFO("_max30003_initialization");
@@ -120,10 +133,12 @@ static void _max30003_initialization(void)
     uint8_t spim_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
     state_handler(spim_disable_array_data); // Disable SPIM Module 
 }
+#endif
 
 /*
 *   @Brief: Function: _cy15b108qi_initialization() is used to initialize the CY15B108QI module 
 */
+#if CY15B108QI
 static void _cy15b108qi_initialization(void)
 {
     NRF_LOG_INFO("_cy15b108qi_initialization");
@@ -153,6 +168,7 @@ static void _cy15b108qi_initialization(void)
     uint8_t spim_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
     state_handler(spim_disable_array_data); // Disable SPIM Module 
 }
+#endif
 
 /*
 *   @Brief: Function: enable_bluetooth_handler() is used to enable the bluetooth handler 
@@ -194,9 +210,6 @@ void enable_bluetooth_handler(void)
 
     uint8_t bluetooth_advertising_start_array_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_START_ADVERTISING_COMMAND};
     state_handler(bluetooth_advertising_start_array_data); // Start advertising data between the GATT Server and Client
-
-//    uint8_t ecg_start_data_recording_array_data[3] = {0x00, ECG_MODULE, ECG_START_DATA_RECORDING};  
-//    state_handler(ecg_start_data_recording_array_data); // Start Data Recording
 }
 
 void bluetooth_handler(uint8_t *settings_char_data_array)
@@ -220,6 +233,7 @@ void bluetooth_handler(uint8_t *settings_char_data_array)
 *   @Brief: Function: enable_serial_slave_handler() is used to initialize the serial debugger to debug and communicate with the NRF52 
 *   using an I2C to USB Converter (FT201X). It creates a RTC so that an interrupt occurs every 1 second. When an RTC
 */
+#if FT201X
 void enable_usb_handler(void)
 {
     NRF_LOG_INFO("_enable_usb_handler");
@@ -316,6 +330,7 @@ void usb_handler(void)
     uint8_t i2c_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  
     state_handler(i2c_uninit_array_data); // Uninit TWIM Driver
 }
+#endif
 
 /*
 *   @Brief: Function: state_handler() is used to handle the different possible states that a command can use to control something.
@@ -330,41 +345,53 @@ void state_handler(uint8_t *serial_array_data)
             NRF_LOG_INFO("STATE HANDLER: NRF52_MODULE");
             _nrf52_handler(serial_array_data);
             break;
-
+        
+        #if FT201X
         case FT201X_MODULE:
             NRF_LOG_INFO("STATE HANDLER: FT201X_MODULE");
             _ft201x_handler(serial_array_data);
             break;
+        #endif
 
+        #if BMI160
         case BMI160_MODULE:
             NRF_LOG_INFO("STATE HANDLER: BMI160_MODULE");
             _bmi160_handler(serial_array_data);
             break;
+        #endif
 
+        #if MAX30003
         case MAX30003_MODULE:
             NRF_LOG_INFO("STATE HANDLER: MAX30003_MODULE");
             _max30003_handler(serial_array_data);
-            break;    
+            break;
+        #endif        
 
+        #if TMP117
         case TMP117_MODULE:
             NRF_LOG_INFO("STATE HANDLER: TMP117_MODULE");
             _tmp117_handler(serial_array_data);
             break;
+        #endif
 
         case BLUETOOTH_MODULE:
             NRF_LOG_INFO("STATE HANDLER: BLUETOOTH_MODULE");
             _bluetooth_handler(serial_array_data);
             break;
 
+        #if ECG
         case ECG_MODULE:
             NRF_LOG_INFO("STATE HANDLER: ECG_MODULE");
             _ecg_handler(serial_array_data);
             break;
+        #endif    
 
+        #if CY15B108QI
         case CY15B108QI_MODULE:
             NRF_LOG_INFO("STATE HANDLER: CY15B108QI_MODULE");
             _cy15b108qi_handler(serial_array_data);
             break;
+        #endif
 
         case SERIAL_SLAVE_MODULE:
             NRF_LOG_INFO("STATE HANDLER: SERIAL_SLAVE_MODULE");
@@ -373,7 +400,9 @@ void state_handler(uint8_t *serial_array_data)
 
         default:
             NRF_LOG_INFO("default");
+            #if FT201X
             ft201x_flush_buffers();
+            #endif
             break;
     }
 
@@ -389,16 +418,20 @@ static void _serial_slave_handler(uint8_t *serial_array_data)
             NRF_LOG_INFO("SERIAL_SLAVE_MODULE: NRF52_INITIALIZATION_COMMAND");
             _nrf52_initialization();
             break;
-
+        
+        #if TMP117
         case TMP117_INITIALIZATION_COMMAND:
             NRF_LOG_INFO("SERIAL_SLAVE_MODULE: TMP117_INITIALIZATION_COMMAND");
             _tmp117_initialization();
             break;
+        #endif
 
+        #if CY15B108QI
         case CY15B108QI_INITIALIZATION_COMMAND:
             NRF_LOG_INFO("SERIAL_SLAVE_MODULE: CY15B108QI_INITIALIZATION_COMMAND");
             _cy15b108qi_initialization();
             break;
+        #endif
 
         case STARTUP_INITIALIZATION_COMMAND:
             NRF_LOG_INFO("SERIAL_SLAVE_MODULE: STARTUP_INITIALIZATION_COMMAND");
@@ -480,6 +513,7 @@ static void _nrf52_handler(uint8_t *serial_array_data)
 
             switch(serial_array_data[3])
             {
+                #if FT201X
                 case NRF52_RTC_FT201X_INIT:
                     rtc_ft201x_init();
                     break;
@@ -506,7 +540,9 @@ static void _nrf52_handler(uint8_t *serial_array_data)
                     rtc_ft201x_set_counter(temp_counter);
                     break;
                 }
+                #endif
 
+                #if TMP117
                 case NRF52_RTC_TMP117_INIT:
                     rtc_tmp117_init();
                     break;
@@ -533,6 +569,8 @@ static void _nrf52_handler(uint8_t *serial_array_data)
                     rtc_tmp117_set_counter(temp_counter);
                     break;
                 }
+                #endif
+
                 default:
                     break;
             }
@@ -646,10 +684,12 @@ static void _nrf52_handler(uint8_t *serial_array_data)
                 case NRF52_VCC_LDO_EN:
                     enable_vcc_ldo();
                     break;
-
+                
+                #if MAX30003
                 case NRF52_MAX30003_POWER_LDO_EN:
                     enable_max30003_power_ldo();
                     break;
+                #endif
 
                 case NRF52_GPIOTE_INIT:
                     gpiote_init();
@@ -659,7 +699,8 @@ static void _nrf52_handler(uint8_t *serial_array_data)
                     break;
             }
             break;
-
+        
+        #if I2C
         case NRF52_I2C_COMMAND:
             NRF_LOG_INFO("NRF52_MODULE: NRF52_I2C_COMMAND");
 
@@ -685,7 +726,9 @@ static void _nrf52_handler(uint8_t *serial_array_data)
                     break;
             }
             break;
+        #endif
 
+        #if SPI
         case NRF52_SPI_COMMAND:
             NRF_LOG_INFO("NRF52_MODULE: NRF52_SPIM_COMMAND");
 
@@ -723,12 +766,14 @@ static void _nrf52_handler(uint8_t *serial_array_data)
                     break;
             }
             break;
+        #endif
 
         default:
             break;
     }
 }
 
+#if FT201X
 static void _ft201x_handler(uint8_t *serial_array_data)
 {
     NRF_LOG_INFO("_ft201x_handler");
@@ -764,7 +809,9 @@ static void _ft201x_handler(uint8_t *serial_array_data)
             break;
     }
 }
+#endif
 
+#if BMI160
 static void _bmi160_handler(uint8_t *serial_array_data)
 {
     NRF_LOG_INFO("_bmi160_handler");
@@ -787,7 +834,9 @@ static void _bmi160_handler(uint8_t *serial_array_data)
             break;
     }
 }
+#endif
 
+#if TMP117
 static void _tmp117_handler(uint8_t *serial_array_data)
 {
     NRF_LOG_INFO("_tmp117_handler");
@@ -797,15 +846,15 @@ static void _tmp117_handler(uint8_t *serial_array_data)
         case TMP117_READ_CHIP_ID_COMMAND:
             NRF_LOG_INFO("tmp117_MODULE: TMP117_READ_CHIP_ID_COMMAND");
             uint16_t tmp117_chip_id = tmp117_read_chip_id();
-            uint8_t tmp117_chip_id_array_data[5] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, (tmp117_chip_id & 0xF0), (tmp117_chip_id & 0x0F)};  // Write TMP117 Chip ID
-            state_handler(tmp117_chip_id_array_data);
+//            uint8_t tmp117_chip_id_array_data[5] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, (tmp117_chip_id & 0xF0), (tmp117_chip_id & 0x0F)};  // Write TMP117 Chip ID
+//            state_handler(tmp117_chip_id_array_data);
             break;
 
         case TMP117_READ_REVISION_NUMBER_COMMAND:
             NRF_LOG_INFO("TMP117_MODULE: TMP117_READ_CHIP_ID_COMMAND");
             uint8_t tmp117_revision_number = tmp117_read_revision_number();
-            uint8_t tmp117_revision_number_array_data[4] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, tmp117_chip_id};  // Write TMP117 Chip ID
-            state_handler(tmp117_revision_number_array_data);
+//            uint8_t tmp117_revision_number_array_data[4] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, tmp117_chip_id};  // Write TMP117 Chip ID
+//            state_handler(tmp117_revision_number_array_data);
             break;
 
         case TMP117_UNLOCK_EEPROM_COMMAND:
@@ -831,24 +880,26 @@ static void _tmp117_handler(uint8_t *serial_array_data)
         case TMP117_TEMP_UINT16_COMMAND:
             NRF_LOG_INFO("TMP117_MODULE: TMP117_UINT16_COMMAND");
             uint16_t tmp117_temp_value = tmp117_get_uint16_t();
-            uint8_t tmp117_temp_value_array_data[5] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, (tmp117_temp_value & 0xF0), (tmp117_temp_value & 0x0F)};  // Write TMP117 Temperature Value
-            state_handler(tmp117_temp_value_array_data);             
+//            uint8_t tmp117_temp_value_array_data[5] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, (tmp117_temp_value & 0xF0), (tmp117_temp_value & 0x0F)};  // Write TMP117 Temperature Value
+//            state_handler(tmp117_temp_value_array_data);             
             break;
 
         case TMP117_TEMP_CHAR_ARRAY_COMMAND:
             NRF_LOG_INFO("TMP117_MODULE: TMP117_TEMP_CHAR_ARRAY_COMMAND");    
             uint8_t tmp117_uint8_t[5];
             tmp117_get_uint8_t(tmp117_uint8_t);
-            uint8_t tmp117_uint8_t_array_data[8] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, tmp117_uint8_t[4], tmp117_uint8_t[3],
-            tmp117_uint8_t[2], tmp117_uint8_t[1], tmp117_uint8_t[0]};  // Write TMP117 Temperature Value
-            state_handler(tmp117_uint8_t_array_data);           
+//            uint8_t tmp117_uint8_t_array_data[8] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, tmp117_uint8_t[4], tmp117_uint8_t[3],
+//            tmp117_uint8_t[2], tmp117_uint8_t[1], tmp117_uint8_t[0]};  // Write TMP117 Temperature Value
+//            state_handler(tmp117_uint8_t_array_data);           
             break;
 
         default:
             break;
     }
 }
+#endif
 
+#if ECG
 static void _ecg_handler(uint8_t *serial_array_data)
 {
     NRF_LOG_INFO("_ecg_handler");
@@ -866,9 +917,10 @@ static void _ecg_handler(uint8_t *serial_array_data)
         default:
             break;
     }
-
 }
+#endif
 
+#if CY15B108QI
 static void _cy15b108qi_handler(uint8_t *serial_array_data)
 {
     NRF_LOG_INFO("_cy15b108qi_handler");
@@ -939,7 +991,9 @@ static void _cy15b108qi_handler(uint8_t *serial_array_data)
             break;
     }
 }
+#endif
 
+#if MAX30003
 static void _max30003_handler(uint8_t *serial_array_data)
 {
     NRF_LOG_INFO("_max30003_handler");
@@ -1106,6 +1160,7 @@ static void _max30003_handler(uint8_t *serial_array_data)
             break;
     }
 }
+#endif
 
 static void _bluetooth_handler(uint8_t *serial_array_data)
 {
@@ -1175,17 +1230,21 @@ static void _bluetooth_handler(uint8_t *serial_array_data)
             bluetooth_configuration_service_response_char_write(crc_char_data_array);            
             break;
 
+        #if TMP117
         case BLUETOOTH_WRITE_TEMP_CHAR_COMMAND:
             NRF_LOG_INFO("BLUETOOTH_MODULE: WRITE_TEMP_CHAR");
             uint8_t temp_char_array[250] = {0};
             bluetooth_temperature_service_temp_char_write(temp_char_array);
             break;
+        #endif
 
+        #if ECG
         case BLUETOOTH_WRITE_ECG_CHAR_COMMAND:
             NRF_LOG_INFO("BLUETOOTH_MODULE: WRITE_ECG_CHAR");
             uint8_t ecg_char_array[250] = {0};
             bluetooth_ecg_service_ecg_char_write(ecg_char_array);
             break;
+        #endif
 
         default:
             break;

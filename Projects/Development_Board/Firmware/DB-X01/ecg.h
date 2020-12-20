@@ -4,6 +4,8 @@
 #include "serial_slave.h"
 #include "common.h"
 
+#if ECG
+
 //enum ECG_CONSTANTS
 //{
 ////    MAX_SAMPLES_PER_BLE_TRANSMISSION = 
@@ -34,6 +36,8 @@ uint8_t ecg_get_data_packet(uint8_t *bluetooth_data_packet, uint8_t bluetooth_da
 uint32_t ecg_get_bytes_left_to_transmit(void);
 void ecg_start_data_recording(void);
 void ecg_stop_data_recording(void);
+
+#endif
 
 #endif // __ECG_H
 

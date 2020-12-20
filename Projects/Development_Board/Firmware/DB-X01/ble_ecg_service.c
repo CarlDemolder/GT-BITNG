@@ -1,5 +1,7 @@
 #include "ble_ecg_service.h"
 
+#if ECG
+
 /**@brief Function for initializing the Custom Service.
  *
  * @param[out]  p_cus       Custom Service structure. This structure will have to be supplied by
@@ -271,3 +273,5 @@ static void _ecg_service_on_write(ble_ecg_service_t *p_cus, ble_evt_t const *p_b
         }
     }
 }
+
+#endif

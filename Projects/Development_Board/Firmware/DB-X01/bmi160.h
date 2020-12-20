@@ -4,6 +4,7 @@
 #include "common.h"
 #include "i2c.h"
 
+#if BMI160
 
 // Device I2C Address:
 #define BMI160_I2C_ADDRESS_DEFAULT (0x68)
@@ -281,5 +282,7 @@ uint8_t bmi160_read_chip_id(void);
 void bmi160_init_registers(void);
 
 void bmi160_read_accel_gyro(uint8_t *data_array_pointer); 
+
+#endif
 
 #endif // BMI160_H_

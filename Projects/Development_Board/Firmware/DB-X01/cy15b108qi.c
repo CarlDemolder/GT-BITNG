@@ -1,5 +1,7 @@
 #include "cy15b108qi.h"
 
+#if CY15B108QI
+
 static struct CY15B108QI_Status_Register status_register;
 static struct CY15B108QI_Device_ID_Register device_id_register;
 static struct CY15B108QI_Unique_ID_Register unique_id_register;
@@ -11,9 +13,6 @@ void cy15b108qi_init(void)
     control_struct.start_address = FIRST_WRITE_ADDRESS;
     control_struct.write_address = control_struct.start_address;
     NRF_LOG_INFO("control_struct.write_address: %X", control_struct.write_address);
-
-//    cy15b108qi_enter_hibernate_mode_command();
-//    cy15b108qi_read_unique_id_command();
 }
 
 void cy15b108qi_uninit(void)
@@ -336,3 +335,4 @@ uint32_t cy15b108qi_get_current_write_address(void)
     NRF_LOG_INFO("cy15b108qi_get_current_write_address");
     return control_struct.write_address;
 }
+#endif

@@ -1,5 +1,7 @@
 #include "spi.h"
 
+#if SPI
+
 static uint8_t _spim_timeout_handler()
 {
     if(spim_configuration.timeout == 0)
@@ -215,3 +217,5 @@ void spim_read_data_array(uint8_t *write_data_array, uint8_t write_data_array_si
     while ((spim_configuration.spim_xfer_done == false) && (_spim_timeout_handler() == false)); 
     nrf_delay_ms(SPIM_DELAY);
 }
+
+#endif

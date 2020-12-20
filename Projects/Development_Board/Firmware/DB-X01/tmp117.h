@@ -4,6 +4,8 @@
 #include "common.h"
 #include "i2c.h"
 
+#if TMP117
+
 enum TMP117_REGISTER_CONSTANTS
 {
     TMP117_SLAVE_ADDRESS = 0X48,
@@ -51,4 +53,7 @@ void tmp117_init(uint8_t configuration_mode, uint8_t averaging_mode);
 
 uint16_t tmp117_read_chip_id(void);
 uint8_t tmp117_read_revision_number(void);
+
+#endif
+
 #endif // __tmp117_H

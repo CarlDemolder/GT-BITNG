@@ -1,5 +1,7 @@
 #include "i2c.h"
 
+#if I2C
+
 static uint8_t _twim_timeout_handler()
 {
     if(twim_configuration.timeout == 0)
@@ -352,3 +354,5 @@ void i2c_no_stop_write_registers(uint8_t device_command, uint8_t* first_array_da
         return;
     }
 }
+
+#endif

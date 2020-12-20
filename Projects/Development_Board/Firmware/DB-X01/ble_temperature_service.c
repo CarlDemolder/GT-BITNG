@@ -1,5 +1,7 @@
 #include "ble_temperature_service.h"
 
+#if TMP117
+
 /**@brief Function for initializing the Temperature Service.
  *
  * @param[out]  p_cus       Temperature Service structure. This structure will have to be supplied by
@@ -278,3 +280,4 @@ static void temperature_service_on_write(ble_temperature_service_t *p_cus, ble_e
     }
 }
 
+#endif

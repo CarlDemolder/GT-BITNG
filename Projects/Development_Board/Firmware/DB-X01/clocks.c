@@ -77,6 +77,7 @@ void lfclock_stop(void)
 
 /**@brief Function to configure an RTC instance for the FT201X
  */
+#if FT201X
 void rtc_ft201x_init(void)
 {
     //Initialize RTC instance for the FT201X
@@ -198,10 +199,11 @@ void rtc_ft201x_restart(void)
         NRF_LOG_INFO("RTC FT201X has been Restarted");
     }
 }
-
+#endif
 
 /**@brief Function to configure an RTC instance for the tmp117
  */
+#if TMP117
 void rtc_tmp117_init(void)
 {
     //Initialize RTC instance for the tmp117
@@ -322,3 +324,4 @@ void rtc_tmp117_restart(void)
         NRF_LOG_INFO("RTC tmp117 has been Restarted");
     }
 }
+#endif

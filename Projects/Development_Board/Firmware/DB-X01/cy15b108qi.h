@@ -4,6 +4,7 @@
 #include "serial_slave.h"
 #include "common.h"
 
+#if CY15B108QI
 
 enum CY15B108QI_CONSTANTS
 {
@@ -103,5 +104,7 @@ void cy15b108qi_exit_deep_power_down_mode_command(void);
 void cy15b108qi_enter_hibernation_mode_command(void);
 
 void cy15b108qi_exit_hibernation_mode_command(void);
+
+#endif
 
 #endif // __CY15B108QI_H

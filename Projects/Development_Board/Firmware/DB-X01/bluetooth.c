@@ -7,8 +7,8 @@
 #define APP_BLE_OBSERVER_PRIO           3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
 
-#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(3995, UNIT_1_25_MS)       /**< Minimum acceptable connection interval (0.1 seconds). */
-#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(3995, UNIT_1_25_MS)       /**< Maximum acceptable connection interval (0.2 second). */
+#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(10, UNIT_1_25_MS)         /**< Minimum acceptable connection interval (0.1 seconds). */
+#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(20, UNIT_1_25_MS)         /**< Maximum acceptable connection interval (0.2 second). */
 #define SLAVE_LATENCY                   0                                       /**< Slave latency. */
 #define CONN_SUP_TIMEOUT                MSEC_TO_UNITS(8000, UNIT_10_MS)         /**< Connection supervisory timeout (10 seconds). */
 
@@ -36,17 +36,40 @@ NRF_BLE_QWR_DEF(m_qwr);                                                         
 BLE_ADVERTISING_DEF(m_advertising);                                             /**< Advertising module instance. */
 
 BLE_CONFIGURATION_SERVICE_DEF(m_ble_configuration_service);                     /**< Declaring Configuration Service Structure for application */
+
+#if TMP117
 BLE_TEMPERATURE_SERVICE_DEF(m_ble_temperature_service);                         /**< Declaring Temperature Service Structure for application */
+#endif
+
+#if ECG
 BLE_ECG_SERVICE_DEF(m_ble_ecg_service);                                         /**< Declaring ECG Service Structure for application */
+#endif
 
 ble_configuration_service_init_t ble_configuration_service_init = {0};
+
+#if TMP117
 ble_temperature_service_init_t ble_temperature_service_init = {0};
+#endif
+
+#if ECG
 ble_ecg_service_init_t ble_ecg_service_init = {0};
+#endif
 
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
 
 // YOUR_JOB: Use UUIDs for service(s) used in your application.
+
+#if ECG && !TMP117
+ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {ECG_SERVICE_UUID}};  /**< Universally unique service identifiers. */
+#endif
+
+#if !ECG && TMP117
+ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {TEMPERATURE_SERVICE_UUID}};  /**< Universally unique service identifiers. */
+#endif
+
+#if ECG && TMP117
 ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {TEMPERATURE_SERVICE_UUID}, {ECG_SERVICE_UUID}};  /**< Universally unique service identifiers. */
+#endif
 
 
 /**@brief Function for handling Queued Write Module errors.
@@ -470,6 +493,7 @@ void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
             APP_ERROR_CHECK(err_code);
+            gap_params_update(m_conn_handle); // Once all Services have been discovered, change the GAP Connection Parameters
             break;
 
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
@@ -521,7 +545,6 @@ static void on_configuration_service_evt(ble_configuration_service_t *p_cus_serv
     {
         case CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_ENABLED:
             NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_ENABLED");
-//            gap_params_update(m_conn_handle); // Once all Services have been discovered, change the GAP Connection Parameters
             break;
 
         case CONFIGURATION_SERVICE_EVT_RESPONSE_CHAR_NOTIFICATION_DISABLED:
@@ -559,6 +582,7 @@ static void on_configuration_service_evt(ble_configuration_service_t *p_cus_serv
  * @param[in]   p_evt          Event received from the Temperature Service.
  *
  */
+ #if TMP117
 static void on_temperature_service_evt(ble_temperature_service_t *p_cus_service, temperature_service_evt_t *p_evt)
 {
     ret_code_t err_code;
@@ -589,6 +613,7 @@ static void on_temperature_service_evt(ble_temperature_service_t *p_cus_service,
               break;
     }
 }
+#endif
 
 /**@brief Function for handling the ECG Service Service events.
  *
@@ -599,6 +624,7 @@ static void on_temperature_service_evt(ble_temperature_service_t *p_cus_service,
  * @param[in]   p_evt          Event received from the ECG Service
  *
  */
+#if ECG
 static void on_ecg_service_evt(ble_ecg_service_t *p_cus_service, ecg_service_evt_t *p_evt)
 {
     ret_code_t err_code;
@@ -629,6 +655,7 @@ static void on_ecg_service_evt(ble_ecg_service_t *p_cus_service, ecg_service_evt
               break;
     }
 }
+#endif
 
 /**@brief Function for initializing services that will be used by the application.
  */
@@ -645,8 +672,6 @@ void services_init(void)
     APP_ERROR_CHECK(err_code);
 
     ble_configuration_service_init.evt_handler = on_configuration_service_evt;    // Initialize Configuration Service
-    ble_temperature_service_init.evt_handler = on_temperature_service_evt;        // Initialize Temperature Service
-    ble_ecg_service_init.evt_handler = on_ecg_service_evt;                        // Initialize ECG Service
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.settings_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.settings_char_attr_md.read_perm);
@@ -663,12 +688,19 @@ void services_init(void)
     err_code = ble_configuration_service_initialize(&m_ble_configuration_service, &ble_configuration_service_init);
     APP_ERROR_CHECK(err_code);
 
+    #if TMP117
+    ble_temperature_service_init.evt_handler = on_temperature_service_evt;        // Initialize Temperature Service
+
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.temp_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.temp_char_attr_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.response_char_attr_md.write_perm);
 
     err_code = ble_temperature_service_initialize(&m_ble_temperature_service, &ble_temperature_service_init);
     APP_ERROR_CHECK(err_code);
+    #endif
+
+    #if ECG
+    ble_ecg_service_init.evt_handler = on_ecg_service_evt;                        // Initialize ECG Service
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.read_perm);
@@ -676,6 +708,7 @@ void services_init(void)
 
     err_code = ble_ecg_service_initialize(&m_ble_ecg_service, &ble_ecg_service_init);
     APP_ERROR_CHECK(err_code);
+    #endif
 }
 
 void bluetooth_configuration_service_settings_char_read(uint8_t *settings_char_data_array)
@@ -702,6 +735,7 @@ void bluetooth_configuration_service_crc_char_write(uint8_t *crc_char_data_array
     APP_ERROR_CHECK(err_code);
 }
 
+#if TMP117
 void bluetooth_temperature_service_temp_char_write(uint8_t *temp_char_data_array)
 {
     NRF_LOG_INFO("bluetooth_temperature_service_temp_char_write");
@@ -710,7 +744,9 @@ void bluetooth_temperature_service_temp_char_write(uint8_t *temp_char_data_array
     err_code = temperature_service_temp_char_write(&m_ble_temperature_service, temp_char_data_array);   // Update the Temp Characteristic
     APP_ERROR_CHECK(err_code);
 }
+#endif
 
+#if ECG
 void bluetooth_ecg_service_ecg_char_write(uint8_t *ecg_char_data_array)
 {
     NRF_LOG_INFO("bluetooth_ecg_service_ecg_char_write");
@@ -719,6 +755,7 @@ void bluetooth_ecg_service_ecg_char_write(uint8_t *ecg_char_data_array)
     err_code = ecg_service_ecg_char_write(&m_ble_ecg_service, ecg_char_data_array);   // Update the ECG Characteristic
     APP_ERROR_CHECK(err_code);
 }
+#endif
 
 void bluetooth_transmit_recording_session(void)
 {

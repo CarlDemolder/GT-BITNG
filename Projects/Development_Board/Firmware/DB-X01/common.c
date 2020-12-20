@@ -42,19 +42,28 @@ void ram_retention(void)
 void ldo_init(void)
 {
     // Initialize LDO pins for power savings
-    disable_max30003_power_ldo();     // Disable MAX30003 Power LDO on startup
-    disable_max30102_led_ldo();       // Disable MAX30102 LED LDO on startup
-    disable_max30102_power_ldo();     // Disable MAX30102 Power LDO on startup
+    #if MAX30003
+        disable_max30003_power_ldo();     // Disable MAX30003 Power LDO on startup
+    #endif
+    #if MAX30102
+        disable_max30102_led_ldo();       // Disable MAX30102 LED LDO on startup
+        disable_max30102_power_ldo();     // Disable MAX30102 Power LDO on startup
+    #endif
 }
 
 void input_output_init(void)
 {
     nrf_gpio_cfg_output(EN_VCC_LDO_PIN);                            // set EN_VCC_LDO pin to output
-    nrf_gpio_cfg_output(EN_MAX30102_LED_LDO_PIN);                   // set EN_MAX30102_LED_LDO pin to output
-    nrf_gpio_cfg_output(EN_MAX30102_POWER_LDO_PIN);                 // set EN_MAX30102_POWER_LDO pin to output
-    nrf_gpio_cfg_output(EN_MAX30003_POWER_LDO_PIN);                 // set EN_MAX30003_POWER_LDO pin to output
     
-    nrf_gpio_cfg_input(WB_V_OUT, NRF_GPIO_PIN_NOPULL);              // set WB_V_OUT input pin to no pull up
+    #if MAX30003
+        nrf_gpio_cfg_output(EN_MAX30003_POWER_LDO_PIN);                 // set EN_MAX30003_POWER_LDO pin to output
+    #endif
+    
+    #if MAX30102
+        nrf_gpio_cfg_output(EN_MAX30102_LED_LDO_PIN);                   // set EN_MAX30102_LED_LDO pin to output
+        nrf_gpio_cfg_output(EN_MAX30102_POWER_LDO_PIN);                 // set EN_MAX30102_POWER_LDO pin to output
+        nrf_gpio_cfg_input(WB_V_OUT, NRF_GPIO_PIN_NOPULL);              // set WB_V_OUT input pin to no pull up
+    #endif
 }
 
 void enable_vcc_ldo(void)
@@ -76,6 +85,7 @@ void disable_vcc_ldo(void)
     nrf_gpio_pin_write(EN_VCC_LDO_PIN, 0);     // Disabling the VCC LDO to shutdown the MCU
 }
 
+#if MAX30102
 void enable_max30102_led_ldo(void)
 {
     NRF_LOG_INFO("enable MAX30102 LED LDO");
@@ -103,7 +113,9 @@ void disable_max30102_power_ldo(void)
     NRF_LOG_INFO("disable MAX30102 POWER LDO");
     nrf_gpio_pin_write(EN_MAX30102_LED_LDO_PIN, 0);     // Disabling the MAX30102 POWER LDO to shutdown the LDO for the MAX30102
 }
+#endif
 
+#if MAX30003
 void enable_max30003_power_ldo(void)
 {
     NRF_LOG_INFO("enable MAX30003 POWER LDO");
@@ -117,6 +129,7 @@ void disable_max30003_power_ldo(void)
     NRF_LOG_INFO("disable MAX30003 POWER LDO");
     nrf_gpio_pin_write(EN_MAX30003_POWER_LDO_PIN, 0);     // Disabling the MAX30003 POWER LDO to shutdown the LDO for the MAX30003
 }
+#endif
 
 void init_leds(void)
 {

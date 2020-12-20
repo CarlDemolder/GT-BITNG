@@ -2,49 +2,98 @@
 #define __SERIAL_SLAVE_H__
 
 #include "common.h"
-#include "ft201x.h"
-#include "tmp117.h"                   
-#include "bmi160.h"
-#include "max30003.h"
 #include "clocks.h"
 #include "power.h"  
-#include "ecg.h"
-#include "storage.h"
-#include "cy15b108qi.h"
 #include "bluetooth.h"
+
+#if FT201X
+#include "ft201x.h"
+#endif
+
+#if TMP117
+#include "tmp117.h"
+#endif
+
+#if BMI160                   
+#include "bmi160.h"
+#endif
+
+#if MAX30003
+#include "max30003.h"
+#endif
+
+#if CY15B108QI
+#include "cy15b108qi.h"
+#endif
+
+#if ECG
+#include "ecg.h"
+#endif
 
 enum MODULE_COMMAND_CONSTANTS
 {
     NRF52_MODULE = 0X01,
+
+    #if TMP117
     TMP117_MODULE = 0X02,
+    #endif
+
+    #if BMI160
     BMI160_MODULE = 0X03,
+    #endif
+
+    #if MAX30003
     MAX30003_MODULE = 0X04,
+    #endif
+
+    #if FT201X
     FT201X_MODULE = 0X05,
+    #endif
+    
     BLUETOOTH_MODULE = 0x06, 
-    ECG_MODULE = 0x07, 
-    CY15B108QI_MODULE = 0X08, 
+    
+    #if ECG
+    ECG_MODULE = 0x07,
+    #endif
+
+    #if CY15B108QI
+    CY15B108QI_MODULE = 0X08,
+    #endif
+
     SERIAL_SLAVE_MODULE = 0X09,
 };
 
 enum SERIAL_SLAVE_COMMAND_CONSTANTS
 {
+    #if FT201X
     USB_COMMAND_HEADER = 0XAA,
     USB_COMMAND_FOOTER = 0XAB,
     USB_LOG_HEADER = 0XAC,
     USB_LOG_FOOTER = 0XAD,
+    ENABLE_USB_HANDLER_COMMAND = 0X07,
+    DISABLE_USB_HANDLER_COMMAND = 0X08,
+    #endif
+
     BLUETOOTH_COMMAND_HEADER = 0XBA,
     BLUETOOTH_COMMAND_FOOTER = 0XBB,
     BLUETOOTH_LOG_HEADER = 0XBC,
     BLUETOOTH_LOG_FOOTER = 0XBD,
     NRF52_INITIALIZATION_COMMAND = 0X01,
+
+    #if TMP117
     TMP117_INITIALIZATION_COMMAND = 0X02,
+    #endif
+
+    #if CY15B108QI
     CY15B108QI_INITIALIZATION_COMMAND = 0X03,
+    #endif
+
+    #if MAX30003
     MAX30003_INITIALIZATION_COMMAND = 0X04,
+    #endif
+
     STARTUP_INITIALIZATION_COMMAND = 0X05,
     ENABLE_BLUETOOTH_HANDLER_COMMAND = 0X06,
-    ENABLE_USB_HANDLER_COMMAND = 0X07,
-    DISABLE_USB_HANDLER_COMMAND = 0X08,
-
 };
 
 enum NRF52_COMMAND_CONSTANTS
@@ -55,10 +104,17 @@ enum NRF52_COMMAND_CONSTANTS
     NRF52_RTC_CLOCK_COMMAND = 0X04,
     NRF52_POWER_COMMAND = 0X05,
     NRF52_COMMON_COMMAND = 0X06,
+    
+    #if I2C
     NRF52_I2C_COMMAND = 0X07,
+    #endif
+
+    #if SPI
     NRF52_SPI_COMMAND = 0X08
+    #endif
 };
 
+#if FT201X
 enum FT201X_COMMAND_CONSTANTS
 {
     FT201X_READ_CHIP_ID_COMMAND = 0X01,
@@ -68,14 +124,18 @@ enum FT201X_COMMAND_CONSTANTS
     FT201X_WRITE_DATA_ARRAY_COMMAND = 0X05,
     FT201X_READ_DATA_COMMAND = 0X06
 };
+#endif
 
+#if BMI160
 enum BMI160_COMMAND_CONSTANTS
 {
     BMI160_READ_CHIP_ID_COMMAND = 0X01,
     BMI160_INIT_COMMAND = 0X02,
     BMI160_READ_ACCEL_GYRO_COMMAND = 0X03
 };
+#endif
 
+#if TMP117
 enum TMP117_COMMAND_CONSTANTS
 {
     TMP117_READ_CHIP_ID_COMMAND = 0X01,
@@ -87,7 +147,9 @@ enum TMP117_COMMAND_CONSTANTS
     TMP117_UNLOCK_EEPROM_COMMAND = 0X07,
     TMP117_GENERAL_CALL_RESET_COMMAND = 0X08
 };
+#endif
 
+#if MAX30003
 enum MAX30003_COMMAND_CONSTANTS
 {
     MAX30003_READ_INFO_REGISTER_COMMAND = 0X01,
@@ -122,6 +184,7 @@ enum MAX30003_COMMAND_CONSTANTS
     MAX30003_START_RECORDING_COMMAND = 0X1E,
     MAX30003_WRITE_FIFO_RESET_REGISTER_COMMAND = 0X1F,
 };
+#endif
 
 enum NRF52_BLUETOOTH_COMMAND_CONSTANTS
 {
@@ -137,8 +200,14 @@ enum NRF52_BLUETOOTH_COMMAND_CONSTANTS
     BLUETOOTH_START_ADVERTISING_COMMAND = 0X0A,
     BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND = 0X0B,
     BLUETOOTH_WRITE_CRC_CHAR_COMMAND = 0X0C,
+
+    #if TMP117
     BLUETOOTH_WRITE_TEMP_CHAR_COMMAND = 0X0D,
+    #endif
+
+    #if ECG
     BLUETOOTH_WRITE_ECG_CHAR_COMMAND = 0X0E,
+    #endif
 };
 
 enum NRF52_BLUETOOTH_RESPONSE_CHAR_CONSTANTS
@@ -146,9 +215,15 @@ enum NRF52_BLUETOOTH_RESPONSE_CHAR_CONSTANTS
     BLUETOOTH_RESPONSE_CHAR_MESSAGE_RECEIVED = 0X01,
     BLUETOOTH_RESPONSE_CHAR_HEADER_FOOTER_INCORRECT = 0X02,
     BLUETOOTH_RESPONSE_CHAR_RECORDING_SESSION_FINISHED = 0X03,
+
+    #if ECG
     BLUETOOTH_RESPONSE_CHAR_ECG_DATA_READY_FOR_TRANSMISSION = 0X04,
-    BLUETOOTH_RESPONSE_CHAR_TEMP_DATA_READY_FOR_TRANSMISSION = 0X05,
     BLUETOOTH_RESPONSE_CHAR_RECORDING_SESSION_STARTED = 0X06,
+    #endif
+
+    #if TMP117
+    BLUETOOTH_RESPONSE_CHAR_TEMP_DATA_READY_FOR_TRANSMISSION = 0X05,
+    #endif
 };
 
 enum NRF52_CLOCK_COMMAND_CONSTANTS
@@ -161,7 +236,8 @@ enum NRF52_CLOCK_COMMAND_CONSTANTS
     NRF52_LF_CLOCK_STOP = 0X06
 };
 
-enum NRF52_RTC_COMMAND_CONSTANTS
+#if FT201X
+enum NRF52_RTC_FT201X_COMMAND_CONSTANTS
 {
     NRF52_RTC_FT201X_INIT = 0X01,
     NRF52_RTC_FT201X_SET_COUNTER = 0X02,
@@ -169,6 +245,12 @@ enum NRF52_RTC_COMMAND_CONSTANTS
     NRF52_RTC_FT201X_STOP = 0X04,
     NRF52_RTC_FT201X_RESTART = 0X05,
     NRF52_RTC_FT201X_UNINIT = 0X06,
+};
+#endif
+
+#if TMP117
+enum NRF52_RTC_TMP117_COMMAND_CONSTANTS
+{
     NRF52_RTC_TMP117_INIT = 0X07,
     NRF52_RTC_TMP117_SET_COUNTER = 0X08,
     NRF52_RTC_TMP117_START = 0X09,
@@ -176,6 +258,7 @@ enum NRF52_RTC_COMMAND_CONSTANTS
     NRF52_RTC_TMP117_RESTART = 0X11,
     NRF52_RTC_TMP117_UNINIT = 0X12
 };
+#endif
 
 enum NRF52_POWER_COMMAND_CONSTANTS
 {
@@ -204,10 +287,13 @@ enum NRF52_COMMON_COMMANDS_CONSTANTS
     NRF52_GPIOTE_INIT = 0X02,
     NRF52_LDO_INIT = 0X03,
     NRF52_VCC_LDO_EN = 0X04,
-    NRF52_INPUT_OUTPUT_INIT = 0X05, 
-    NRF52_MAX30003_POWER_LDO_EN = 0X06, 
+    NRF52_INPUT_OUTPUT_INIT = 0X05,
+    #if MAX30003
+    NRF52_MAX30003_POWER_LDO_EN = 0X06,
+    #endif
 };
 
+#if I2C
 enum NRF52_I2C_COMMANDS_CONSTANTS
 {
     NRF52_I2C_TWIM_INIT = 0X01,
@@ -216,7 +302,9 @@ enum NRF52_I2C_COMMANDS_CONSTANTS
     NRF52_I2C_TWIM_ENABLE = 0X04,
     NRF52_I2C_TWIM_DISABLE = 0x05,
 };
+#endif
 
+#if SPI
 enum NRF52_SPI_COMMANDS_CONSTANTS
 {
     NRF52_SPI_SPIM_INIT = 0X01,
@@ -227,6 +315,7 @@ enum NRF52_SPI_COMMANDS_CONSTANTS
     NRF52_SPI_SPIM_SETUP = 0X06, 
     NRF52_SPI_SPIM_INIT_CS_PIN = 0X07
 };
+#endif
 
 enum NRF52_LED_COMMANDS_CONSTANTS
 {
@@ -236,12 +325,15 @@ enum NRF52_LED_COMMANDS_CONSTANTS
     NRF52_LED_IND_LONG_BLINK = 0X04
 };
 
+#if ECG
 enum ECG_COMMANDS_CONSTANTS
 {
     ECG_INIT = 0X01,
     ECG_START_DATA_RECORDING = 0X02
 };
+#endif
 
+#if CY15B108QI
 enum CY15B108QI_COMMANDS_CONSTANTS
 {
     CY15B108QI_INIT_COMMAND = 0X01,
@@ -257,27 +349,44 @@ enum CY15B108QI_COMMANDS_CONSTANTS
     CY15B108QI_WRITE_STATUS_REGISTER_COMMAND = 0X0B,
     CY15B108QI_READ_STATUS_REGISTER_COMMAND = 0X0C,
 };
+#endif
 
 void startup_initialization(void);
 
+#if FT201X
 void enable_usb_handler(void);
 static void _disable_usb_handler(void);
 void usb_handler(void);
+static void _ft201x_handler(uint8_t *serial_array_data);
+#endif
 
 void enable_bluetooth_handler(void);
 void bluetooth_handler(uint8_t *settings_char_data_array);
+static void _bluetooth_handler(uint8_t *serial_array_data);
 
 void state_handler(uint8_t *serial_array_data);
 
 static void _serial_slave_handler(uint8_t *serial_array_data);
 static void _nrf52_handler(uint8_t *serial_array_data);
-static void _ft201x_handler(uint8_t *serial_array_data);
+
+#if BMI160
 static void _bmi160_handler(uint8_t *serial_array_data);
+#endif
+
+#if TMP117
 static void _tmp117_handler(uint8_t *serial_array_data);
+#endif
+
+#if MAX30003
 static void _max30003_handler(uint8_t *serial_array_data);
-static void _bluetooth_handler(uint8_t *serial_array_data);
+#endif
+
+#if ECG
 static void _ecg_handler(uint8_t *serial_array_data);
-static void _storage_handler(uint8_t *serial_array_data);
+#endif
+
+#if CY15B108QI
 static void _cy15b108qi_handler(uint8_t *serial_array_data);
+#endif
 
 #endif /*__SERIAL_SLAVE_H__*/

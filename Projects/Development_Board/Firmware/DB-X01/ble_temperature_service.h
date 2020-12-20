@@ -4,6 +4,8 @@
 #include "ble_service.h"
 #include "serial_slave.h"
 
+#if TMP117
+
 // Macro for defining a ble instance
 #define BLE_TEMPERATURE_SERVICE_DEF(_name) static ble_temperature_service_t _name; \
 NRF_SDH_BLE_OBSERVER(_name ## _obs, BLE_HRS_BLE_OBSERVER_PRIO, ble_temperature_service_on_ble_evt, &_name)
@@ -78,7 +80,7 @@ static void temperature_service_on_disconnect(ble_temperature_service_t *p_cus, 
 
 static void temperature_service_on_write(ble_temperature_service_t *p_cus, ble_evt_t const *p_ble_evt);
 
-
+#endif
 
 #endif // BLE_TEMPERATURE_SERVICE_H__
 

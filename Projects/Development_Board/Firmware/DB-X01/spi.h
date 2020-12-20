@@ -4,6 +4,8 @@
 #include "common.h"
 #include "nrfx_spim.h"
 
+#if SPI
+
 #define SPIM_READ_ADDRESS(x) ((x << 1) | 1) // x is the register address  
 #define SPIM_WRITE_ADDRESS(x) ((x << 1) | 0) // x is the register address  
 
@@ -54,5 +56,7 @@ void spim_disable(void);
 void spim_write_data_array(uint8_t *data_array, uint8_t data_array_size);
 
 void spim_read_data_array(uint8_t *write_data_array, uint8_t write_data_array_size, uint8_t *read_data_array, uint8_t read_data_array_size);
+
+#endif
 
 #endif // __SPI_H

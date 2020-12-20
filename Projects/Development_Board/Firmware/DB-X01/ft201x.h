@@ -4,6 +4,8 @@
 #include "common.h"
 #include "i2c.h"
 
+#if FT201X
+
 enum FT201X_INTERNAL_CONSTANTS
 {
     FT201X_DEVICE_ADDRESS = 0X22,
@@ -52,5 +54,7 @@ uint8_t ft201x_check_usb_state(void);
 void ft201x_read_chip_id(uint16_t* array_data);
 static void _ft201x_enable_vcp(void);
 static uint8_t _ft201x_read_eeprom_register(uint8_t const* register_address_array);
+
+#endif
 
 #endif /*__FT201X_H__*/

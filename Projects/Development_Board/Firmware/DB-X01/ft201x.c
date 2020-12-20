@@ -1,5 +1,6 @@
 #include "ft201x.h"
 
+#if FT201X
 
 void ft201x_init(void)
 {
@@ -268,4 +269,5 @@ static void _ft201x_write_eeprom_register(uint8_t const* register_address_array,
     uint8_t register_data[1];
     register_data[1] = register_write_value;
     i2c_write_registers(FT201X_DEVICE_ADDRESS, register_data, register_byte_count); 
-}     
+}
+#endif     

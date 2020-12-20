@@ -1,5 +1,6 @@
 #include "ecg.h"
 
+#if ECG
 static struct ECG_DATA_FLOW data_flow;
 
 void ecg_init(void)
@@ -278,3 +279,5 @@ void ecg_stop_data_recording(void)
     state_handler(spim_disable_array_data); // Disable SPIM Module
 
 }
+
+#endif

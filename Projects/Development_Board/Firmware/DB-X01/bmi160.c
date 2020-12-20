@@ -1,5 +1,7 @@
 #include "bmi160.h"
 
+#if BMI160
+
 // Array of Default Registers:
 uint8_t bmi160_default_registers[] = 
 {
@@ -128,3 +130,5 @@ void bmi160_read_accel_gyro(uint8_t *data_array_pointer)
     //    }
     }
 }
+
+#endif
