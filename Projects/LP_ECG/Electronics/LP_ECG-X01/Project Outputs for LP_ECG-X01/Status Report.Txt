@@ -1,10 +1,25 @@
-Output: Bill of Materials
-Type  : BOM
-From  : BOM Document [DB-X02.BomDoc]
-   Generated File[Bill of Materials-DB-X02.xlsx]
+Project Outputs Generation Report
+---------------------------------
+Start Output Generation At 12:43:11 AM On 12/17/2020
+
+Output: Gerber Files
+Type  : Gerber
+From  : PCB Document [LP_ECG-X01.PcbDoc]
+   Generated File[LP_ECG-X01.GTO]
+   Generated File[LP_ECG-X01.GTP]
+   Generated File[LP_ECG-X01.GTS]
+   Generated File[LP_ECG-X01.GTL]
+   Generated File[LP_ECG-X01.GBL]
+   Generated File[LP_ECG-X01.GBS]
+   Generated File[LP_ECG-X01.GBP]
+   Generated File[LP_ECG-X01.GBO]
+   Generated File[LP_ECG-X01.GM6]
+   Generated File[LP_ECG-X01.GKO]
+   Generated File[LP_ECG-X01.EXTREP]
+   Generated File[LP_ECG-X01.REP]
 
 
-Files Generated   : 1
+Files Generated   : 12
 Documents Printed : 0
 
-Finished Output Generation At 8:27:36 PM On 10/4/2020
+Finished Output Generation At 12:43:12 AM On 12/17/2020

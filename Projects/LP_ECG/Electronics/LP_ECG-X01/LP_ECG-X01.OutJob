@@ -15,13 +15,13 @@ LifeCycleDefinitionGUID=
 RevisionNamingSchemeGUID=
 
 [OutputGroup1]
-Name=DB-X02.OutJob
+Name=LP_ECG-X01.OutJob
 Description=
 TargetOutputMedium=Folder Structure
 VariantName=[No Variations]
 VariantScope=0
 CurrentConfigurationName=
-TargetPrinter=OneNote for Windows 10
+TargetPrinter=Microsoft Print to PDF
 PrinterOptions=Record=PrinterOptions|Copies=1|Duplex=1|TrueTypeOptions=3|Collate=1|PrintJobKind=1|PrintWhat=0
 OutputMedium1=Print Job
 OutputMedium1_Type=Printer
@@ -36,7 +36,7 @@ OutputMedium4_Type=Multimedia
 OutputType1=Assembly
 OutputName1=Assembly Drawings
 OutputCategory1=Assembly
-OutputDocumentPath1=DB_Main-X02.PcbDoc
+OutputDocumentPath1=LP_ECG-X01.PcbDoc
 OutputVariantName1=
 OutputEnabled1=0
 OutputEnabled1_OutputMedium1=0
@@ -44,7 +44,7 @@ OutputEnabled1_OutputMedium2=1
 OutputEnabled1_OutputMedium3=0
 OutputEnabled1_OutputMedium4=0
 OutputDefault1=0
-PageOptions1=Record=PageOptions|CenterHorizontal=True|CenterVertical=True|PrintScale=2.69|XCorrection=1.00|YCorrection=1.00|PrintKind=1|BorderSize=5000000|LeftOffset=0|BottomOffset=0|Orientation=2|PaperLength=1000|PaperWidth=1000|Scale=100|PaperSource=7|PrintQuality=-3|MediaType=1|DitherType=10|PrintScaleMode=1|PaperKind=Letter|PaperIndex=1
+PageOptions1=Record=PageOptions|CenterHorizontal=True|CenterVertical=True|PrintScale=4.99|XCorrection=1.00|YCorrection=1.00|PrintKind=1|BorderSize=5000000|LeftOffset=0|BottomOffset=0|Orientation=2|PaperLength=1000|PaperWidth=1000|Scale=100|PaperSource=7|PrintQuality=-3|MediaType=1|DitherType=10|PrintScaleMode=1|PaperKind=Letter|PaperIndex=1
 Configuration1_Name1=OutputConfigurationParameter1
 Configuration1_Item1=DesignatorDisplayMode=Physical|PrintArea=DesignExtent|PrintAreaLowerLeftCornerX=0|PrintAreaLowerLeftCornerY=0|PrintAreaUpperRightCornerX=0|PrintAreaUpperRightCornerY=0|Record=PcbPrintView
 Configuration1_Name2=OutputConfigurationParameter2
@@ -99,7 +99,7 @@ PcbPrintPreferences1=SubsititueFont_Default=True|SubsititueFont_Serif=True|Subsi
 OutputType2=Pick Place
 OutputName2=Generates pick and place files
 OutputCategory2=Assembly
-OutputDocumentPath2=DB_Main-X02.PcbDoc
+OutputDocumentPath2=LP_ECG-X01.PcbDoc
 OutputVariantName2=
 OutputEnabled2=0
 OutputEnabled2_OutputMedium1=0
@@ -112,7 +112,7 @@ Configuration2_Item1=Record=PickPlaceView|Units=Imperial|GenerateCSVFormat=False
 OutputType3=Gerber
 OutputName3=Gerber Files
 OutputCategory3=Fabrication
-OutputDocumentPath3=DB_Main-X02.PcbDoc
+OutputDocumentPath3=LP_ECG-X01.PcbDoc
 OutputVariantName3=
 OutputEnabled3=1
 OutputEnabled3_OutputMedium1=0
@@ -125,12 +125,12 @@ Configuration3_Item1=AddToAllLayerClasses.Set= |AddToAllPlots.Set=SerializeLayer
 OutputType4=NC Drill
 OutputName4=NC Drill Files
 OutputCategory4=Fabrication
-OutputDocumentPath4=DB_Main-X02.PcbDoc
+OutputDocumentPath4=LP_ECG-X01.PcbDoc
 OutputVariantName4=
-OutputEnabled4=1
+OutputEnabled4=0
 OutputEnabled4_OutputMedium1=0
 OutputEnabled4_OutputMedium2=0
-OutputEnabled4_OutputMedium3=2
+OutputEnabled4_OutputMedium3=0
 OutputEnabled4_OutputMedium4=0
 OutputDefault4=0
 Configuration4_Name1=OutputConfigurationParameter1
@@ -138,35 +138,35 @@ Configuration4_Item1=BoardEdgeRoutToolDia=2000000|GenerateBoardEdgeRout=False|Ge
 OutputType5=BOM_PartType
 OutputName5=Bill of Materials
 OutputCategory5=Report
-OutputDocumentPath5=DB-X02.BomDoc
+OutputDocumentPath5=LP_ECG-X01.BomDoc
 OutputVariantName5=
-OutputEnabled5=1
+OutputEnabled5=0
 OutputEnabled5_OutputMedium1=0
-OutputEnabled5_OutputMedium2=0
-OutputEnabled5_OutputMedium3=3
+OutputEnabled5_OutputMedium2=3
+OutputEnabled5_OutputMedium3=0
 OutputEnabled5_OutputMedium4=0
 OutputDefault5=0
 PageOptions5=Record=PageOptions|CenterHorizontal=True|CenterVertical=True|PrintScale=1.00|XCorrection=1.00|YCorrection=1.00|PrintKind=1|BorderSize=5000000|LeftOffset=0|BottomOffset=0|Orientation=2|PaperLength=1000|PaperWidth=1000|Scale=100|PaperSource=7|PrintQuality=-3|MediaType=1|DitherType=10|PrintScaleMode=1|PaperKind=Letter|PaperIndex=1
 Configuration5_Name1=ColumnNameFormat
 Configuration5_Item1=CaptionAsName
 Configuration5_Name2=General
-Configuration5_Item2=OpenExported=True|AddToProject=True|ReportBOMViolationsInMessages=False|ForceFit=False|NotFitted=False|Database=True|DatabasePriority=False|IncludePcbData=True|IncludeVaultData=True|IncludeCloudData=False|IncludeDocumentData=True|IncludeAlternatives=False|ShowExportOptions=True|TemplateFilename=|TemplateVaultGuid=|TemplateRevisionGuid=|BatchMode=5|FormWidth=1802|FormHeight=710|SupplierProdQty=1|SupplierAutoQty=False|SupplierUseCachedPricing=False|SupplierCurrency=USD|SolutionsPerItem=1|SuppliersPerSolution=1|ViewType=1|UseDirectApi=True|BomSetName=
+Configuration5_Item2=OpenExported=True|AddToProject=True|ReportBOMViolationsInMessages=False|ForceFit=False|NotFitted=False|Database=True|DatabasePriority=False|IncludePcbData=True|IncludeVaultData=True|IncludeCloudData=False|IncludeDocumentData=True|IncludeAlternatives=False|ShowExportOptions=True|TemplateFilename=|TemplateVaultGuid=|TemplateItemGuid=|TemplateRevisionGuid=|BatchMode=5|FormWidth=1802|FormHeight=710|SupplierProdQty=1|SupplierAutoQty=False|SupplierUseCachedPricing=False|SupplierCurrency=USD|SolutionsPerItem=1|SuppliersPerSolution=1|ViewType=1|UseDirectApi=True|BomSetName=
 Configuration5_Name3=GroupOrder
 Configuration5_Item3=Supplier Part Number 1=True
 Configuration5_Name4=SortOrder
 Configuration5_Item4=Supplier Part Number 1=Up
 Configuration5_Name5=VisibleOrder
-Configuration5_Item5=Designator=141|Description=106|Footprint=75|Quantity=56|Supplier Order Qty 1=100|Manufacturer Part Number=100|Supplier Part Number 1=213|Supplier Stock 1=95|Pricing 1=92|Supplier Unit Price 1=116|Supplier Subtotal 1=111|Supplier Part Number 2=197
+Configuration5_Item5=Designator=141|Footprint=75|Quantity=56|Supplier Order Qty 1=100|Manufacturer Part Number=100|Supplier Part Number 1=213|Supplier Stock 1=95|Pricing 1=92|Supplier Unit Price 1=116|Supplier Subtotal 1=111
 Configuration5_Name6=VisibleOrder_Base
 Configuration5_Item6=Description=82|Designator=80|Comment=52|Supplier Order Qty 1=128|Supplier 1=75|Supplier Part Number 1=142|Supplier Unit Price 1=127|Supplier Subtotal 1=122
 Configuration5_Name7=VisibleOrder_Consolidated
 Configuration5_Item7=Line #=100|Comment=100|Description=100|Designator=100|Revision ID=100|Quantity=100|Manufacturer 1=102|Manufacturer Part Number 1=169|Manufacturer Lifecycle 1=147|Supplier 1=75|Supplier Part Number 1=142|Supplier Unit Price 1=127|Supplier Subtotal 1=122|Quantity@Temperature_IMU=100|Price@Temperature_IMU=100
 Configuration5_Name8=VisibleOrder_Flat
-Configuration5_Item8=Designator=141|Description=106|Footprint=75|Quantity=56|Supplier Order Qty 1=100|Manufacturer Part Number=100|Supplier Part Number 1=213|Supplier Stock 1=95|Pricing 1=92|Supplier Unit Price 1=116|Supplier Subtotal 1=111|Supplier Part Number 2=197
+Configuration5_Item8=Designator=141|Footprint=75|Quantity=56|Supplier Order Qty 1=100|Manufacturer Part Number=100|Supplier Part Number 1=213|Supplier Stock 1=95|Pricing 1=92|Supplier Unit Price 1=116|Supplier Subtotal 1=111
 OutputType6=ExportSTEP
 OutputName6=Export STEP
 OutputCategory6=Export
-OutputDocumentPath6=DB_Main-X02.PcbDoc
+OutputDocumentPath6=LP_ECG-X01.PcbDoc
 OutputVariantName6=
 OutputEnabled6=0
 OutputEnabled6_OutputMedium1=0
@@ -192,18 +192,18 @@ Configuration7_Name1=OutputConfigurationParameter1
 Configuration7_Item1=Record=SchPrintView|ShowNoERC=True|ShowParamSet=True|ShowProbe=True|ShowBlanket=True|NoERCSymbolsToShow="Thin Cross","Thick Cross","Small Cross",Checkbox,Triangle|ShowNote=True|ShowNoteCollapsed=True|ShowOpenEnds=True|ExpandDesignator=True|ExpandNetLabel=False|ExpandPort=False|ExpandSheetNum=False|ExpandDocNum=False|PrintArea=0|PrintAreaRect.X1=0|PrintAreaRect.Y1=0|PrintAreaRect.X2=0|PrintAreaRect.Y2=0
 
 [PublishSettings]
-OutputFilePath2=C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Electronics\X01\DB-X01\.PDF
-ReleaseManaged2=0
-OutputBasePath2=C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Electronics\X01\DB-X01\
+OutputFilePath2=C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\LP_ECG\Electronics\LP_ECG-X01\Project Outputs for LP_ECG-X01\DB_Power-X01.pdf
+ReleaseManaged2=1
+OutputBasePath2=Project Outputs for LP_ECG-X01
 OutputPathMedia2=
 OutputPathMediaValue2=
 OutputPathOutputer2=[Output Type]
 OutputPathOutputerPrefix2=
 OutputPathOutputerValue2=
-OutputFileName2=DB_Power-X01.pdf
+OutputFileName2=LP_ECG-X01.PDF
 OutputFileNameMulti2=
-UseOutputNameForMulti2=1
-OutputFileNameSpecial2=
+UseOutputNameForMulti2=0
+OutputFileNameSpecial2==ProjectName
 OpenOutput2=1
 PromptOverwrite2=1
 PublishMethod2=0
@@ -219,9 +219,9 @@ ShowComponentParameters2=1
 GlobalBookmarks2=0
 PDFACompliance2=Disabled
 PDFVersion2=Default
-OutputFilePath3=C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Electronics\X01\DB-X01\Project Outputs for DB-X01\
+OutputFilePath3=C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\LP_ECG\Electronics\LP_ECG-X01\Project Outputs for LP_ECG-X01\
 ReleaseManaged3=1
-OutputBasePath3=Project Outputs for DB-X02
+OutputBasePath3=Project Outputs for LP_ECG-X01
 OutputPathMedia3=
 OutputPathMediaValue3=
 OutputPathOutputer3=[Output Type]
@@ -234,7 +234,7 @@ OutputFileNameSpecial3=
 OpenOutput3=1
 OutputFilePath4=
 ReleaseManaged4=1
-OutputBasePath4=Project Outputs for DB-X02
+OutputBasePath4=Project Outputs for LP_ECG-X01
 OutputPathMedia4=
 OutputPathMediaValue4=
 OutputPathOutputer4=[Output Type]
@@ -271,9 +271,9 @@ WmvVideoCodecName4=Windows Media Video V7
 WmvQuality4=80
 
 [GeneratedFilesSettings]
-RelativeOutputPath2=C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Electronics\X01\DB-X01\.PDF
+RelativeOutputPath2=C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\LP_ECG\Electronics\LP_ECG-X01\Project Outputs for LP_ECG-X01\DB_Power-X01.pdf
 OpenOutputs2=1
-RelativeOutputPath3=C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\Development_Board\Electronics\X01\DB-X01\Project Outputs for DB-X01\
+RelativeOutputPath3=C:\Users\cdemolde\Documents\GitHub\GT-BITNG\Projects\LP_ECG\Electronics\LP_ECG-X01\Project Outputs for LP_ECG-X01\
 OpenOutputs3=1
 AddToProject3=1
 TimestampFolder3=0
