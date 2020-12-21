@@ -911,9 +911,11 @@ static void _ecg_handler(uint8_t *serial_array_data)
             ecg_init();
             break;
 
-        case ECG_START_DATA_RECORDING:
-            NRF_LOG_INFO("ECG_MODULE: ECG_START_DATA_RECORDING");
-            ecg_start_data_recording();
+        case ECG_START_RECORDING_SESSION:
+            NRF_LOG_INFO("ECG_MODULE: ECG_START_RECORDING_SESSION");
+            ecg_start_recording_session();
+            break;
+
         default:
             break;
     }
@@ -1213,11 +1215,6 @@ static void _bluetooth_handler(uint8_t *serial_array_data)
             advertising_start();
             break;
 
-        case BLUETOOTH_TRANSMIT_RECORDING_SESSION_COMMAND:
-            NRF_LOG_INFO("BLUETOOTH_MODULE: TRANSMIT_RECORDING_SESSION");
-            bluetooth_transmit_recording_session();
-            break;
-
         case BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND:
             NRF_LOG_INFO("BLUETOOTH_MODULE: WRITE_RESPONSE_CHAR");
             uint8_t response_char_data_array[2] = {serial_array_data[3], serial_array_data[4]};
@@ -1230,11 +1227,26 @@ static void _bluetooth_handler(uint8_t *serial_array_data)
             bluetooth_configuration_service_response_char_write(crc_char_data_array);            
             break;
 
+        case BLUETOOTH_TRANSMIT_FIRMWARE_VERSION_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: TRANSMIT_FIRMWARE_VERSION");
+            bluetooth_transmit_firmware_version();
+            break;
+
+        case BLUETOOTH_TRANSMIT_HARDWARE_BOARD_VERSION_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: TRANSMIT_HARDWARE_BOARD_VERSION");
+            bluetooth_transmit_hardware_board_version();
+            break;
+
         #if TMP117
         case BLUETOOTH_WRITE_TEMP_CHAR_COMMAND:
             NRF_LOG_INFO("BLUETOOTH_MODULE: WRITE_TEMP_CHAR");
             uint8_t temp_char_array[250] = {0};
             bluetooth_temperature_service_temp_char_write(temp_char_array);
+            break;
+
+        case BLUETOOTH_TRANSMIT_TEMPERATURE_RECORDING_SESSION_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: TRANSMIT_TEMPERATURE_RECORDING_SESSION");
+            bluetooth_transmit_temperature_recording_session();
             break;
         #endif
 
@@ -1243,6 +1255,11 @@ static void _bluetooth_handler(uint8_t *serial_array_data)
             NRF_LOG_INFO("BLUETOOTH_MODULE: WRITE_ECG_CHAR");
             uint8_t ecg_char_array[250] = {0};
             bluetooth_ecg_service_ecg_char_write(ecg_char_array);
+            break;
+
+        case BLUETOOTH_TRANSMIT_ECG_RECORDING_SESSION_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: TRANSMIT_ECG_RECORDING_SESSION");
+            bluetooth_transmit_ecg_recording_session();
             break;
         #endif
 

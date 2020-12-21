@@ -13,22 +13,26 @@ void ecg_init(void)
     NRF_LOG_INFO("data_flow.max30003_samples_per_second: %u", data_flow.max30003_samples_per_second);
     data_flow.samples_per_recording_session = 3600 * data_flow.max30003_samples_per_second;         // Each recording session is 1 hour
     NRF_LOG_INFO("data_flow.samples_per_recording_session: %u", data_flow.samples_per_recording_session);
-    data_flow.bytes_per_recording_session = data_flow.samples_per_recording_session * 2;            // two bytes of ECG data stored
-    NRF_LOG_INFO("data_flow.bytes_per_recording_session: %u", data_flow.bytes_per_recording_session);
-    data_flow.current_sample_count = 0;
 
-    data_flow.interrupt = 0;    // Disabling the interrupt handler for ECG Data
+    data_flow.bytes_per_sample = max30003_get_bytes_per_sample();
+    NRF_LOG_INFO("data_flow.bytes_per_sample: %u", data_flow.bytes_per_sample);
+    data_flow.bytes_per_recording_session = data_flow.samples_per_recording_session * data_flow.bytes_per_sample;
+    NRF_LOG_INFO("data_flow.bytes_per_recording_session: %u", data_flow.bytes_per_recording_session);
+
+    data_flow.current_sample_count = 0;    
+
+    data_flow.interrupt = 0;    // Disabling the interrupt flag for ECG Data
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
     data_flow.bytes_per_bluetooth_transmission = bluetooth_get_bytes_per_transmission();
-    data_flow.samples_per_bluetooth_transmission = data_flow.bytes_per_bluetooth_transmission/2;
+    data_flow.samples_per_bluetooth_transmission = data_flow.bytes_per_bluetooth_transmission/data_flow.bytes_per_sample;
     NRF_LOG_INFO("data_flow.samples_per_bluetooth_transmission: %u", data_flow.samples_per_bluetooth_transmission);
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    data_flow.recording_session_new_start_address = cy15b108qi_get_current_write_address();
-    NRF_LOG_INFO("data_flow.recording_session_new_start_address: %X", data_flow.recording_session_new_start_address);
+    data_flow.recording_session_start_address = cy15b108qi_get_current_write_address() + TEMPERATURE_DATA_REGISTER_SIZE;
+    NRF_LOG_INFO("data_flow.recording_session_start_address: %X", data_flow.recording_session_start_address);
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 }
@@ -115,7 +119,7 @@ void ecg_interrupt_handler(void)
                 NRF_LOG_INFO("data_flow.bytes_left_to_transmit: %u", data_flow.bytes_left_to_transmit);
                 data_flow.current_sample_count = 0;    // Resetting the sample count
 
-                uint8_t bluetooth_transmit_recording_session_array_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_TRANSMIT_RECORDING_SESSION_COMMAND};
+                uint8_t bluetooth_transmit_recording_session_array_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_TRANSMIT_ECG_RECORDING_SESSION_COMMAND};
                 state_handler(bluetooth_transmit_recording_session_array_data); // Start to transmit the Recording Session of the Data
             }
         }
@@ -198,7 +202,7 @@ uint32_t ecg_get_bytes_left_to_transmit(void)
     return data_flow.bytes_left_to_transmit;
 }
 
-void ecg_start_data_recording(void)
+void ecg_start_recording_session(void)
 {
     NRF_LOG_INFO("ecg_start_data_recording");
     data_flow.interrupt = 1;    // Enabling the interrupt
@@ -239,7 +243,7 @@ void ecg_start_data_recording(void)
     state_handler(spim_disable_array_data); // Disable SPIM Module
 }
 
-void ecg_stop_data_recording(void)
+void ecg_stop_recording_session(void)
 {
     NRF_LOG_INFO("ecg_stop_data_recording");
 

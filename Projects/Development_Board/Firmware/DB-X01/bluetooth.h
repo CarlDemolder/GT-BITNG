@@ -40,13 +40,17 @@ void bluetooth_configuration_service_crc_char_write(uint8_t *crc_char_data_array
 
 #if TMP117
 void bluetooth_temperature_service_temp_char_write(uint8_t *temp_char_data_array);
+void bluetooth_transmit_temperature_recording_session(void);
 #endif
 
 #if ECG
 void bluetooth_ecg_service_ecg_char_write(uint8_t *ecg_char_data_array);
+void bluetooth_transmit_ecg_recording_session(void);
 #endif
 
-void bluetooth_transmit_recording_session(void);
+void bluetooth_transmit_firmware_version(void);
+void bluetooth_transmit_hardware_board_version(void);
+
 uint8_t bluetooth_get_bytes_per_transmission(void);
 
 #endif /*__BLUETOOTH_H__*/

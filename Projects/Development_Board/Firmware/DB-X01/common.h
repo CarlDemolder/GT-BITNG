@@ -22,13 +22,19 @@
 
 #include "nrfx_gpiote.h"
 
-#define DB_X01 1
-#define DB_X02 2
-#define SG_X01 3
-#define LP_ECG_X01 4
-#define LP_ECG_X02 5
+#define DB_X01 0X01
+#define DB_X02 0X02
+#define SG_X01 0X03
+#define LP_ECG_X01 0X04
+#define LP_ECG_X02 0X05
 
 #define BOARD_VERSION LP_ECG_X01
+
+enum COMMON_CONSTANTS
+{
+    POWER_LDO_ON_DELAY = 1000,                          /** Power LDO ON Delay to allow it to startup */
+    FIRMWARE_VERSION = 1,                               /** Firmware version to verify the hardware is using the latest firmware version*/  
+};
 
 #if BOARD_VERSION == DB_X02
     #define MAX30003 1
@@ -73,12 +79,6 @@
         NRESET_PIN = 21,                                    /** Pinout for nRESET pin for DB-X02 */ 
 
         WB_V_OUT = 4,                                       /** Pinout for Wheatstone Bridge Analog pin for DB-X02 */
-     
-        POWER_LDO_ON_DELAY = 1000,                          /** Power LDO ON Delay to allow it to startup */
-
-        HARDWARE_VERSION = 1,                               /** Hardware version to document circuitry */  
-
-        FIRMWARE_VERSION = 1,                               /** Firmware version to document firmware changes */
     };
 #endif
 
@@ -111,12 +111,6 @@
         CY15B108QI_CS_PIN = 9,                              /** Pinout for Chip Select pin of CY15B108QI for LP_ECG-X01 */
 
         NRESET_PIN = 21,                                    /** Pinout for nRESET pin for LP_ECG-X01 */ 
-
-        POWER_LDO_ON_DELAY = 1000,                          /** Power LDO ON Delay to allow it to startup */
-
-        HARDWARE_VERSION = 1,                               /** Hardware version to document circuitry */  
-
-        FIRMWARE_VERSION = 1,                               /** Firmware version to document firmware changes */
     };
 #endif
 
@@ -141,12 +135,6 @@
         TMP117_ALERT_PIN = 26,                              /** Pinout for TMP117 ALERT pin for SG-X01 */
 
         NRESET_PIN = 21,                                    /** Pinout for nRESET pin for SG-X01 */ 
-
-        POWER_LDO_ON_DELAY = 1000,                          /** Power LDO ON Delay to allow it to startup */
-
-        HARDWARE_VERSION = 1,                               /** Hardware version to document circuitry */  
-
-        FIRMWARE_VERSION = 1,                               /** Firmware version to document firmware changes */
     };
 #endif
 

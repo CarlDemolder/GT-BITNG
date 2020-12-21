@@ -10,7 +10,7 @@ static struct CY15B108QI_Control_Struct control_struct;
 void cy15b108qi_init(void)
 {
     NRF_LOG_INFO("cy15b108qi_init");
-    control_struct.start_address = FIRST_WRITE_ADDRESS;
+    control_struct.start_address = CY15B108QI_FIRST_WRITE_ADDRESS;
     control_struct.write_address = control_struct.start_address;
     NRF_LOG_INFO("control_struct.write_address: %X", control_struct.write_address);
 }

@@ -25,8 +25,17 @@
 #define SEC_PARAM_MIN_KEY_SIZE          7                                       /**< Minimum encryption key size. */
 #define SEC_PARAM_MAX_KEY_SIZE          16                                      /**< Maximum encryption key size. */
 
+#if BOARD_VERSION == LP_ECG_X01
+#define DEVICE_NAME                     "LP_ECG-X01"                                /**< Name of device. Will be included in the advertising data. */
+#endif
 
-#define DEVICE_NAME                     "LP-ECG"                                /**< Name of device. Will be included in the advertising data. */
+#if BOARD_VERSION == DB_X02
+#define DEVICE_NAME                     "DB-X02"                                /**< Name of device. Will be included in the advertising data. */
+#endif
+
+#if BOARD_VERSION == SG_X01
+#define DEVICE_NAME                     "SG-X01"                                /**< Name of device. Will be included in the advertising data. */
+#endif
 
 #define MANUFACTURER_NAME               "GT-BITNG"                              /**< Manufacturer. Will be passed to Device Information Service. */
 
@@ -757,18 +766,45 @@ void bluetooth_ecg_service_ecg_char_write(uint8_t *ecg_char_data_array)
 }
 #endif
 
-void bluetooth_transmit_recording_session(void)
+#if ECG
+void bluetooth_transmit_ecg_recording_session(void)
 {
     NRF_LOG_INFO("bluetooth_transmit_recording_session");
     uint8_t temp_data_array[64];
     ecg_get_data_packet(temp_data_array, 64);
 
-    ecg_stop_data_recording();
+    ecg_stop_recording_session();
 }
+#endif
+
+#if TMP117
+void bluetooth_transmit_temperature_recording_session(void)
+{
+//    NRF_LOG_INFO("bluetooth_transmit_recording_session");
+//    uint8_t temp_data_array[64];
+//    ecg_get_data_packet(temp_data_array, 64);
+//
+//    ecg_stop_recording_session();
+}
+#endif
 
 uint8_t bluetooth_get_bytes_per_transmission(void)
 {
     NRF_LOG_INFO("bluetooth_get_bytes_per_transmission");
     uint8_t temp = 250;
     return temp;
+}
+
+void bluetooth_transmit_firmware_version(void)
+{
+    NRF_LOG_INFO("bluetooth_transmit_firmware_version");
+    uint8_t response_char_data_array[2] = {0x00, FIRMWARE_VERSION};
+    bluetooth_configuration_service_response_char_write(response_char_data_array);
+}
+
+void bluetooth_transmit_hardware_board_version(void)
+{
+    NRF_LOG_INFO("bluetooth_transmit_hardware_board_version");
+    uint8_t response_char_data_array[2] = {0x00, BOARD_VERSION};
+    bluetooth_configuration_service_response_char_write(response_char_data_array);
 }

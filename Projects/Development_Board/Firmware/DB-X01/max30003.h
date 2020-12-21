@@ -204,8 +204,9 @@ static struct ECG_FIFO_Memory_Register ecg_fifo_memory_register;
 struct MAX30003_Data_Flow
 {
     uint8_t counter;                                                /**< counter to iterate through values */
-    uint8_t samples_per_interrupt;                                 /**< Counter value to record the number of samples per interrupt */
-    uint16_t samples_per_second;                                     /**< Sampling frequency */
+    uint8_t samples_per_interrupt;                                  /**< Counter value to record the number of samples per interrupt */
+    uint16_t samples_per_second;                                    /**< Sampling frequency */
+    uint8_t bytes_per_sample;                                       /**< Bytes per Sample */
 };
 
 //Function Prototypes:
@@ -226,6 +227,8 @@ void max30003_start_recording(void);
 uint8_t max30003_get_samples_per_interrupt(void);
 
 uint8_t max30003_get_samples_per_second(void);
+
+uint8_t max30003_get_bytes_per_sample(void);
 
 void max30003_interrupt1_enable(void);
 

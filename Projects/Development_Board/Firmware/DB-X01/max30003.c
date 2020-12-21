@@ -1,5 +1,7 @@
 #include "max30003.h"
 
+#if MAX30003
+
 static struct MAX30003_Status_Register status_register;
 static struct MAX30003_Data_Flow data_flow;
 
@@ -170,6 +172,8 @@ void max30003_init(void)
     data_flow.samples_per_interrupt = interrupt_manager_register.efit + 1;  // Setting the default Samples recored per interrupt
     NRF_LOG_INFO("data_flow.samples_per_interrupt: %u", data_flow.samples_per_interrupt);
     data_flow.samples_per_second = 128;
+
+    data_flow.bytes_per_sample = 2;   // Bytes per sample
 }
 
 void max30003_start_recording(void)
@@ -191,6 +195,12 @@ uint8_t max30003_get_samples_per_second(void)
 {
     NRF_LOG_INFO("max30003_get_samples_per_second");
     return data_flow.samples_per_second;
+}
+
+uint8_t max30003_get_bytes_per_sample(void)
+{
+    NRF_LOG_INFO("max30003_get_bytes_per_sample");
+    return data_flow.bytes_per_sample;
 }
 
 void max30003_interrupt1_enable(void)
@@ -935,3 +945,4 @@ static void _max30003_spim_write_registers(uint8_t start_register_address, uint8
     NRF_LOG_HEXDUMP_INFO(temp_data_array, ARRAY_LENGTH(temp_data_array));   // Debugging purposes only
     spim_write_registers(start_register_address, data_array, data_array_size);
 }
+#endif

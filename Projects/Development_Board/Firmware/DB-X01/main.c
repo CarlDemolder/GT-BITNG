@@ -27,7 +27,11 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
 int main(void)
 {
     startup_initialization();
-//    enable_usb_handler();    // Enable USB Handler for Serial Debugging through I2C
+
+    #if FT201X
+    enable_usb_handler();    // Enable USB Handler for Serial Debugging through I2C
+    #endif
+
     enable_bluetooth_handler();
     for (;;)
     {
