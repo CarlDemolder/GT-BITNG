@@ -1,6 +1,7 @@
-Projects/Development_Board/Electronics/DB/DB-X01/History/*
-Projects/Development_Board/Firmware/DB-X01/pca10040/s132/ses/Output/*
-Projects/Development_Board/Electronics/DB/DB-X02/History/*
-Projects/LP_ECG/Electronics/LP_ECG-X01/History/*
+**/History/
+**/ses/Output/
 *.pptx
+*.o
+*.d
+
 

@@ -65,7 +65,7 @@
  <Files>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="230" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../serial_slave.c" selected="0" top="229" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="578" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../bluetooth.c" selected="0" top="715" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="109" y="114" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../ecg.c" selected="1" top="90" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="114" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../ecg.c" selected="1" top="90" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="9" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../ecg.h" selected="0" top="0" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="16" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../cy15b108qi.c" selected="0" top="325" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="32" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../cy15b108qi.h" selected="0" top="0" codecName="Default"/>
