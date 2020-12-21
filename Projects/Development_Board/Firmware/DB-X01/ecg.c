@@ -109,10 +109,10 @@ void ecg_interrupt_handler(void)
 
             if(data_flow.samples >= data_flow.samples_per_recording_session)
             {
-                data_flow.recording_session_old_start_address = data_flow.recording_session_new_start_address;
+                data_flow.recording_session_old_start_address = data_flow.recording_session_start_address;
                 NRF_LOG_INFO("data_flow.recording_session_old_start_address: %X", data_flow.recording_session_old_start_address);
-                data_flow.recording_session_new_start_address = cy15b108qi_get_current_write_address();
-                NRF_LOG_INFO("data_flow.recording_session_new_start_address: %X", data_flow.recording_session_new_start_address);
+                data_flow.recording_session_start_address = cy15b108qi_get_current_write_address();
+                NRF_LOG_INFO("data_flow.recording_session_new_start_address: %X", data_flow.recording_session_start_address);
                 data_flow.recording_session_current_read_address = data_flow.recording_session_old_start_address;
                 NRF_LOG_INFO("data_flow.recording_session_current_read_address: %X", data_flow.recording_session_current_read_address);
                 data_flow.bytes_left_to_transmit = data_flow.max30003_samples_per_interrupt*2;
