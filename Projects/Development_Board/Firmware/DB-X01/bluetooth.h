@@ -15,6 +15,13 @@
 
 #include "serial_slave.h"
 
+/**@brief Status Register Structure. This structure contains all values read from the Status Register.*/
+struct Bluetooth_Data_Flow
+{
+    ret_code_t error_code;          /**< Variable to track errors */
+
+};
+
 void nrf_qwr_error_handler(uint32_t nrf_error);
 void pm_evt_handler(pm_evt_t const *p_evt);
 void gap_params_init(void);
@@ -52,5 +59,5 @@ void bluetooth_transmit_firmware_version(void);
 void bluetooth_transmit_hardware_board_version(void);
 
 uint8_t bluetooth_get_bytes_per_transmission(void);
-
+void bluetooth_disconnect(void);
 #endif /*__BLUETOOTH_H__*/

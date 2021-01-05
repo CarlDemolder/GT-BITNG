@@ -208,7 +208,7 @@ void rtc_tmp117_init(void)
 {
     //Initialize RTC instance for the tmp117
     NRF_LOG_INFO("rtc__tmp117_init");
-    rtc_tmp117_configuration.rtc_frequency = 8;      // Setting the frequency of the RTC tmp117 to 8 Hz
+    rtc_tmp117_configuration.rtc_frequency = 1;      // Setting the frequency of the RTC tmp117 to 1 Hz
     rtc_tmp117_configuration.rtc_is_running = 0;     // RTC tmp117 current state
     rtc_tmp117_configuration.rtc_restart = 0;        // RTC tmp117 restart command
 
@@ -221,6 +221,9 @@ void rtc_tmp117_init(void)
     NRF_LOG_INFO("prescaler %u", rtc_tmp117_configuration.nrfx_rtc_config.prescaler);
 
     nrfx_rtc_tmp117_init();
+
+    rtc_tmp117_configuration.rtc_counter = 30;  // Setting the counter of the RTC to trigger every 30 seconds
+    rtc_tmp117_set_counter(rtc_tmp117_configuration.rtc_counter);
 }
 
 /**@brief Function to uninitialize the instance of the RTC for the tmp117
@@ -242,19 +245,20 @@ void nrfx_rtc_tmp117_init(void)
 
 /**@brief Function to configure an RTC instance for the tmp117
  */
-void rtc_tmp117_handler(nrfx_rtc_int_type_t int_type)
+void rtc_tmp117_handler(nrfx_rtc_int_type_t interrupt_type)
 {
-    if (int_type == NRFX_RTC_INT_COMPARE2)
+    if (interrupt_type == NRFX_RTC_INT_COMPARE2)
     {
-        NRF_LOG_INFO("NRFX_RTC_INT_COMPARE2");
+        NRF_LOG_INFO("rtc_tmp117_handler: NRFX_RTC_INT_COMPARE2");
         nrfx_rtc_counter_clear(&rtc_tmp117_configuration.nrfx_rtc);
         nrfx_rtc_int_enable(&rtc_tmp117_configuration.nrfx_rtc, NRF_RTC_INT_COMPARE2_MASK);
 
+        temperature_interrupt_handler();
     }
 }
 
-/**@brief Function to set the counter of the RTC tmp117
-* The counter is a function of the frequency. For example, if the frequency = 8 Hz, a counter value of 80 would be 10 seconds...
+/**@brief Function to set the counter of the RTC for the tmp117
+* The counter is a function of the frequency. For example, if the frequency = 8 Hz, a counter value of 80 would trigger the interrupt every 10 seconds...
  */
 void rtc_tmp117_set_counter(uint32_t new_sampling_counter)
 {
@@ -265,7 +269,7 @@ void rtc_tmp117_set_counter(uint32_t new_sampling_counter)
     NRF_LOG_INFO("counter %u", rtc_tmp117_configuration.rtc_counter);
 }
 
-/**@brief Function to set the counter of the RTC tmp117
+/**@brief Function to set the frequency of the RTC for the tmp117
 * The frequency is when the RTC timer is triggered
  */
 void rtc_tmp117_set_frequency(uint8_t new_sampling_frequency)
@@ -278,6 +282,14 @@ void rtc_tmp117_set_frequency(uint8_t new_sampling_frequency)
     rtc_tmp117_configuration.nrfx_rtc_config.prescaler =  RTC_TIMER_CLOCK_FREQ/rtc_tmp117_configuration.rtc_frequency - 1;
     NRF_LOG_INFO("frequency %u", rtc_tmp117_configuration.rtc_frequency);
     nrfx_rtc_tmp117_init();
+}
+
+/** @brief Function to return the number of samples per minute */
+uint8_t rtc_tmp117_get_sampling_frequency(void)
+{
+    NRF_LOG_INFO("rtc_tmp117_get_sampling_frequency");
+    uint8_t sampling_frequency = (uint8_t) 60/(((float)(1/rtc_tmp117_configuration.rtc_frequency))*rtc_tmp117_configuration.rtc_counter);
+    return sampling_frequency;
 }
 
 /**@brief Function to stop the RTC tmp117

@@ -21,7 +21,7 @@ void ecg_init(void)
 
     data_flow.current_sample_count = 0;    
 
-    data_flow.interrupt = 0;    // Disabling the interrupt flag for ECG Data
+    data_flow.ecg_interrupt = 0;    // Disabling the interrupt flag for ECG Data
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -41,7 +41,7 @@ void ecg_interrupt_handler(void)
 {
     NRF_LOG_INFO("ecg_interrupt_handler");
     
-    if(data_flow.interrupt == 1)
+    if(data_flow.ecg_interrupt == 1)
     {
         uint8_t spim_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
         state_handler(spim_enable_array_data); // Enable SPIM Module
@@ -94,8 +94,12 @@ void ecg_interrupt_handler(void)
             uint8_t cy15b108qi_set_write_enable_latch_array_data[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_SET_WRITE_ENABLE_LATCH_COMMAND};
             state_handler(cy15b108qi_set_write_enable_latch_array_data); // Set the write enable latch
 
+            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+            
             cy15b108qi_write_data_command(cy15b108qi_voltage_array, ARRAY_LENGTH(cy15b108qi_voltage_array));
 
+            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+            
             uint8_t cy15b108qi_reset_write_enable_latch_array_data[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_RESET_WRITE_ENABLE_LATCH_COMMAND};
             state_handler(cy15b108qi_reset_write_enable_latch_array_data); // Reset the write enable latch
 
@@ -205,7 +209,7 @@ uint32_t ecg_get_bytes_left_to_transmit(void)
 void ecg_start_recording_session(void)
 {
     NRF_LOG_INFO("ecg_start_data_recording");
-    data_flow.interrupt = 1;    // Enabling the interrupt
+    data_flow.ecg_interrupt = 1;    // Enabling the interrupt
 
     uint8_t spim_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
     state_handler(spim_enable_array_data); // Enable SPIM Module
@@ -241,13 +245,26 @@ void ecg_start_recording_session(void)
 
     uint8_t spim_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
     state_handler(spim_disable_array_data); // Disable SPIM Module
+
+/* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t nrfx_rtc_start_tmp117_array_data[4] = {0x00, NRF52_MODULE, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_TMP117_START};
+    state_handler(nrfx_rtc_start_tmp117_array_data); // NRFX Start TMP117 RTC
+
+/* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t response_char_recording_session_started_data_array[5] = {0X00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, 0X00, BLUETOOTH_RESPONSE_CHAR_RECORDING_SESSION_STARTED};
+    state_handler(response_char_recording_session_started_data_array); // Sending message to phone that the recording session has started
+
+    uint8_t bluetooth_disconnect_data_array[5] = {0X00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, BLUETOOTH_DISCONNECT_COMMAND};
+    state_handler(bluetooth_disconnect_data_array); // Disconnect the device from the phone to conserve energy
 }
 
 void ecg_stop_recording_session(void)
 {
     NRF_LOG_INFO("ecg_stop_data_recording");
 
-    data_flow.interrupt = 0;    // Disabling the interrupt
+    data_flow.ecg_interrupt = 0;    // Disabling the interrupt
 
     uint8_t spim_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
     state_handler(spim_enable_array_data); // Enable SPIM Module
@@ -281,7 +298,6 @@ void ecg_stop_recording_session(void)
 
     uint8_t spim_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
     state_handler(spim_disable_array_data); // Disable SPIM Module
-
 }
 
 #endif

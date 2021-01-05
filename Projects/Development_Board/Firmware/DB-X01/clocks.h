@@ -60,6 +60,7 @@ void rtc_tmp117_init(void);
 void rtc_tmp117_handler(nrfx_rtc_int_type_t int_type);
 void rtc_tmp117_set_counter(uint32_t new_sampling_counter);
 void rtc_tmp117_set_frequency(uint8_t new_sampling_frequency);
+uint8_t rtc_tmp117_get_sampling_frequency(void);
 void rtc_tmp117_start(void);
 void rtc_tmp117_stop(void);
 void rtc_tmp117_restart(void);

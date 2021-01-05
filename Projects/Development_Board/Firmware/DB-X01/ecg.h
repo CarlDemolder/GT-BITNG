@@ -2,7 +2,6 @@
 #define ECG_H_
 
 #include "serial_slave.h"
-#include "common.h"
 
 #if ECG
 
@@ -27,14 +26,19 @@ struct ECG_DATA_FLOW
     uint32_t recording_session_current_read_address;
     uint32_t bytes_left_to_transmit;
     uint8_t bytes_per_sample;
-    uint8_t interrupt;
+    uint8_t ecg_interrupt;
 };
 
 void ecg_init(void);
+
 void ecg_interrupt_handler(void);
+
 uint8_t ecg_get_data_packet(uint8_t *bluetooth_data_packet, uint8_t bluetooth_data_packet_size);
+
 uint32_t ecg_get_bytes_left_to_transmit(void);
+
 void ecg_start_recording_session(void);
+
 void ecg_stop_recording_session(void);
 
 #endif

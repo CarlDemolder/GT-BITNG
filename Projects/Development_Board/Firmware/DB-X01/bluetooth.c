@@ -80,6 +80,7 @@ ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {TEMPERATURE_SERVICE_UU
 ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {TEMPERATURE_SERVICE_UUID}, {ECG_SERVICE_UUID}};  /**< Universally unique service identifiers. */
 #endif
 
+static struct Bluetooth_Data_Flow data_flow;
 
 /**@brief Function for handling Queued Write Module errors.
  *
@@ -316,7 +317,7 @@ void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
 
     if (p_evt->evt_type == BLE_CONN_PARAMS_EVT_FAILED)
     {
-        NRF_LOG_INFO("On Connection Parameters Failed");
+        NRF_LOG_INFO("BLE_CONN_PARAMS_EVT_FAILED");
         err_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_CONN_INTERVAL_UNACCEPTABLE);
         APP_ERROR_CHECK(err_code);
     }
@@ -368,11 +369,11 @@ void on_adv_evt(ble_adv_evt_t ble_adv_evt)
     switch (ble_adv_evt)
     {
         case BLE_ADV_EVT_FAST:
-            NRF_LOG_INFO("Fast advertising.");
+            NRF_LOG_INFO("BLE_ADV_EVT_FAST");
             break;
 
         case BLE_ADV_EVT_IDLE:
-            NRF_LOG_INFO("BLE advertising idle.");
+            NRF_LOG_INFO("BLE_ADV_EVT_IDLE");
             break;
 
         default:
@@ -572,9 +573,6 @@ static void on_configuration_service_evt(ble_configuration_service_t *p_cus_serv
             NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_SETTINGS_CHAR_WRITE");
             configuration_service_settings_char_read(p_cus_service, ble_configuration_service_init.settings_char);
             bluetooth_configuration_service_settings_char_read(ble_configuration_service_init.settings_char);
-            uint8_t response_char_ack_data_array[10] = {BLUETOOTH_COMMAND_HEADER, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, 
-                0X00, BLUETOOTH_RESPONSE_CHAR_MESSAGE_RECEIVED, 0X00, 0X00, 0X00, 0X00, BLUETOOTH_COMMAND_FOOTER};
-            bluetooth_handler(response_char_ack_data_array);
             break;
 
         default:
@@ -807,4 +805,11 @@ void bluetooth_transmit_hardware_board_version(void)
     NRF_LOG_INFO("bluetooth_transmit_hardware_board_version");
     uint8_t response_char_data_array[2] = {0x00, BOARD_VERSION};
     bluetooth_configuration_service_response_char_write(response_char_data_array);
+}
+
+void bluetooth_disconnect(void)
+{
+    NRF_LOG_INFO("bluetooth_disconnect");
+    data_flow.error_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+    APP_ERROR_CHECK(data_flow.error_code);
 }

@@ -81,14 +81,23 @@ static void _tmp117_initialization(void)
     uint8_t i2c_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_ENABLE};  
     state_handler(i2c_enable_array_data); // Enable TWIM Driver
 
-    uint8_t tmp117_shutdown_array_data[5] = {0x00, TMP117_MODULE, TMP117_INIT_COMMAND, TMP117_SHUTDOWN_MODE, TMP117_64_AVERAGED_MODE};  
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t tmp117_shutdown_array_data[5] = {0x00, TMP117_MODULE, TMP117_INIT_COMMAND, TMP117_SHUTDOWN_MODE, TMP117_NO_AVERAGING_MODE};  
     state_handler(tmp117_shutdown_array_data); // Set the TMP117 to shutdown mode, no averaging mode
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
     uint8_t i2c_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_DISABLE};  
     state_handler(i2c_disable_array_data); // Disable TWIM Driver
 
     uint8_t i2c_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  
     state_handler(i2c_uninit_array_data); // Uninit TWIM Driver
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t rtc_tmp117_array_data[4] = {0x00, NRF52_MODULE, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_TMP117_INIT};  
+    state_handler(rtc_tmp117_array_data); // Initialize the RTC to control the sampling frequency of the TMP117
 }
 #endif
 
@@ -217,6 +226,8 @@ void bluetooth_handler(uint8_t *settings_char_data_array)
     NRF_LOG_INFO("bluetooth_handler");
     if(settings_char_data_array[0] == BLUETOOTH_COMMAND_HEADER && settings_char_data_array[CONFIGURATION_SERVICE_SETTINGS_CHAR_LENGTH-1] == BLUETOOTH_COMMAND_FOOTER)
     {
+        uint8_t response_char_ack_data_array[5] = {0X00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, 0X00, BLUETOOTH_RESPONSE_CHAR_MESSAGE_RECEIVED};
+        state_handler(response_char_ack_data_array);
         state_handler(settings_char_data_array);
     }
     else
@@ -845,16 +856,12 @@ static void _tmp117_handler(uint8_t *serial_array_data)
     {
         case TMP117_READ_CHIP_ID_COMMAND:
             NRF_LOG_INFO("tmp117_MODULE: TMP117_READ_CHIP_ID_COMMAND");
-            uint16_t tmp117_chip_id = tmp117_read_chip_id();
-//            uint8_t tmp117_chip_id_array_data[5] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, (tmp117_chip_id & 0xF0), (tmp117_chip_id & 0x0F)};  // Write TMP117 Chip ID
-//            state_handler(tmp117_chip_id_array_data);
+            tmp117_read_chip_id();
             break;
 
         case TMP117_READ_REVISION_NUMBER_COMMAND:
             NRF_LOG_INFO("TMP117_MODULE: TMP117_READ_CHIP_ID_COMMAND");
-            uint8_t tmp117_revision_number = tmp117_read_revision_number();
-//            uint8_t tmp117_revision_number_array_data[4] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, tmp117_chip_id};  // Write TMP117 Chip ID
-//            state_handler(tmp117_revision_number_array_data);
+            tmp117_read_revision_number();
             break;
 
         case TMP117_UNLOCK_EEPROM_COMMAND:
@@ -879,18 +886,12 @@ static void _tmp117_handler(uint8_t *serial_array_data)
 
         case TMP117_TEMP_UINT16_COMMAND:
             NRF_LOG_INFO("TMP117_MODULE: TMP117_UINT16_COMMAND");
-            uint16_t tmp117_temp_value = tmp117_get_uint16_t();
-//            uint8_t tmp117_temp_value_array_data[5] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, (tmp117_temp_value & 0xF0), (tmp117_temp_value & 0x0F)};  // Write TMP117 Temperature Value
-//            state_handler(tmp117_temp_value_array_data);             
+            tmp117_get_uint16_t();     
             break;
 
         case TMP117_TEMP_CHAR_ARRAY_COMMAND:
             NRF_LOG_INFO("TMP117_MODULE: TMP117_TEMP_CHAR_ARRAY_COMMAND");    
-            uint8_t tmp117_uint8_t[5];
-            tmp117_get_uint8_t(tmp117_uint8_t);
-//            uint8_t tmp117_uint8_t_array_data[8] = {0x00, FT201X_MODULE, FT201X_WRITE_DATA_ARRAY_COMMAND, tmp117_uint8_t[4], tmp117_uint8_t[3],
-//            tmp117_uint8_t[2], tmp117_uint8_t[1], tmp117_uint8_t[0]};  // Write TMP117 Temperature Value
-//            state_handler(tmp117_uint8_t_array_data);           
+            tmp117_get_uint8_t();           
             break;
 
         default:
@@ -1262,6 +1263,11 @@ static void _bluetooth_handler(uint8_t *serial_array_data)
             bluetooth_transmit_ecg_recording_session();
             break;
         #endif
+
+        case BLUETOOTH_DISCONNECT_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: DISCONNECT");
+            bluetooth_disconnect();
+            break;
 
         default:
             break;

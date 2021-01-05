@@ -1,7 +1,59 @@
 #include "tmp117.h"
 
+#if TMP117
 
-uint16_t tmp117_read_chip_id(void)
+static struct TMP117_CONTROL_STRUCT control_struct;
+
+void tmp117_init(uint8_t configuration_mode, uint8_t averaging_mode)
+{
+    NRF_LOG_INFO("tmp117_init");
+
+    tmp117_unlock_eeprom();
+    tmp117_set_operating_mode(configuration_mode, averaging_mode);
+    tmp117_general_call_reset();
+
+    control_struct.interrupt = 0;   // Initializing the interrupt to 0 to start out
+
+    control_struct.external_memory_write_start_address = 0x000000;    // Start address of the external memory to store temperature data
+    control_struct.external_memory_write_end_address = 0x0001F4;      // End address of the external memory to store temperature data
+    control_struct.external_memory_write_current_address = control_struct.external_memory_write_start_address;    // Initializing the current write address to the write start address
+
+    control_struct.external_memory_transmit_start_address = control_struct.external_memory_write_start_address;           // The transmitting start address is set the write start address
+    control_struct.external_memory_transmit_end_address = control_struct.external_memory_write_end_address;               // The transmitting end address is set to the write end address
+    control_struct.external_memory_transmit_current_address = control_struct.external_memory_transmit_start_address;      // The transmitting current address is set to the transmit start address
+
+    control_struct.bytes_per_sample = 2;    // Number of bytes per sample; uint16_t data type used to store temperature value
+
+    control_struct.samples_per_minute = rtc_tmp117_get_sampling_frequency();
+    NRF_LOG_INFO("data_flow.max30003_samples_per_second: %u", data_flow.max30003_samples_per_second);
+    data_flow.samples_per_recording_session = 3600 * data_flow.max30003_samples_per_second;         // Each recording session is 1 hour
+    NRF_LOG_INFO("data_flow.samples_per_recording_session: %u", data_flow.samples_per_recording_session);
+
+    data_flow.bytes_per_sample = max30003_get_bytes_per_sample();
+    NRF_LOG_INFO("data_flow.bytes_per_sample: %u", data_flow.bytes_per_sample);
+    data_flow.bytes_per_recording_session = data_flow.samples_per_recording_session * data_flow.bytes_per_sample;
+    NRF_LOG_INFO("data_flow.bytes_per_recording_session: %u", data_flow.bytes_per_recording_session);
+
+    data_flow.current_sample_count = 0;    
+
+    data_flow.ecg_interrupt = 0;    // Disabling the interrupt flag for ECG Data
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    data_flow.bytes_per_bluetooth_transmission = bluetooth_get_bytes_per_transmission();
+    data_flow.samples_per_bluetooth_transmission = data_flow.bytes_per_bluetooth_transmission/data_flow.bytes_per_sample;
+    NRF_LOG_INFO("data_flow.samples_per_bluetooth_transmission: %u", data_flow.samples_per_bluetooth_transmission);
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    data_flow.recording_session_start_address = cy15b108qi_get_current_write_address() + TEMPERATURE_DATA_REGISTER_SIZE;
+    NRF_LOG_INFO("data_flow.recording_session_start_address: %X", data_flow.recording_session_start_address);
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+}
+
+void tmp117_read_chip_id(void)
 {
     NRF_LOG_INFO("tmp117_read_chip_id");
     uint8_t register_byte_count = 2;                            // Number of bytes of buffer to read
@@ -10,11 +62,10 @@ uint16_t tmp117_read_chip_id(void)
     uint8_t register_data[register_byte_count];                 // Store data in array
     
     i2c_read_registers(device_address, register_address, register_data, register_byte_count);
-    uint16_t device_id =  ((register_data[0] << 8) & 0b00001111) | register_data[1];
-    return device_id;
+    control_struct.device_id =  ((register_data[0] << 8) & 0b00001111) | register_data[1];
 }
 
-uint8_t tmp117_read_revision_number(void)
+void tmp117_read_revision_number(void)
 {
     NRF_LOG_INFO("tmp117_read_chip_id");
     uint8_t register_byte_count = 2;                            // Number of bytes of buffer to read
@@ -23,21 +74,21 @@ uint8_t tmp117_read_revision_number(void)
     uint8_t register_data[register_byte_count];                 // Store data in array
     
     i2c_read_registers(device_address, register_address, register_data, register_byte_count);
-    uint8_t revision_number =  register_data[0] & 0b11110000;   // Reading revision number bits
-    return revision_number;
+    control_struct.revision_number =  register_data[0] & 0b11110000;   // Reading revision number bits
 }
 
 float tmp117_get_celsius(void)
 {
     NRF_LOG_INFO("tmp117_get_celsius");
     float reg_cels_conv = 7812.5; //1 Register unit = 0.0078125 Celcius
-    float celsius_counts = (float) tmp117_get_uint16_t();
+    tmp117_get_uint16_t();
+    float celsius_counts = (float) control_struct.temp_raw_value;
     float tmp117_celsius = reg_cels_conv*celsius_counts/1000000;
     NRF_LOG_INFO("Temperature Value: " NRF_LOG_FLOAT_MARKER " C.", NRF_LOG_FLOAT(tmp117_celsius));
     return tmp117_celsius;
 }
 
-uint16_t tmp117_get_uint16_t(void)
+void tmp117_get_uint16_t(void)
 {    
     NRF_LOG_INFO("tmp117_get_uint16_t");
     uint8_t register_byte_count = 2;                            // Number of bytes of buffer to read
@@ -46,8 +97,9 @@ uint16_t tmp117_get_uint16_t(void)
     uint8_t register_data[register_byte_count];                 // Store data in array
     
     i2c_read_registers(device_address, register_address, register_data, register_byte_count);
-    uint16_t uint16_temp_results =  (register_data[0] << 8) | register_data[1];   // Reading temperature data bits
-    return uint16_temp_results;
+    control_struct.temp_raw_value =  (register_data[0] << 8) | register_data[1];   // Reading temperature data bits
+    control_struct.temp_raw_value_array[0] = register_data[0];
+    control_struct.temp_raw_value_array[1] = register_data[1];
 }
 
 void tmp117_string_celsius(char *tmp117_temperature)
@@ -56,22 +108,15 @@ void tmp117_string_celsius(char *tmp117_temperature)
     sprintf(tmp117_temperature, "%.4f", int_temp);    
 }
 
-void tmp117_get_uint8_t(uint8_t *tmp117_uint8_t)
+void tmp117_get_uint8_t(void)
 {
     char tmp117_char[5]; //Initializes the Character Array
     tmp117_string_celsius(tmp117_char);
 
     for(uint8_t i = 0; i<strlen(tmp117_char); i++)
     {
-        tmp117_uint8_t[i] = (uint8_t) tmp117_char[i];
+        control_struct.tmp117_uint8_t[i] = (uint8_t) tmp117_char[i];
     }
-}
-
-void tmp117_init(uint8_t configuration_mode, uint8_t averaging_mode)
-{
-    tmp117_unlock_eeprom();
-    tmp117_set_operating_mode(configuration_mode, averaging_mode);
-    tmp117_general_call_reset();
 }
 
 void tmp117_unlock_eeprom(void)
@@ -169,3 +214,181 @@ void tmp117_general_call_reset(void)
     register_data[0] = TMP117_GENERAL_CALL_RESET; 
     i2c_write_registers(GENERAL_CALL_ADDRESS, register_data, register_byte_count);
 }
+
+void tmp117_interrupt_handler(void)
+{
+    NRF_LOG_INFO("tmp117_interrupt_handler");
+
+    if(control_struct.interrupt == 1)
+    {
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+    
+        uint8_t i2c_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  
+        state_handler(i2c_init_array_data); // Init TWIM Driver
+
+        uint8_t i2c_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_ENABLE};  
+        state_handler(i2c_enable_array_data); // Enable TWIM Driver
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        uint8_t tmp117_wakeup_array_data[5] = {0x00, TMP117_MODULE, TMP117_INIT_COMMAND, TMP117_CONTINUOUS_CONVERSION_MODE, TMP117_64_AVERAGED_MODE};  
+        state_handler(tmp117_wakeup_array_data); // Set the TMP117 to continous conversion mode, 64 averaging mode
+
+        uint8_t tmp117_read_temperature_value_array_data[3] = {0x00, TMP117_MODULE, TMP117_TEMP_UINT16_COMMAND};  
+        state_handler(tmp117_read_temperature_value_array_data); // Read the uint16_t temperature value of the TMP117 
+
+        uint8_t tmp117_shutdown_array_data[5] = {0x00, TMP117_MODULE, TMP117_INIT_COMMAND, TMP117_SHUTDOWN_MODE, TMP117_NO_AVERAGING_MODE};  
+        state_handler(tmp117_shutdown_array_data); // Set the TMP117 to shutdown mode, no averaging mode
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        uint8_t i2c_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_DISABLE};  
+        state_handler(i2c_disable_array_data); // Disable TWIM Driver
+
+        uint8_t i2c_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  
+        state_handler(i2c_uninit_array_data); // Uninit TWIM Driver
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        uint8_t spim_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+        state_handler(spim_enable_array_data); // Enable SPIM Module
+
+        uint8_t spim_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
+        state_handler(spim_init_array_data); // Initialize SPIM Module
+    
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+    
+        uint8_t spim_select_cs_pin_array_data[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, CY15B108QI_CS_PIN};
+        state_handler(spim_select_cs_pin_array_data); // Set Chip Select Pin to CY15B108QI for the SPIM Module
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        uint8_t cy15b108qi_exit_deep_power_down_mode_array_data[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_EXIT_DEEP_POWER_DOWN_MODE_COMMAND};
+        state_handler(cy15b108qi_exit_deep_power_down_mode_array_data); // Exit the Deep power down mode
+
+        uint8_t cy15b108qi_set_write_enable_latch_array_data[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_SET_WRITE_ENABLE_LATCH_COMMAND};
+        state_handler(cy15b108qi_set_write_enable_latch_array_data); // Set the write enable latch
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        if(control_struct.external_memory_current_address > control_struct.external_memory_end_address)
+        {
+            control_struct.external_memory_current_address = control_struct.external_memory_start_address;
+        }
+
+        cy15b108qi_write_data_command(control_struct.temp_raw_value_array, ARRAY_LENGTH(control_struct.temp_raw_value_array), control_struct.external_memory_current_address);
+        control_struct.external_memory_current_address += ARRAY_LENGTH(control_struct.temp_raw_value_array);
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        uint8_t cy15b108qi_reset_write_enable_latch_array_data[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_RESET_WRITE_ENABLE_LATCH_COMMAND};
+        state_handler(cy15b108qi_reset_write_enable_latch_array_data); // Reset the write enable latch
+
+        uint8_t cy15b108qi_enter_deep_power_down_mode_array_data[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_ENTER_DEEP_POWER_DOWN_MODE_COMMAND};
+        state_handler(cy15b108qi_enter_deep_power_down_mode_array_data); // Enter the Deep power down mode
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        uint8_t spim_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
+        state_handler(spim_uninit_array_data); // Uninitialize SPIM Module
+
+        uint8_t spim_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
+        state_handler(spim_disable_array_data); // Disable SPIM Module
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+    }
+}
+
+void tmp117_stop_recording_session(void)
+{
+    NRF_LOG_INFO("tmp117_stop_recording_session");
+
+    control_struct.interrupt = 0;    // Disabling the interrupt
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t rtc_tmp117_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_TMP117_STOP};  
+    state_handler(rtc_tmp117_uninit_array_data); // Stop the RTC sampling interrupt for the TMP117
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t i2c_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  
+    state_handler(i2c_init_array_data); // Init TWIM Driver
+
+    uint8_t i2c_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_ENABLE};  
+    state_handler(i2c_enable_array_data); // Enable TWIM Driver
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t tmp117_shutdown_array_data[5] = {0x00, TMP117_MODULE, TMP117_INIT_COMMAND, TMP117_SHUTDOWN_MODE, TMP117_NO_AVERAGING_MODE};  
+    state_handler(tmp117_shutdown_array_data); // Set the TMP117 to shutdown mode, no averaging mode
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t i2c_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_DISABLE};  
+    state_handler(i2c_disable_array_data); // Disable TWIM Driver
+
+    uint8_t i2c_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  
+    state_handler(i2c_uninit_array_data); // Uninit TWIM Driver
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    #if !MAX30003
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        uint8_t spim_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+        state_handler(spim_enable_array_data); // Enable SPIM Module
+
+        uint8_t spim_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
+        state_handler(spim_init_array_data); // Initialize SPIM Module
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        uint8_t spim_select_cs_pin_array_data[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, CY15B108QI_CS_PIN};
+        state_handler(spim_select_cs_pin_array_data); // Set Chip Select Pin to CY15B108QI for the SPIM Module
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        uint8_t cy15b108qi_enter_hibernation_array_data[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_ENTER_HIBERNATION_MODE_COMMAND};
+        state_handler(cy15b108qi_enter_hibernation_array_data);
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        uint8_t spim_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
+        state_handler(spim_uninit_array_data); // Uninitialize SPIM Module
+
+        uint8_t spim_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
+        state_handler(spim_disable_array_data); // Disable SPIM Module
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+    #endif
+}
+
+
+void tmp117_start_recording_session(void)
+{
+    NRF_LOG_INFO("tmp117_start_recording_session");
+
+    control_struct.interrupt = 1;    // Enabling the sampling interrupt
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t nrfx_rtc_start_tmp117_array_data[4] = {0x00, NRF52_MODULE, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_TMP117_START};
+    state_handler(nrfx_rtc_start_tmp117_array_data); // NRFX Start TMP117 RTC
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+}
+
+void tmp117_set_external_memory_write_start_address(uint32_t external_memory_write_start_address)
+{
+    NRF_LOG_INFO("tmp117_set_external_memory_write_start_address");
+    control_struct.external_memory_write_start_address;
+}
+
+void tmp117_set_external_memory_write_end_address(uint32_t external_memory_write_end_address)
+{
+    NRF_LOG_INFO("tmp117_set_external_memory_write_end_address");
+    control_struct.external_memory_write_end_address;
+}
+ 
+#endif
