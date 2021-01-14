@@ -24,32 +24,32 @@ void tmp117_init(uint8_t configuration_mode, uint8_t averaging_mode)
 
     control_struct.bytes_per_sample = 2;    // Number of bytes per sample; uint16_t data type used to store temperature value
 
-    control_struct.samples_per_minute = rtc_tmp117_get_sampling_frequency();
-    NRF_LOG_INFO("data_flow.max30003_samples_per_second: %u", data_flow.max30003_samples_per_second);
-    data_flow.samples_per_recording_session = 3600 * data_flow.max30003_samples_per_second;         // Each recording session is 1 hour
-    NRF_LOG_INFO("data_flow.samples_per_recording_session: %u", data_flow.samples_per_recording_session);
-
-    data_flow.bytes_per_sample = max30003_get_bytes_per_sample();
-    NRF_LOG_INFO("data_flow.bytes_per_sample: %u", data_flow.bytes_per_sample);
-    data_flow.bytes_per_recording_session = data_flow.samples_per_recording_session * data_flow.bytes_per_sample;
-    NRF_LOG_INFO("data_flow.bytes_per_recording_session: %u", data_flow.bytes_per_recording_session);
-
-    data_flow.current_sample_count = 0;    
-
-    data_flow.ecg_interrupt = 0;    // Disabling the interrupt flag for ECG Data
-
-    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
-    data_flow.bytes_per_bluetooth_transmission = bluetooth_get_bytes_per_transmission();
-    data_flow.samples_per_bluetooth_transmission = data_flow.bytes_per_bluetooth_transmission/data_flow.bytes_per_sample;
-    NRF_LOG_INFO("data_flow.samples_per_bluetooth_transmission: %u", data_flow.samples_per_bluetooth_transmission);
-
-    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
-    data_flow.recording_session_start_address = cy15b108qi_get_current_write_address() + TEMPERATURE_DATA_REGISTER_SIZE;
-    NRF_LOG_INFO("data_flow.recording_session_start_address: %X", data_flow.recording_session_start_address);
-
-    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+//    control_struct.samples_per_minute = rtc_tmp117_get_sampling_frequency();
+//    NRF_LOG_INFO("data_flow.max30003_samples_per_second: %u", data_flow.max30003_samples_per_second);
+//    data_flow.samples_per_recording_session = 3600 * data_flow.max30003_samples_per_second;         // Each recording session is 1 hour
+//    NRF_LOG_INFO("data_flow.samples_per_recording_session: %u", data_flow.samples_per_recording_session);
+//
+//    data_flow.bytes_per_sample = max30003_get_bytes_per_sample();
+//    NRF_LOG_INFO("data_flow.bytes_per_sample: %u", data_flow.bytes_per_sample);
+//    data_flow.bytes_per_recording_session = data_flow.samples_per_recording_session * data_flow.bytes_per_sample;
+//    NRF_LOG_INFO("data_flow.bytes_per_recording_session: %u", data_flow.bytes_per_recording_session);
+//
+//    data_flow.current_sample_count = 0;    
+//
+//    data_flow.ecg_interrupt = 0;    // Disabling the interrupt flag for ECG Data
+//
+//    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+//
+//    data_flow.bytes_per_bluetooth_transmission = bluetooth_get_bytes_per_transmission();
+//    data_flow.samples_per_bluetooth_transmission = data_flow.bytes_per_bluetooth_transmission/data_flow.bytes_per_sample;
+//    NRF_LOG_INFO("data_flow.samples_per_bluetooth_transmission: %u", data_flow.samples_per_bluetooth_transmission);
+//
+//    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+//
+//    data_flow.recording_session_start_address = cy15b108qi_get_current_write_address() + TEMPERATURE_DATA_REGISTER_SIZE;
+//    NRF_LOG_INFO("data_flow.recording_session_start_address: %X", data_flow.recording_session_start_address);
+//
+//    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
 }
 
@@ -115,7 +115,7 @@ void tmp117_get_uint8_t(void)
 
     for(uint8_t i = 0; i<strlen(tmp117_char); i++)
     {
-        control_struct.tmp117_uint8_t[i] = (uint8_t) tmp117_char[i];
+//        control_struct.temp_uint8_t[i] = (uint8_t) tmp117_char[i];
     }
 }
 
@@ -271,13 +271,13 @@ void tmp117_interrupt_handler(void)
 
         /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-        if(control_struct.external_memory_current_address > control_struct.external_memory_end_address)
-        {
-            control_struct.external_memory_current_address = control_struct.external_memory_start_address;
-        }
+//        if(control_struct.external_memory_current_address > control_struct.external_memory_end_address)
+//        {
+//            control_struct.external_memory_current_address = control_struct.external_memory_start_address;
+//        }
 
-        cy15b108qi_write_data_command(control_struct.temp_raw_value_array, ARRAY_LENGTH(control_struct.temp_raw_value_array), control_struct.external_memory_current_address);
-        control_struct.external_memory_current_address += ARRAY_LENGTH(control_struct.temp_raw_value_array);
+//        cy15b108qi_write_data_command(control_struct.temp_raw_value_array, ARRAY_LENGTH(control_struct.temp_raw_value_array), control_struct.external_memory_current_address);
+//        control_struct.external_memory_current_address += ARRAY_LENGTH(control_struct.temp_raw_value_array);
 
         /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 

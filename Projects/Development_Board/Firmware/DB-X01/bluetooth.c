@@ -80,7 +80,7 @@ ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {TEMPERATURE_SERVICE_UU
 ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {TEMPERATURE_SERVICE_UUID}, {ECG_SERVICE_UUID}};  /**< Universally unique service identifiers. */
 #endif
 
-static struct Bluetooth_Data_Flow data_flow;
+static struct Bluetooth_Control_Struct control_struct;
 
 /**@brief Function for handling Queued Write Module errors.
  *
@@ -232,6 +232,16 @@ void pm_evt_handler(pm_evt_t const * p_evt)
         default:
           break;
     }
+}
+
+/** @brief Clear bonding information from persistent storage.
+ */
+void delete_bonds(void)
+{
+    NRF_LOG_INFO("delete_bonds");
+
+    control_struct.error_code = pm_peers_delete();
+    APP_ERROR_CHECK(control_struct.error_code);
 }
 
 /**@brief Function for the GAP initialization.
@@ -453,7 +463,6 @@ void gatt_init(void)
 void ble_stack_init(void)
 {
     NRF_LOG_INFO("ble_stack_init");
-    ret_code_t err_code;
     
     if(nrf_sdh_is_enabled())
     {
@@ -464,18 +473,18 @@ void ble_stack_init(void)
         NRF_LOG_INFO("SOFT DEVICE IS DISABLED");
     }
 
-    err_code = nrf_sdh_enable_request();
-    APP_ERROR_CHECK(err_code);
+    control_struct.error_code = nrf_sdh_enable_request();
+    APP_ERROR_CHECK(control_struct.error_code);
 
     // Configure the BLE stack using the default settings.
     // Fetch the start address of the application RAM.
     uint32_t ram_start = 0;
-    err_code = nrf_sdh_ble_default_cfg_set(APP_BLE_CONN_CFG_TAG, &ram_start);
-    APP_ERROR_CHECK(err_code);
+    control_struct.error_code = nrf_sdh_ble_default_cfg_set(APP_BLE_CONN_CFG_TAG, &ram_start);
+    APP_ERROR_CHECK(control_struct.error_code);
 
     // Enable BLE stack.
-    err_code = nrf_sdh_ble_enable(&ram_start);
-    APP_ERROR_CHECK(err_code);
+    control_struct.error_code = nrf_sdh_ble_enable(&ram_start);
+    APP_ERROR_CHECK(control_struct.error_code);
 
     // Register a handler for BLE events.
     NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
@@ -489,7 +498,7 @@ void ble_stack_init(void)
 void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
 {
     NRF_LOG_INFO("ble_evt_handler");
-    ret_code_t err_code = NRF_SUCCESS;
+    control_struct.error_code = NRF_SUCCESS;
     NRF_LOG_INFO("BLE Configuration Service Event Received. Event type = %d", p_ble_evt->header.evt_id); 
 
     switch (p_ble_evt->header.evt_id)
@@ -501,30 +510,30 @@ void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
         case BLE_GAP_EVT_CONNECTED:
             NRF_LOG_INFO("BLE_GAP_EVT_CONNECTED");
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
-            err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
-            APP_ERROR_CHECK(err_code);
+            control_struct.error_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
+            APP_ERROR_CHECK(control_struct.error_code);
             gap_params_update(m_conn_handle); // Once all Services have been discovered, change the GAP Connection Parameters
             break;
 
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
             NRF_LOG_INFO("BLE_GAP_EVT_PHY_UPDATE_REQUEST");
             ble_gap_phys_t const phys = {.rx_phys = BLE_GAP_PHY_AUTO, .tx_phys = BLE_GAP_PHY_AUTO};
-            err_code = sd_ble_gap_phy_update(p_ble_evt->evt.gap_evt.conn_handle, &phys);
-            APP_ERROR_CHECK(err_code);
+            control_struct.error_code = sd_ble_gap_phy_update(p_ble_evt->evt.gap_evt.conn_handle, &phys);
+            APP_ERROR_CHECK(control_struct.error_code);
             break;
 
         case BLE_GATTC_EVT_TIMEOUT:
             // Disconnect on GATT Client timeout event.
             NRF_LOG_INFO("BLE_GATTC_EVT_TIMEOUT");
-            err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-            APP_ERROR_CHECK(err_code);
+            control_struct.error_code = sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+            APP_ERROR_CHECK(control_struct.error_code);
             break;
 
         case BLE_GATTS_EVT_TIMEOUT:
             // Disconnect on GATT Server timeout event.
             NRF_LOG_INFO("BLE_GATTS_EVT_TIMEOUT");
-            err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-            APP_ERROR_CHECK(err_code);
+            control_struct.error_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+            APP_ERROR_CHECK(control_struct.error_code);
             break;
 
         case BLE_GATTS_EVT_WRITE:
@@ -669,14 +678,20 @@ static void on_ecg_service_evt(ble_ecg_service_t *p_cus_service, ecg_service_evt
 void services_init(void)
 {
     NRF_LOG_INFO("services_init");
-    ret_code_t err_code;
     nrf_ble_qwr_init_t qwr_init = {0};
+    ble_dfu_buttonless_init_t dfus_init = {0};
     
     // Initialize Queued Write Module.
     qwr_init.error_handler = nrf_qwr_error_handler;
 
-    err_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
-    APP_ERROR_CHECK(err_code);
+    control_struct.error_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
+    APP_ERROR_CHECK(control_struct.error_code);
+
+    // DFU Related Event Handlers
+    dfus_init.evt_handler = ble_dfu_evt_handler;
+
+    control_struct.error_code = ble_dfu_buttonless_init(&dfus_init);
+    APP_ERROR_CHECK(control_struct.error_code);
 
     ble_configuration_service_init.evt_handler = on_configuration_service_evt;    // Initialize Configuration Service
 
@@ -692,8 +707,8 @@ void services_init(void)
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.crc_char_attr_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.response_char_attr_md.write_perm);
 
-    err_code = ble_configuration_service_initialize(&m_ble_configuration_service, &ble_configuration_service_init);
-    APP_ERROR_CHECK(err_code);
+    control_struct.error_code = ble_configuration_service_initialize(&m_ble_configuration_service, &ble_configuration_service_init);
+    APP_ERROR_CHECK(control_struct.error_code);
 
     #if TMP117
     ble_temperature_service_init.evt_handler = on_temperature_service_evt;        // Initialize Temperature Service
@@ -702,8 +717,8 @@ void services_init(void)
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.temp_char_attr_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.response_char_attr_md.write_perm);
 
-    err_code = ble_temperature_service_initialize(&m_ble_temperature_service, &ble_temperature_service_init);
-    APP_ERROR_CHECK(err_code);
+    control_struct.error_code = ble_temperature_service_initialize(&m_ble_temperature_service, &ble_temperature_service_init);
+    APP_ERROR_CHECK(control_struct.error_code);
     #endif
 
     #if ECG
@@ -713,8 +728,8 @@ void services_init(void)
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.response_char_attr_md.write_perm);
 
-    err_code = ble_ecg_service_initialize(&m_ble_ecg_service, &ble_ecg_service_init);
-    APP_ERROR_CHECK(err_code);
+    control_struct.error_code = ble_ecg_service_initialize(&m_ble_ecg_service, &ble_ecg_service_init);
+    APP_ERROR_CHECK(control_struct.error_code);
     #endif
 }
 
@@ -727,29 +742,26 @@ void bluetooth_configuration_service_settings_char_read(uint8_t *settings_char_d
 void bluetooth_configuration_service_response_char_write(uint8_t *response_char_data_array)
 {
     NRF_LOG_INFO("bluetooth_configuration_service_response_char_write");
-    uint32_t err_code;
     memcpy(ble_configuration_service_init.response_char, response_char_data_array, CONFIGURATION_SERVICE_RESPONSE_CHAR_LENGTH);
-    err_code = configuration_service_response_char_write(&m_ble_configuration_service, response_char_data_array);   // Update the Response Characteristic
-    APP_ERROR_CHECK(err_code);
+    control_struct.error_code = configuration_service_response_char_write(&m_ble_configuration_service, response_char_data_array);   // Update the Response Characteristic
+    APP_ERROR_CHECK(control_struct.error_code);
 }
 
 void bluetooth_configuration_service_crc_char_write(uint8_t *crc_char_data_array)
 {
     NRF_LOG_INFO("bluetooth_configuration_service_crc_char_write");
-    uint32_t err_code;
     memcpy(ble_configuration_service_init.crc_char, crc_char_data_array, CONFIGURATION_SERVICE_CRC_CHAR_LENGTH);
-    err_code = configuration_service_crc_char_write(&m_ble_configuration_service, crc_char_data_array);   // Update the CRC Characteristic
-    APP_ERROR_CHECK(err_code);
+    control_struct.error_code = configuration_service_crc_char_write(&m_ble_configuration_service, crc_char_data_array);   // Update the CRC Characteristic
+    APP_ERROR_CHECK(control_struct.error_code);
 }
 
 #if TMP117
 void bluetooth_temperature_service_temp_char_write(uint8_t *temp_char_data_array)
 {
     NRF_LOG_INFO("bluetooth_temperature_service_temp_char_write");
-    uint32_t err_code;
     memcpy(ble_temperature_service_init.temp_char, temp_char_data_array, TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH);
-    err_code = temperature_service_temp_char_write(&m_ble_temperature_service, temp_char_data_array);   // Update the Temp Characteristic
-    APP_ERROR_CHECK(err_code);
+    control_struct.error_code = temperature_service_temp_char_write(&m_ble_temperature_service, temp_char_data_array);   // Update the Temp Characteristic
+    APP_ERROR_CHECK(control_struct.error_code);
 }
 #endif
 
@@ -757,10 +769,9 @@ void bluetooth_temperature_service_temp_char_write(uint8_t *temp_char_data_array
 void bluetooth_ecg_service_ecg_char_write(uint8_t *ecg_char_data_array)
 {
     NRF_LOG_INFO("bluetooth_ecg_service_ecg_char_write");
-    uint32_t err_code;
     memcpy(ble_ecg_service_init.ecg_char, ecg_char_data_array, ECG_SERVICE_ECG_CHAR_LENGTH);
-    err_code = ecg_service_ecg_char_write(&m_ble_ecg_service, ecg_char_data_array);   // Update the ECG Characteristic
-    APP_ERROR_CHECK(err_code);
+    control_struct.error_code = ecg_service_ecg_char_write(&m_ble_ecg_service, ecg_char_data_array);   // Update the ECG Characteristic
+    APP_ERROR_CHECK(control_struct.error_code);
 }
 #endif
 
@@ -810,6 +821,75 @@ void bluetooth_transmit_hardware_board_version(void)
 void bluetooth_disconnect(void)
 {
     NRF_LOG_INFO("bluetooth_disconnect");
-    data_flow.error_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-    APP_ERROR_CHECK(data_flow.error_code);
+    control_struct.error_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+    APP_ERROR_CHECK(control_struct.error_code);
+    if (control_struct.error_code != NRF_SUCCESS)
+    {
+        NRF_LOG_INFO("Failed to disconnect connection. Connection handle: %d Error: %d", conn_handle, control_struct.error_code);
+    }
+    else
+    {
+        NRF_LOG_INFO("Disconnected connection handle %d", conn_handle);
+    }
+}
+
+/**@brief This function must be called before any interrupts are enabled. It can be called after the log module is initialized.
+ */
+void ble_dfu_async_svci_init(void)
+{
+    // Initialize the async SVCI interface to bootloader before any interrupts are enabled.
+    control_struct.error_code = ble_dfu_buttonless_async_svci_init();
+    APP_ERROR_CHECK(control_struct.error_code);
+}
+
+// YOUR_JOB: Update this code if you want to do anything given a DFU event (optional).
+/**@brief Function for handling dfu events from the Buttonless Secure DFU service
+ *
+ * @param[in]   event   Event from the Buttonless Secure DFU service.
+ */
+void ble_dfu_evt_handler(ble_dfu_buttonless_evt_type_t event)
+{
+    switch (event)
+    {
+        case BLE_DFU_EVT_BOOTLOADER_ENTER_PREPARE:
+        {
+            NRF_LOG_INFO("Device is preparing to enter bootloader mode.");
+
+            // Prevent device from advertising on disconnect.
+            ble_adv_modes_config_t config;
+            advertising_config_get(&config);
+            config.ble_adv_on_disconnect_disabled = true;
+            ble_advertising_modes_config_set(&m_advertising, &config);
+
+            // Disconnect all other bonded devices that currently are connected.
+            // This is required to receive a service changed indication
+            // on bootup after a successful (or aborted) Device Firmware Update.
+            uint32_t conn_count = ble_conn_state_for_each_connected(disconnect, NULL);
+            NRF_LOG_INFO("Disconnected %d links.", conn_count);
+            break;
+        }
+
+        case BLE_DFU_EVT_BOOTLOADER_ENTER:
+            // YOUR_JOB: Write app-specific unwritten data to FLASH, control finalization of this
+            //           by delaying reset by reporting false in app_shutdown_handler
+            NRF_LOG_INFO("Device will enter bootloader mode.");
+            break;
+
+        case BLE_DFU_EVT_BOOTLOADER_ENTER_FAILED:
+            NRF_LOG_ERROR("Request to enter bootloader mode failed asynchroneously.");
+            // YOUR_JOB: Take corrective measures to resolve the issue
+            //           like calling APP_ERROR_CHECK to reset the device.
+            break;
+
+        case BLE_DFU_EVT_RESPONSE_SEND_ERROR:
+            NRF_LOG_ERROR("Request to send a response to client failed.");
+            // YOUR_JOB: Take corrective measures to resolve the issue
+            //           like calling APP_ERROR_CHECK to reset the device.
+            APP_ERROR_CHECK(false);
+            break;
+
+        default:
+            NRF_LOG_ERROR("Unknown event from ble_dfu_buttonless.");
+            break;
+    }
 }

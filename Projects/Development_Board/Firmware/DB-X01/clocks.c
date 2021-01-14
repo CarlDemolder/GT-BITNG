@@ -253,7 +253,7 @@ void rtc_tmp117_handler(nrfx_rtc_int_type_t interrupt_type)
         nrfx_rtc_counter_clear(&rtc_tmp117_configuration.nrfx_rtc);
         nrfx_rtc_int_enable(&rtc_tmp117_configuration.nrfx_rtc, NRF_RTC_INT_COMPARE2_MASK);
 
-        temperature_interrupt_handler();
+//        temperature_interrupt_handler();
     }
 }
 

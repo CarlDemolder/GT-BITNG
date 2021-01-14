@@ -15,8 +15,14 @@
 
 #include "serial_slave.h"
 
+#include "nrf_dfu_ble_svci_bond_sharing.h"
+#include "nrf_svci_async_function.h"
+#include "nrf_svci_async_handler.h"
+
+#include "ble_dfu.h"
+
 /**@brief Status Register Structure. This structure contains all values read from the Status Register.*/
-struct Bluetooth_Data_Flow
+struct Bluetooth_Control_Struct
 {
     ret_code_t error_code;          /**< Variable to track errors */
 
@@ -60,4 +66,11 @@ void bluetooth_transmit_hardware_board_version(void);
 
 uint8_t bluetooth_get_bytes_per_transmission(void);
 void bluetooth_disconnect(void);
+
+// DFU Related Functions
+void ble_dfu_async_svci_init(void);
+void delete_bonds(void);
+void ble_dfu_evt_handler(ble_dfu_buttonless_evt_type_t event);
+
+
 #endif /*__BLUETOOTH_H__*/
