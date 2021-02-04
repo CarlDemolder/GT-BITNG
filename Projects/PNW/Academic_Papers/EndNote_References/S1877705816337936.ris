@@ -1,0 +1,22 @@
+TY  - JOUR
+T1  - Multisensory Smart Glove for Tactile Feedback in Prosthetic Hand
+AU  - Polishchuk, Anton
+AU  - Navaraj, William Taube
+AU  - Heidari, Hadi
+AU  - Dahiya, Ravinder
+JO  - Procedia Engineering
+VL  - 168
+SP  - 1605
+EP  - 1608
+PY  - 2016
+DA  - 2016/01/01/
+T2  - Proceedings of the 30th anniversary Eurosensors Conference – Eurosensors 2016, 4-7. Sepember 2016, Budapest, Hungary
+SN  - 1877-7058
+DO  - https://doi.org/10.1016/j.proeng.2016.11.471
+UR  - http://www.sciencedirect.com/science/article/pii/S1877705816337936
+KW  - Prosthetics
+KW  - tactile sensors
+KW  - sensitive glove
+KW  - flexible electronics ;
+AB  - This paper presents a multisensory glove to allow prosthetic and robotic hand to simultaneously feel the pressure, temperature, and humidity. The low-cost implementation of the flexible glove with multiple sensors presented here will enable gathering of tactile information from grasped objects. The off-the-shelf components such as pressure, temperature and humidity sensors have been mounted on a flexible printed circuit (FPC) board and attached the glove. During validation most of the sensors were in contact with the grasped objects and successfully measured various contact parameters.
+ER  - 

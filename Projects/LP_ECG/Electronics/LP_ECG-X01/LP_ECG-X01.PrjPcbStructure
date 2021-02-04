@@ -1,1 +1,3 @@
-Record=TopLevelDocument|FileName=LP_ECG_ECG-X01.SchDoc
+Record=TopLevelDocument|FileName=LP_ECG_ECG-X01.SchDoc|SheetNumber=4
+Record=NoMainPathDocument|SourceDocument=LP_ECG_ECG-X01.SchDoc|FileName=LP_ECG_Main-X01.SchDoc|SheetNumber=1
+Record=NoMainPathDocument|SourceDocument=LP_ECG_ECG-X01.SchDoc|FileName=LP_ECG_Power-X01.SchDoc|SheetNumber=3

@@ -1,0 +1,46 @@
+TY  - CONF
+TI  - Artificial ridged skin for slippage speed detection in prosthetic hand applications
+T2  - 2010 IEEE/RSJ International Conference on Intelligent Robots and Systems
+SP  - 904
+EP  - 909
+AU  - D. D. Damian
+AU  - H. Martinez
+AU  - K. Dermitzakis
+AU  - A. Hernandez-Arieta
+AU  - R. Pfeifer
+PY  - 2010
+KW  - artificial limbs
+KW  - dexterous manipulators
+KW  - encoding
+KW  - force feedback
+KW  - medical robotics
+KW  - skin
+KW  - tactile sensors
+KW  - touch (physiological)
+KW  - prosthetic hand
+KW  - artificial ridged skin
+KW  - slippage speed detection
+KW  - human hand
+KW  - dexterous manipulation
+KW  - artificial skin
+KW  - tactile sense
+KW  - slippage signal encoding
+KW  - tactile feedback
+KW  - prosthetic interface
+KW  - Skin
+KW  - Robot sensing systems
+KW  - Force
+KW  - Prosthetics
+KW  - Mathematical model
+DO  - 10.1109/IROS.2010.5652094
+JO  - 2010 IEEE/RSJ International Conference on Intelligent Robots and Systems
+IS  - 
+SN  - 2153-0866
+VO  - 
+VL  - 
+JA  - 2010 IEEE/RSJ International Conference on Intelligent Robots and Systems
+Y1  - 18-22 Oct. 2010
+AB  - The human hand is one of the most complex structures in the body, being involved in dexterous manipulation and fine sensing. Traditional engineering approaches have mostly attempted to match such complexity in robotics without sufficiently stressing on the underlying mechanisms that its morphology encodes. In this work, we propose an artificial skin able to encode, through its morphology, the tactile sense of a robotic hand, characteristic to slippage events. The underlying layout consists of ridges and allows slippage detection and the quantification of slippage speed. Such encoding of slippage signal becomes suitable for relaying tactile feedback to users in prosthetic applications. This approach emphasizes the importance of exploiting morphology and mechanics in structures for the design of prosthetic interfaces.
+ER  - 
+
+

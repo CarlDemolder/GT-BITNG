@@ -1,0 +1,34 @@
+
+TY  - JOUR
+T1  - A Simple, Inexpensive, Wearable Glove with Hybrid Resistive-Pressure Sensors for Computational Sensing, Proprioception, and Task Identification
+AU  - Hughes, Josie
+AU  - Spielberg, Andrew
+AU  - Chounlakone, Mark
+AU  - Chang, Gloria
+AU  - Matusik, Wojciech
+AU  - Rus, Daniela
+Y1  - 2020/06/01
+PY  - 2020
+DA  - 2020/06/01
+N1  - https://doi.org/10.1002/aisy.202000002
+DO  - https://doi.org/10.1002/aisy.202000002
+T2  - Advanced Intelligent Systems
+JF  - Advanced Intelligent Systems
+JO  - Advanced Intelligent Systems
+JA  - Adv. Intell. Syst.
+SP  - 2000002
+VL  - 2
+IS  - 6
+KW  - machine learning
+KW  - multimodal sensing
+KW  - soft sensing
+KW  - task recognition
+KW  - wearable computing
+KW  - wearable gloves
+PB  - John Wiley & Sons, Ltd
+SN  - 2640-4567
+M3  - https://doi.org/10.1002/aisy.202000002
+UR  - https://doi.org/10.1002/aisy.202000002
+Y2  - 2021/01/19
+N2  - Wearable devices have many applications ranging from health analytics to virtual and mixed reality interaction, to industrial training. For wearable devices to be practical, they must be responsive, deformable to fit the wearer, and robust to the user's range of motion. Signals produced by the wearable must also be informative enough to infer the precise physical state or activity of the user. Herein, a fully soft, wearable glove is developed, which is capable of real-time hand pose reconstruction, environment sensing, and task classification. The design is easy to fabricate using low cost, commercial off-the-shelf items in a manner that is amenable to automated manufacturing. To realize such capabilities, resisitive and fluidic sensing technologies with machine learning neural architectures are merged. The glove is formed from a conductive knit which is strain sensitive, providing information through a network of resistance measurements. Fluidic sensing captured via pressure changes in fibrous sewn-in flexible tubes, measuring interactions with the environment. The system can reconstruct user hand pose and identify sensory inputs such as holding force, object temperature, conductability, material stiffness, and user heart rate, all with high accuracy. The ability to identify complex environmentally dependent tasks, including held object identification and handwriting recognition is demonstrated.
+ER  - 

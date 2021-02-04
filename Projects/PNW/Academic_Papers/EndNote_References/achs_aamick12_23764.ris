@@ -1,0 +1,33 @@
+
+
+
+
+TY  - JOUR
+T1  - Smart Glove Integrated with Tunable MWNTs/PDMS Fibers Made of a One-Step Extrusion Method for Finger Dexterity, Gesture, and Temperature Recognition
+AU  - Li, Yingchun
+AU  - Zheng, Chunran
+AU  - Liu, Shuai
+AU  - Huang, Liang
+AU  - Fang, Tianshu
+AU  - Li, Jasmine Xinze
+AU  - Xu, Feng
+AU  - Li, Fei
+Y1  - 2020/05/27
+PY  - 2020
+DA  - 2020/05/27
+N1  - doi: 10.1021/acsami.0c08114
+DO  - 10.1021/acsami.0c08114
+T2  - ACS Applied Materials & Interfaces
+JF  - ACS Applied Materials & Interfaces
+JO  - ACS Appl. Mater. Interfaces
+SP  - 23764
+EP  - 23773
+VL  - 12
+IS  - 21
+PB  - American Chemical Society
+N2  - Flexible wearable devices have proven to be emerging tools for motion monitoring, personal healthcare, and rehabilitation training. The development of a multifunctional, flexible sensor and the integration of sensors and a smart chip for signal reading and transmission play a critical role in building a smart wearable device. In this work, a smart glove based on multiwalled carbon nanotubes/poly(dimethylsiloxane) (MWNTs/PDMS) fibers is developed for gesture and temperature recognition. First, the well-tunable, stretchable, and thermal-sensitive MWNTs/PDMS fibers are fabricated via a facile and cost-effective one-step extrusion method. The obtained fibers exhibit an outstanding linear relationship between resistance change and strain in the range of 0–120% and excellent cyclic stability and durability after 20 000 cycles of 50% tension. They also present a linear relationship of resistance change and temperature of 0.55% °C–1 with a correlation coefficient of 0.998 in the range of 0–100 °C. The fibers, as parts of wearable sensors, are then integrated into a smart glove along with a custom-made data acquisition chip to recognize finger dexterity, gestures, and temperature signals and output them through a screen display, an audio system, and Bluetooth transmission. The highly integrated, low-cost, and multifunctional glove holds great potential for various applications, such as sign language recognition, rehabilitation training, and telemedicine in the Internet-of-Things era.
+AB  - Flexible wearable devices have proven to be emerging tools for motion monitoring, personal healthcare, and rehabilitation training. The development of a multifunctional, flexible sensor and the integration of sensors and a smart chip for signal reading and transmission play a critical role in building a smart wearable device. In this work, a smart glove based on multiwalled carbon nanotubes/poly(dimethylsiloxane) (MWNTs/PDMS) fibers is developed for gesture and temperature recognition. First, the well-tunable, stretchable, and thermal-sensitive MWNTs/PDMS fibers are fabricated via a facile and cost-effective one-step extrusion method. The obtained fibers exhibit an outstanding linear relationship between resistance change and strain in the range of 0–120% and excellent cyclic stability and durability after 20 000 cycles of 50% tension. They also present a linear relationship of resistance change and temperature of 0.55% °C–1 with a correlation coefficient of 0.998 in the range of 0–100 °C. The fibers, as parts of wearable sensors, are then integrated into a smart glove along with a custom-made data acquisition chip to recognize finger dexterity, gestures, and temperature signals and output them through a screen display, an audio system, and Bluetooth transmission. The highly integrated, low-cost, and multifunctional glove holds great potential for various applications, such as sign language recognition, rehabilitation training, and telemedicine in the Internet-of-Things era.
+SN  - 1944-8244
+M3  - doi: 10.1021/acsami.0c08114
+UR  - https://doi.org/10.1021/acsami.0c08114
+ER  - 

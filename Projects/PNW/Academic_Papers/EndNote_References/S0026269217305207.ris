@@ -1,0 +1,23 @@
+TY  - JOUR
+T1  - Wearable technologies for hand joints monitoring for rehabilitation: A survey
+AU  - Rashid, Adnan
+AU  - Hasan, Osman
+JO  - Microelectronics Journal
+VL  - 88
+SP  - 173
+EP  - 183
+PY  - 2019
+DA  - 2019/06/01/
+SN  - 0026-2692
+DO  - https://doi.org/10.1016/j.mejo.2018.01.014
+UR  - http://www.sciencedirect.com/science/article/pii/S0026269217305207
+KW  - Flex sensors
+KW  - Magnetic sensors
+KW  - Accelerometers
+KW  - Hall-effect
+KW  - Stretch sensors
+KW  - Hand joints
+KW  - Gloves
+KW  - Dexterity
+AB  - Hand deformities often become a major obstacle in conducting everyday tasks for many people around the globe. Rehabilitation procedures are widely used for strengthening the hand muscles, which in turn leads to the restoration of functionality of the affected hand. This paper conducts a survey of various wearable technologies that can be used to accurately quantify the rehabilitation progress in terms of fingers' hand joint angles. Based on the data acquisition methods, these technologies can be mainly divided into six categories: 1) Flex sensor based; 2) Accelerometer based; 3) Vision based; 4) Hall-effect based; 5) Stretch sensor based; and 6) Magnetic sensor based. The main focus of some of the discussed technologies has been on various other domains, like gaming gloves, tele-manipulation etc., and thus their usage for rehabilitation of hand joints could be quite interesting. This paper analyzes the strengths and weaknesses of these wearable technologies along with some examples of their implementations. Based on our survey results, we propose a wearable glove for accurately measuring hand joint angles with enhanced features for better diagnosis and rehabilitation.
+ER  - 

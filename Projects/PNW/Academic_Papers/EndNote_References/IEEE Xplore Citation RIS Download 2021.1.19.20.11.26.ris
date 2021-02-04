@@ -1,0 +1,60 @@
+TY  - CONF
+TI  - Toward a modular soft sensor-embedded glove for human hand motion and tactile pressure measurement
+T2  - 2014 IEEE/RSJ International Conference on Intelligent Robots and Systems
+SP  - 4000
+EP  - 4007
+AU  - F. L. Hammond
+AU  - Y. Mengüç
+AU  - R. J. Wood
+PY  - 2014
+KW  - compliant mechanisms
+KW  - data gloves
+KW  - elastomers
+KW  - force measurement
+KW  - human computer interaction
+KW  - intelligent sensors
+KW  - motion measurement
+KW  - pressure measurement
+KW  - strain measurement
+KW  - strain sensors
+KW  - tactile sensors
+KW  - modular soft sensor-embedded glove
+KW  - human hand motion measurement
+KW  - tactile pressure measurement
+KW  - grasp mechanics
+KW  - manual gesturing
+KW  - human skill training
+KW  - rehabilitation
+KW  - robotic hand control
+KW  - robotic hand design
+KW  - human-computer interaction devices
+KW  - contact pressure measurement
+KW  - manipulation tasks
+KW  - liquid-metal embedded elastomer sensor array
+KW  - interaction force measurement
+KW  - skin strain measurement
+KW  - phalangeal joints
+KW  - carpal joints
+KW  - joint motion tracking
+KW  - mechanical compliance
+KW  - anatomical variations
+KW  - strain sensors
+KW  - mechanical integration
+KW  - assembly method
+KW  - Thumb
+KW  - Strain
+KW  - Joints
+KW  - Mechanical sensors
+KW  - Fabrication
+DO  - 10.1109/IROS.2014.6943125
+JO  - 2014 IEEE/RSJ International Conference on Intelligent Robots and Systems
+IS  - 
+SN  - 2153-0866
+VO  - 
+VL  - 
+JA  - 2014 IEEE/RSJ International Conference on Intelligent Robots and Systems
+Y1  - 14-18 Sept. 2014
+AB  - The ability to measure human hand motions and interaction forces is critical to improving our understanding of manual gesturing and grasp mechanics. This knowledge serves as a basis for developing better tools for human skill training and rehabilitation, exploring more effective methods of designing and controlling robotic hands, and creating more sophisticated human-computer interaction devices which use complex hand motions as control inputs. This paper presents work on the design, fabrication, and experimental validation of a soft sensor-embedded glove which measures both hand motion and contact pressures during human gesturing and manipulation tasks. We design an array of liquid-metal embedded elastomer sensors to measure up to hundreds of Newtons of interaction forces across the human palm during manipulation tasks and to measure skin strains across phalangeal and carpal joints for joint motion tracking. The elastomeric sensors provide the mechanical compliance necessary to accommodate anatomical variations and permit a normal range of hand motion. We explore methods of assembling this soft sensor glove from modular, individually fabricated pressure and strain sensors and develop design guidelines for their mechanical integration. Experimental validation of a soft finger glove prototype demonstrates the sensitivity range of the designed sensors and the mechanical robustness of the proposed assembly method, and provides a basis for the production of a complete soft sensor glove from inexpensive modular sensor components.
+ER  - 
+
+

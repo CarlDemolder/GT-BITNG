@@ -1,0 +1,42 @@
+
+TY  - JOUR
+T1  - Wearable Microfluidic Diaphragm Pressure Sensor for Health and Tactile Touch Monitoring
+AU  - Gao, Yuji
+AU  - Ota, Hiroki
+AU  - Schaler, Ethan W.
+AU  - Chen, Kevin
+AU  - Zhao, Allan
+AU  - Gao, Wei
+AU  - Fahad, Hossain M.
+AU  - Leng, Yonggang
+AU  - Zheng, Anzong
+AU  - Xiong, Furui
+AU  - Zhang, Chuchu
+AU  - Tai, Li-Chia
+AU  - Zhao, Peida
+AU  - Fearing, Ronald S.
+AU  - Javey, Ali
+Y1  - 2017/10/01
+PY  - 2017
+DA  - 2017/10/01
+N1  - https://doi.org/10.1002/adma.201701985
+DO  - https://doi.org/10.1002/adma.201701985
+T2  - Advanced Materials
+JF  - Advanced Materials
+JO  - Advanced Materials
+JA  - Adv. Mater.
+SP  - 1701985
+VL  - 29
+IS  - 39
+KW  - diaphragm pressure sensors
+KW  - flexible pressure sensors
+KW  - liquid metal
+KW  - microfluidics
+KW  - wearable
+PB  - John Wiley & Sons, Ltd
+SN  - 0935-9648
+M3  - https://doi.org/10.1002/adma.201701985
+UR  - https://doi.org/10.1002/adma.201701985
+Y2  - 2021/01/19
+N2  - Abstract Flexible pressure sensors have many potential applications in wearable electronics, robotics, health monitoring, and more. In particular, liquid-metal-based sensors are especially promising as they can undergo strains of over 200% without failure. However, current liquid-metal-based strain sensors are incapable of resolving small pressure changes in the few kPa range, making them unsuitable for applications such as heart-rate monitoring, which require a much lower pressure detection resolution. In this paper, a microfluidic tactile diaphragm pressure sensor based on embedded Galinstan microchannels (70 µm width ? 70 µm height) capable of resolving sub-50 Pa changes in pressure with sub-100 Pa detection limits and a response time of 90 ms is demonstrated. An embedded equivalent Wheatstone bridge circuit makes the most of tangential and radial strain fields, leading to high sensitivities of a 0.0835 kPa?1 change in output voltage. The Wheatstone bridge also provides temperature self-compensation, allowing for operation in the range of 20?50 °C. As examples of potential applications, a polydimethylsiloxane (PDMS) wristband with an embedded microfluidic diaphragm pressure sensor capable of real-time pulse monitoring and a PDMS glove with multiple embedded sensors to provide comprehensive tactile feedback of a human hand when touching or holding objects are demonstrated.
+ER  - 

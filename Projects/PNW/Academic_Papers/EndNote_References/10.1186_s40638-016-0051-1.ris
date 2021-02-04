@@ -1,0 +1,21 @@
+TY  - JOUR
+AU  - Shen, Zhong
+AU  - Yi, Juan
+AU  - Li, Xiaodong
+AU  - Lo, Mark Hin Pei
+AU  - Chen, Michael Z. Q.
+AU  - Hu, Yong
+AU  - Wang, Zheng
+PY  - 2016
+DA  - 2016/12/01
+TI  - A soft stretchable bending sensor and data glove applications
+JO  - Robotics and Biomimetics
+SP  - 22
+VL  - 3
+IS  - 1
+AB  - Soft sensors are required to accommodate the flexible and deformable natures of the human body in wearable device applications. They are also suitable for integration with soft robotic devices to monitor the performance status and provide references for feedback control. However, the choices for bending sensors are still highly limited. In this paper, a soft bending sensor is presented. By careful design with a blend of sensitive and insensitive regions, the sensor could be stretchable while being insensitive to stretching. An analytical study was presented on how to design the sensor with the named bending/stretching feature. This feature enables the sensor to be implemented in measuring human motions where a large amount of skin stretch is involved. Two sensor gloves were designed and fabricated based on the proposed soft bending sensor, aiming for different application scenarios. Both the sensor and the gloves were evaluated using a dedicated evaluation platform with experimental results compared against each other.
+SN  - 2197-3768
+UR  - https://doi.org/10.1186/s40638-016-0051-1
+DO  - 10.1186/s40638-016-0051-1
+ID  - Shen2016
+ER  - 

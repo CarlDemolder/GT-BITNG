@@ -1,0 +1,20 @@
+TY  - EJOU
+AU  - Francés, Leire
+AU  - Morer, Paz
+AU  - Rodriguez, Maria I.
+AU  - Cazón, Aitor
+TI  - Design and Development of a Low-Cost Wearable Glove to Track Forces Exerted by Workers in Car Assembly Lines
+T2  - Sensors
+
+PY  - 2019
+VL  - 19
+IS  - 2
+SN  - 1424-8220
+
+AB  - Wearables are gaining widespread use and technologies are making it possible to monitor human physical activity and behaviour as part of connected infrastructures. Many companies see wearables as an opportunity to enhance worker safety since they can monitor their workers&rsquo; activity in real life scenarios. One of the goals of this technology is to integrate existing electronic components, such as sensors or conductors, in order to create fully wearable systems. This integration is constrained not only by technical factors but also by user requirements and internal company standards. This paper considers such constraints and presents preliminary research for the design of a wearable glove as a new tool to track forces exerted by workers in car assembly lines. The objective of the glove is to measure forces and compare these to maximum forces already identified by the company. Thus, the main objectives are to: (1) integrate the components based on the requirements of the users and the context of application, and (2) provide a new tool that can be used &ldquo;in situ&rdquo; to track workers. This study was carried out in close collaboration with Volkswagen through a human-centred iterative design process. Thus, this paper presents the development of a wearable device glove based on a specific design methodology where both the human and technological aspects are considered.
+KW  - smart glove
+KW  - wearable technology
+KW  - components integration
+KW  - pressure sensors
+KW  - conductive textiles
+DO  - 10.3390/s19020296

@@ -1,0 +1,47 @@
+TY  - JOUR
+TI  - A Survey of Glove-Based Systems and Their Applications
+T2  - IEEE Transactions on Systems, Man, and Cybernetics, Part C (Applications and Reviews)
+SP  - 461
+EP  - 482
+AU  - L. Dipietro
+AU  - A. M. Sabatini
+AU  - P. Dario
+PY  - 2008
+KW  - data acquisition
+KW  - data gloves
+KW  - gesture recognition
+KW  - man-machine systems
+KW  - medical computing
+KW  - glove-based systems
+KW  - hand movement data acquisition
+KW  - biomedical sciences
+KW  - gestures recognition
+KW  - man-machine interfaces
+KW  - Laboratories
+KW  - Rehabilitation robotics
+KW  - Biomedical engineering
+KW  - Data acquisition
+KW  - Data engineering
+KW  - Roads
+KW  - Wearable sensors
+KW  - Writing
+KW  - Biomedical measurements
+KW  - Scattering
+KW  - Gestures recognition
+KW  - man--machine interfaces
+KW  - wearable sensors
+KW  - Gestures recognition
+KW  - man--machine interfaces
+KW  - wearable sensors
+DO  - 10.1109/TSMCC.2008.923862
+JO  - IEEE Transactions on Systems, Man, and Cybernetics, Part C (Applications and Reviews)
+IS  - 4
+SN  - 1558-2442
+VO  - 38
+VL  - 38
+JA  - IEEE Transactions on Systems, Man, and Cybernetics, Part C (Applications and Reviews)
+Y1  - July 2008
+AB  - Hand movement data acquisition is used in many engineering applications ranging from the analysis of gestures to the biomedical sciences. Glove-based systems represent one of the most important efforts aimed at acquiring hand movement data. While they have been around for over three decades, they keep attracting the interest of researchers from increasingly diverse fields. This paper surveys such glove systems and their applications. It also analyzes the characteristics of the devices, provides a road map of the evolution of the technology, and discusses limitations of current technology and trends at the frontiers of research. A foremost goal of this paper is to provide readers who are new to the area with a basis for understanding glove systems technology and how it can be applied, while offering specialists an updated picture of the breadth of applications in several engineering and biomedical sciences areas.
+ER  - 
+
+

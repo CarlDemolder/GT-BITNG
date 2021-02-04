@@ -1,0 +1,13 @@
+TY  - JOUR
+AU  - Dipietro, Laura
+AU  - Sabatini, A.M.
+AU  - Dario, Paolo
+PY  - 2008/08/01
+SP  - 461 
+EP  -  482
+N2  - Hand movement data acquisition is used in many engineering applications ranging from the analysis of gestures to the biomedical sciences. Glove-based systems represent one of the most important efforts aimed at acquiring hand movement data. While they have been around for over three decades, they keep attracting the interest of researchers from increasingly diverse fields. This paper surveys such glove systems and their applications. It also analyzes the characteristics of the devices, provides a road map of the evolution of the technology, and discusses limitations of current technology and trends at the frontiers of research. A foremost goal of this paper is to provide readers who are new to the area with a basis for understanding glove systems technology and how it can be applied, while offering specialists an updated picture of the breadth of applications in several engineering and biomedical sciences areas.
+T1  - A Survey of Glove-Based Systems and Their Applications
+VL  - 38
+DO  - 10.1109/TSMCC.2008.923862
+JO  - Systems, Man, and Cybernetics, Part C: Applications and Reviews, IEEE Transactions on
+ER  - 

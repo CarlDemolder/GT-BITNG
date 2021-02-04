@@ -1,0 +1,17 @@
+TY  - JOUR
+AU  - Zhang, Wentai
+AU  - Yu, Jonelle
+AU  - Zhu, Fangcheng
+AU  - Yifang, Zhu
+AU  - Yang, Zhangsihao
+AU  - Gecer Ulu, Nurcan
+AU  - Arisoy, Batuhan
+AU  - Kara, Levent
+PY  - 2019/05/15
+SP  - 
+N2  - The ability to track human operators’ hand usage when working in production plants and factories is critically important for developing realistic digital factory simulators as well as manufacturing process control. We propose a proof-of-concept instrumented glove with only a few strain gauge sensors and a micro-controller that continuously tracks and records the hand configuration during actual use. At the heart of our approach is a trainable system that can predict the fourteen joint angles in the hand using only a small set of strain sensors. First, ten strain gauges are placed at the various joints in the hand to optimize the sensor layout using the English letters in the American Sign Language as a benchmark for assessment. Next, the best sensor configurations for three through ten strain gauges are computed using a support vector machine classifier. Following the layout optimization, our approach learns a mapping between the sensor readouts to the actual joint angles optically captured using a Leap Motion system. Five regression methods including linear, quadratic and neural regression are then used to train the mapping between the strain gauge data and the corresponding joint angles. The final proposed model involves four strain gauges mapped to the fourteen joint angles using a two-layer feed-forward neural network.
+T1  - High Degree of Freedom Hand Pose Tracking Using Limited Strain Sensing and Optical Training
+VL  - 19
+DO  - 10.1115/1.4043757
+JO  - Journal of Computing and Information Science in Engineering
+ER  - 

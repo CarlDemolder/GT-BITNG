@@ -1,0 +1,26 @@
+
+Provider: Silverchair
+Database: AmericanSocietyofMechanicalEngineersDigitalCollection
+Content: text/plain; charset="UTF-8"
+
+TY  - CPAPER
+AU  - McCaw, John C. S.
+AU  - Yuen, Michelle C.
+AU  - Kramer-Bottiglio, Rebecca
+T1  - Sensory Glove for Dynamic Hand Proprioception and Tactile Sensing
+C1  - Volume 2B: 44th Design Automation Conference
+C2  - ASME 2018 International Design Engineering Technical Conferences and Computers and Information in Engineering Conference
+C3  - IDETC-CIE2018
+C4  - International Design Engineering Technical Conferences and Computers and Information in Engineering Conference
+C5  - IDETC-CIE
+SN  - 978-0-7918-5176-0
+PY  - 2018
+Y1  - 2018/08/26
+DO  - 10.1115/DETC2018-85703
+M1  - V02BT03A025
+N2  - The fields of soft robotics and soft electronics have introduced novel technologies for tracking dynamic pose of the human body. These new flexible sensors use material softness and elasticity to allow for high conformability, low risk of injury or discomfort, and ease of integration into other flexible materials such as clothing. Here, we present a glove embedded with soft capacitive strain sensors for measuring finger bending and fingertip pressure, while leveraging low-cost components. Previous capacitive sensing approaches have shown limitations in dimensional scalability of the sensor geometry and system-level scalability of sensors, wiring, and networking methods. We overcome these previous limitations by using sensors with novel geometry and leverage I2C communication protocol to reduce the quantity of interfacing wires to four, even for sensor counts on the order of 103. We show that the sensory glove is able to capture the salient features of hand proprioception by sensing the presence and continuous intensity of touch and finger curvature. Finally, we demonstrate the application of this glove towards the recognition of the letters comprising the American Manual Alphabet, which is used to augment the American Sign Language, and utilize the glove to perform a teleoperation task.
+Y2  - 1/19/2021
+UR  - https://doi.org/10.1115/DETC2018-85703
+ER  - 
+
+

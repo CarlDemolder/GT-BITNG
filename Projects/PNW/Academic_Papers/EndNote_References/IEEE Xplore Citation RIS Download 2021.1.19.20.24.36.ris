@@ -1,0 +1,85 @@
+TY  - JOUR
+TI  - Exploiting Wearable Goniometer Technology for Motion Sensing Gloves
+T2  - IEEE Journal of Biomedical and Health Informatics
+SP  - 1788
+EP  - 1795
+AU  - N. Carbonaro
+AU  - G. D. Mura
+AU  - F. Lorussi
+AU  - R. Paradiso
+AU  - D. De Rossi
+AU  - A. Tognetti
+PY  - 2014
+KW  - body sensor networks
+KW  - gait analysis
+KW  - gesture recognition
+KW  - goniometers
+KW  - medical signal processing
+KW  - optical tracking
+KW  - patient monitoring
+KW  - patient rehabilitation
+KW  - piezoresistive devices
+KW  - figures of merit
+KW  - angular error
+KW  - standard Bland Altman analysis
+KW  - electrogoniometers
+KW  - conceptual prototype design
+KW  - sensor connections
+KW  - mechanical constraints
+KW  - metallic inextensible wires
+KW  - user comfort
+KW  - hand gesture
+KW  - dynamic posture
+KW  - static posture
+KW  - gold standard
+KW  - optical tracking system
+KW  - rehabilitation
+KW  - stroke survivors
+KW  - daily-life activities
+KW  - continuous patient monitoring
+KW  - middle fingers
+KW  - index fingers
+KW  - thumb fingers
+KW  - metacarpophalangeal joint
+KW  - extension movement tracking
+KW  - flexion movement tracking
+KW  - KPF goniometer
+KW  - sensing glove prototype
+KW  - angular sensor
+KW  - double-layer configuration
+KW  - hand movement
+KW  - knitted piezoresistive fabric sensor technology
+KW  - wearable kinesthetic glove
+KW  - motion sensing gloves
+KW  - wearable goniometer technology
+KW  - Goniometers
+KW  - Prototypes
+KW  - Joints
+KW  - Sensor phenomena and characterization
+KW  - Wearable computers
+KW  - Patient rehabilitation
+KW  - Hand posture monitoring
+KW  - poststroke rehabilitation
+KW  - sensing glove
+KW  - textile deformation sensor
+KW  - wearable goniometers
+KW  - Clothing
+KW  - Equipment Design
+KW  - Hand
+KW  - Humans
+KW  - Monitoring, Ambulatory
+KW  - Posture
+KW  - Range of Motion, Articular
+KW  - Stroke
+DO  - 10.1109/JBHI.2014.2324293
+JO  - IEEE Journal of Biomedical and Health Informatics
+IS  - 6
+SN  - 2168-2208
+VO  - 18
+VL  - 18
+JA  - IEEE Journal of Biomedical and Health Informatics
+Y1  - Nov. 2014
+AB  - This paper presents an innovative wearable kinesthetic glove realized with knitted piezoresistive fabric (KPF) sensor technology. The glove is conceived to capture hand movement and gesture by using KPF in a double-layer configuration working as angular sensors (electrogoniometers). The sensing glove prototype is endowed by three KPF goniometers, used to track flexion and extension movement of metacarpophalangeal joint of thumb, index, and middle fingers. The glove is devoted to the continuous monitoring of patients during their daily-life activities, in particular for stroke survivors during their rehabilitation. The prototype performances have been evaluated in comparison with an optical tracking system considered as a gold standard both for relieving static and dynamic posture and gesture of the hand. The introduced prototype has shown very interesting figures of merit. The angular error, evaluated through the standard Bland Altman analysis, has been estimated in ${\bf \pm 3^\circ}$ which is slightly less accurate than commercial electrogoniometers. Moreover, a new conceptual prototype design, preliminary evaluated within this study, is presented and discussed in order to solve actual limitations in terms of number and type of sensor connections, avoiding mechanical constraints given by metallic inextensible wires and improving user comfort.
+ER  - 
+
+
