@@ -2,7 +2,6 @@
 #define CY15B108QI_H_
 
 #include "serial_slave.h"
-#include "common.h"
 
 #if CY15B108QI
 

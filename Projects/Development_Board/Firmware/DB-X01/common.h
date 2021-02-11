@@ -28,7 +28,7 @@
 #define LP_ECG_X01 0X04
 #define LP_ECG_X02 0X05
 
-#define BOARD_VERSION LP_ECG_X01
+#define BOARD_VERSION DB_X02
 
 enum COMMON_CONSTANTS
 {
@@ -44,6 +44,7 @@ enum COMMON_CONSTANTS
     #define WB 1
     #define FT201X 1
     #define BMI160 1
+    #define FDC1004 1
     enum PIN_CONSTANTS
     {
         BLE_LED_PIN = 11,                                   /** Pinout for BLE LED for DB-X02 */

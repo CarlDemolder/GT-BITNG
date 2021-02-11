@@ -687,11 +687,11 @@ void services_init(void)
     control_struct.error_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
     APP_ERROR_CHECK(control_struct.error_code);
 
-    // DFU Related Event Handlers
-    dfus_init.evt_handler = ble_dfu_evt_handler;
-
-    control_struct.error_code = ble_dfu_buttonless_init(&dfus_init);
-    APP_ERROR_CHECK(control_struct.error_code);
+//    // DFU Related Event Handlers
+//    dfus_init.evt_handler = ble_dfu_evt_handler;
+//
+//    control_struct.error_code = ble_dfu_buttonless_init(&dfus_init);
+//    APP_ERROR_CHECK(control_struct.error_code);
 
     ble_configuration_service_init.evt_handler = on_configuration_service_evt;    // Initialize Configuration Service
 
@@ -825,71 +825,71 @@ void bluetooth_disconnect(void)
     APP_ERROR_CHECK(control_struct.error_code);
     if (control_struct.error_code != NRF_SUCCESS)
     {
-        NRF_LOG_INFO("Failed to disconnect connection. Connection handle: %d Error: %d", conn_handle, control_struct.error_code);
+        NRF_LOG_INFO("Failed to disconnect connection. Connection handle: %d Error: %d", m_conn_handle, control_struct.error_code);
     }
     else
     {
-        NRF_LOG_INFO("Disconnected connection handle %d", conn_handle);
+        NRF_LOG_INFO("Disconnected connection handle %d", m_conn_handle);
     }
 }
 
-/**@brief This function must be called before any interrupts are enabled. It can be called after the log module is initialized.
- */
-void ble_dfu_async_svci_init(void)
-{
-    // Initialize the async SVCI interface to bootloader before any interrupts are enabled.
-    control_struct.error_code = ble_dfu_buttonless_async_svci_init();
-    APP_ERROR_CHECK(control_struct.error_code);
-}
-
-// YOUR_JOB: Update this code if you want to do anything given a DFU event (optional).
-/**@brief Function for handling dfu events from the Buttonless Secure DFU service
- *
- * @param[in]   event   Event from the Buttonless Secure DFU service.
- */
-void ble_dfu_evt_handler(ble_dfu_buttonless_evt_type_t event)
-{
-    switch (event)
-    {
-        case BLE_DFU_EVT_BOOTLOADER_ENTER_PREPARE:
-        {
-            NRF_LOG_INFO("Device is preparing to enter bootloader mode.");
-
-            // Prevent device from advertising on disconnect.
-            ble_adv_modes_config_t config;
-            advertising_config_get(&config);
-            config.ble_adv_on_disconnect_disabled = true;
-            ble_advertising_modes_config_set(&m_advertising, &config);
-
-            // Disconnect all other bonded devices that currently are connected.
-            // This is required to receive a service changed indication
-            // on bootup after a successful (or aborted) Device Firmware Update.
-            uint32_t conn_count = ble_conn_state_for_each_connected(disconnect, NULL);
-            NRF_LOG_INFO("Disconnected %d links.", conn_count);
-            break;
-        }
-
-        case BLE_DFU_EVT_BOOTLOADER_ENTER:
-            // YOUR_JOB: Write app-specific unwritten data to FLASH, control finalization of this
-            //           by delaying reset by reporting false in app_shutdown_handler
-            NRF_LOG_INFO("Device will enter bootloader mode.");
-            break;
-
-        case BLE_DFU_EVT_BOOTLOADER_ENTER_FAILED:
-            NRF_LOG_ERROR("Request to enter bootloader mode failed asynchroneously.");
-            // YOUR_JOB: Take corrective measures to resolve the issue
-            //           like calling APP_ERROR_CHECK to reset the device.
-            break;
-
-        case BLE_DFU_EVT_RESPONSE_SEND_ERROR:
-            NRF_LOG_ERROR("Request to send a response to client failed.");
-            // YOUR_JOB: Take corrective measures to resolve the issue
-            //           like calling APP_ERROR_CHECK to reset the device.
-            APP_ERROR_CHECK(false);
-            break;
-
-        default:
-            NRF_LOG_ERROR("Unknown event from ble_dfu_buttonless.");
-            break;
-    }
-}
+///**@brief This function must be called before any interrupts are enabled. It can be called after the log module is initialized.
+// */
+//void ble_dfu_async_svci_init(void)
+//{
+//    // Initialize the async SVCI interface to bootloader before any interrupts are enabled.
+//    control_struct.error_code = ble_dfu_buttonless_async_svci_init();
+//    APP_ERROR_CHECK(control_struct.error_code);
+//}
+//
+//// YOUR_JOB: Update this code if you want to do anything given a DFU event (optional).
+///**@brief Function for handling dfu events from the Buttonless Secure DFU service
+// *
+// * @param[in]   event   Event from the Buttonless Secure DFU service.
+// */
+//void ble_dfu_evt_handler(ble_dfu_buttonless_evt_type_t event)
+//{
+//    switch (event)
+//    {
+//        case BLE_DFU_EVT_BOOTLOADER_ENTER_PREPARE:
+//        {
+//            NRF_LOG_INFO("Device is preparing to enter bootloader mode.");
+//
+//            // Prevent device from advertising on disconnect.
+//            ble_adv_modes_config_t config;
+//            advertising_config_get(&config);
+//            config.ble_adv_on_disconnect_disabled = true;
+//            ble_advertising_modes_config_set(&m_advertising, &config);
+//
+//            // Disconnect all other bonded devices that currently are connected.
+//            // This is required to receive a service changed indication
+//            // on bootup after a successful (or aborted) Device Firmware Update.
+//            uint32_t conn_count = ble_conn_state_for_each_connected(disconnect, NULL);
+//            NRF_LOG_INFO("Disconnected %d links.", conn_count);
+//            break;
+//        }
+//
+//        case BLE_DFU_EVT_BOOTLOADER_ENTER:
+//            // YOUR_JOB: Write app-specific unwritten data to FLASH, control finalization of this
+//            //           by delaying reset by reporting false in app_shutdown_handler
+//            NRF_LOG_INFO("Device will enter bootloader mode.");
+//            break;
+//
+//        case BLE_DFU_EVT_BOOTLOADER_ENTER_FAILED:
+//            NRF_LOG_ERROR("Request to enter bootloader mode failed asynchroneously.");
+//            // YOUR_JOB: Take corrective measures to resolve the issue
+//            //           like calling APP_ERROR_CHECK to reset the device.
+//            break;
+//
+//        case BLE_DFU_EVT_RESPONSE_SEND_ERROR:
+//            NRF_LOG_ERROR("Request to send a response to client failed.");
+//            // YOUR_JOB: Take corrective measures to resolve the issue
+//            //           like calling APP_ERROR_CHECK to reset the device.
+//            APP_ERROR_CHECK(false);
+//            break;
+//
+//        default:
+//            NRF_LOG_ERROR("Unknown event from ble_dfu_buttonless.");
+//            break;
+//    }
+//}

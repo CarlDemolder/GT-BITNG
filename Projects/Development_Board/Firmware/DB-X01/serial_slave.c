@@ -22,6 +22,11 @@ void startup_initialization(void)
     uint8_t cy15b108qi_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, CY15B108QI_INITIALIZATION_COMMAND};       
     state_handler(cy15b108qi_initialization_array_data); // Initialize CY15B108QI Module
     #endif
+
+    #if FDC1004
+    uint8_t fdc1004_initialization_array_data[3] = {0x00, SERIAL_SLAVE_MODULE, FDC1004_INITIALIZATION_COMMAND};       
+    state_handler(fdc1004_initialization_array_data); // Initialize FDC1004 Module
+    #endif
 }
 
 /*
@@ -176,6 +181,35 @@ static void _cy15b108qi_initialization(void)
 
     uint8_t spim_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
     state_handler(spim_disable_array_data); // Disable SPIM Module 
+}
+#endif
+
+/*
+*   @Brief: Function: _fdc1004_initialization() is used to initialize the FDC1004 module
+*/
+#if FDC1004
+static void _fdc1004_initialization(void)
+{
+    NRF_LOG_INFO("_fdc1004_initialization");
+
+    uint8_t i2c_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  
+    state_handler(i2c_init_array_data); // Init TWIM Driver
+
+    uint8_t i2c_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_ENABLE};  
+    state_handler(i2c_enable_array_data); // Enable TWIM Driver
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t tmp117_shutdown_array_data[5] = {0x00, FDC1004_MODULE, FDC1004_INIT_COMMAND};  
+    state_handler(tmp117_shutdown_array_data); // Initialize the FDC1004
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t i2c_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_DISABLE};  
+    state_handler(i2c_disable_array_data); // Disable TWIM Driver
+
+    uint8_t i2c_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  
+    state_handler(i2c_uninit_array_data); // Uninit TWIM Driver
 }
 #endif
 
@@ -401,6 +435,13 @@ void state_handler(uint8_t *serial_array_data)
         case CY15B108QI_MODULE:
             NRF_LOG_INFO("STATE HANDLER: CY15B108QI_MODULE");
             _cy15b108qi_handler(serial_array_data);
+            break;
+        #endif
+
+        #if FDC1004
+        case FDC1004_MODULE:
+            NRF_LOG_INFO("STATE HANDLER: FDC1004_MODULE");
+            _fdc1004_handler(serial_array_data);
             break;
         #endif
 
@@ -1158,6 +1199,79 @@ static void _max30003_handler(uint8_t *serial_array_data)
           NRF_LOG_INFO("MAX30003_MODULE: WRITE_FIFO_RESET_REGISTER");
           max30003_write_fifo_reset_register();
           break;
+
+        default:
+            break;
+    }
+}
+#endif
+
+#if FDC1004
+static void _fdc1004_handler(uint8_t *serial_array_data)
+{
+    NRF_LOG_INFO("_fdc1004_handler");
+
+    switch(serial_array_data[2])
+    {
+        case FDC1004_INIT_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_INIT_COMMAND");
+            fdc1004_init();
+            break;
+
+        case FDC1004_UNINIT_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_UNINIT_COMMAND");
+            fdc1004_uninit();
+            break;
+
+        case FDC1004_SOFT_RESET_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SOFT_RESET_COMMAND");
+            fdc1004_soft_reset();
+            break;
+
+        case FDC1004_SET_OFFSET_CALIBRATION_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_OFFSET_CALIBRATION_COMMAND");
+            fdc1004_set_offset_calibration(serial_array_data[3], serial_array_data[4], serial_array_data[5], serial_array_data[6]);
+            break;
+
+        case FDC1004_SET_GAIN_CALIBRATION_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_GAIN_CALIBRATION_COMMAND");
+            fdc1004_set_gain_calibration(serial_array_data[3], serial_array_data[4], serial_array_data[5], serial_array_data[6]);
+            break;
+
+        case FDC1004_SET_MEASUREMENT_RATE_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_MEASUREMENT_RATE_COMMAND");
+            fdc1004_set_measurement_rate(serial_array_data[3]);
+            break;
+
+        case FDC1004_SET_REPEAT_MEASUREMENT_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_REPEAT_MEASUREMENT_COMMAND");
+            fdc1004_set_repeat_measurement(serial_array_data[3]);
+            break;
+
+        case FDC1004_GET_MANUFACTURER_ID_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_GET_MANUFACTURER_ID_COMMAND");
+            fdc1004_get_manufacturer_id();
+            break;
+
+        case FDC1004_GET_DEVICE_ID_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_GET_DEVICE_ID_COMMAND");
+            fdc1004_get_device_id();
+            break;
+
+        case FDC1004_SET_CAPDAC_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_CAPDAC_COMMAND");
+            fdc1004_set_capdac(serial_array_data[3], serial_array_data[4]);
+            break;
+
+        case FDC1004_TRIGGER_MEASUREMENT_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_TRIGGER_MEASUREMENT_COMMAND");
+            fdc1004_trigger_measurement(serial_array_data[3]);
+            break;
+
+        case FDC1004_GET_MEASUREMENT_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_GET_MEASUREMENT_COMMAND");
+            fdc1004_get_measurement(serial_array_data[3]);
+            break;
 
         default:
             break;

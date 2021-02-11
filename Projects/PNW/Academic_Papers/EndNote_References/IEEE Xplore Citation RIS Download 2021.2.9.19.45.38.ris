@@ -1,0 +1,51 @@
+TY  - CONF
+TI  - Tactile sensorized glove for force and motion sensing
+T2  - 2016 IEEE SENSORS
+SP  - 1
+EP  - 3
+AU  - J. C. Yeo
+AU  - C. Lee
+AU  - Z. Wang
+AU  - C. T. Lim
+PY  - 2016
+KW  - electric resistance
+KW  - force sensors
+KW  - motion measurement
+KW  - pressure sensors
+KW  - strain gauges
+KW  - tactile sensors
+KW  - tactile sensorized glove
+KW  - force sensing
+KW  - motion sensing
+KW  - flexible tactile sensor glove
+KW  - soft wearable tactile sensor glove
+KW  - flexible strain gauge
+KW  - stretchable strain gauge
+KW  - pressure sensor
+KW  - electrical signals
+KW  - custom-built wireless module
+KW  - dynamic electrical resistance profile
+KW  - thumb movement
+KW  - reaction forces
+KW  - Thumb
+KW  - Sensors
+KW  - Strain
+KW  - Resistance
+KW  - Electrical resistance measurement
+KW  - Motion measurement
+KW  - wearable electronics
+KW  - flexible sensor
+KW  - stretchable strain gauge
+KW  - tactile glove
+DO  - 10.1109/ICSENS.2016.7808596
+JO  - 2016 IEEE SENSORS
+IS  - 
+SN  - 
+VO  - 
+VL  - 
+JA  - 2016 IEEE SENSORS
+Y1  - 30 Oct.-3 Nov. 2016
+AB  - Frequent use of mobile gadgets has led to hand injuries, including thumb tendonitis and carpal tunnel syndrome. Despite the high incidence rates and severity, current monitoring tools are still limited and are ineffective in performing hand assessment. To overcome this, we developed a flexible and soft wearable tactile sensor glove capable of measuring forces and finger motion. The tactile sensor system comprised flexible and stretchable strain gauge and pressure sensor. The sensing elements are almost imperceptible to the user, and can be easily embedded into the glove for tactile sensing applications. The sensorized glove provides minimal discomfort to the user. The electrical signals are measured and transmitted via a custom-built wireless module. The dynamic electrical resistance profile of individual sensors may be retrieved for further analysis. Accordingly, we demonstrate the simultaneous measurements of thumb movement and reaction forces exerted on the thumb. Overall, we envision this technology to provide both clinicians and users real-time dynamic monitoring and measurements of finger movement for rehabilitation or therapy.
+ER  - 
+
+

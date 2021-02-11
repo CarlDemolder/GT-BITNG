@@ -1,0 +1,60 @@
+TY  - CONF
+TI  - Inductance-Based Flexible Pressure Sensor for Assistive Gloves
+T2  - 2018 IEEE SENSORS
+SP  - 1
+EP  - 4
+AU  - O. Ozioko
+AU  - M. Hersh
+AU  - R. Dahiya
+PY  - 2018
+KW  - coils
+KW  - elastomers
+KW  - ferromagnetic materials
+KW  - handicapped aids
+KW  - inductance measurement
+KW  - inductive sensors
+KW  - LIGA
+KW  - moulding
+KW  - nanoparticles
+KW  - nanosensors
+KW  - pressure measurement
+KW  - pressure sensors
+KW  - soft magnetic materials
+KW  - inductance-based flexible pressure sensor
+KW  - soft ferromagnetic elastomer
+KW  - coil
+KW  - vibrotactile feedback
+KW  - tactile sensing
+KW  - assistive smart gloves
+KW  - iron nanoparticles
+KW  - ecoflex
+KW  - micromolding technique
+KW  - Lithographie Galvanoformung, Abformung
+KW  - LIGA
+KW  - metal particles
+KW  - deafblind people
+KW  - tactile communication
+KW  - thick flexible polyimide sheet
+KW  - ferromagnetic elastomer
+KW  - size 50.0 mum
+KW  - size 75.0 mum
+KW  - size 25.0 mum
+KW  - size 17 mum
+KW  - Pressure sensor
+KW  - Tactile sensor
+KW  - Smart Glove
+KW  - Assistive technology
+KW  - Inductance
+KW  - Deafblind Communication
+DO  - 10.1109/ICSENS.2018.8589826
+JO  - 2018 IEEE SENSORS
+IS  - 
+SN  - 2168-9229
+VO  - 
+VL  - 
+JA  - 2018 IEEE SENSORS
+Y1  - 28-31 Oct. 2018
+AB  - This paper presents an inductance-based flexible pressure sensor to support the tactile communication between deafblind people. The pressure sensor was realized with a soft ferromagnetic elastomer and a 17μm-thick coil fabricated on a 50 μm thick flexible polyimide sheet. The ferromagnetic elastomer acts as the core of the coil, which when pressed, sees the metal particles moving closer to each other and leads to changes in the inductance. The coil, with 75μm wide wires and 25μm pitch, was realized using LIGA (Lithographie Galvanoformung, Abformung) micro molding technique. Four different sensors have been fabricated using different ratios (1:1, 2:1, 3:1 and 5:1) of ecoflex and iron nanoparticles. The results show that the higher the ratio the better the response of the sensor. The presented sensor is intended to be integrated in a smart glove having dual function of tactile sensing and vibrotactile feedback.
+ER  - 
+
+
