@@ -27,6 +27,8 @@
 #define SG_X01 0X03
 #define LP_ECG_X01 0X04
 #define LP_ECG_X02 0X05
+#define SG_PRESSURE_X01 0X06
+#define SG_STRAIN_X01 0X07
 
 #define BOARD_VERSION DB_X02
 
@@ -45,6 +47,7 @@ enum COMMON_CONSTANTS
     #define FT201X 1
     #define BMI160 1
     #define FDC1004 1
+    #define STRAIN_GAUGE 1
     enum PIN_CONSTANTS
     {
         BLE_LED_PIN = 11,                                   /** Pinout for BLE LED for DB-X02 */
@@ -122,6 +125,7 @@ enum COMMON_CONSTANTS
     #define ADG728 1
     #define DAC5571 1
     #define ADS1100 1
+    #define STRAIN_GAUGE 1
 
     enum PIN_CONSTANTS
     {

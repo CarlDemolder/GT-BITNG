@@ -201,139 +201,160 @@ void rtc_ft201x_restart(void)
 }
 #endif
 
-/**@brief Function to configure an RTC instance for the tmp117
- */
-#if TMP117
-void rtc_tmp117_init(void)
-{
-    //Initialize RTC instance for the tmp117
-    NRF_LOG_INFO("rtc__tmp117_init");
-    rtc_tmp117_configuration.rtc_frequency = 1;      // Setting the frequency of the RTC tmp117 to 1 Hz
-    rtc_tmp117_configuration.rtc_is_running = 0;     // RTC tmp117 current state
-    rtc_tmp117_configuration.rtc_restart = 0;        // RTC tmp117 restart command
 
-    const nrfx_rtc_t nrfx_rtc_tmp117 = NRFX_RTC_INSTANCE(2); /**< Declaring an instance of nrfx_rtc using RTC2 for tmp117.*/
-    rtc_tmp117_configuration.nrfx_rtc = nrfx_rtc_tmp117;
+/* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+
+/**@brief Function to configure an RTC instance for all available sensors at a set sampling frequency
+ */
+void rtc_sensor_init(void)
+{
+    //Initialize a RTC instance for all available sensors
+    NRF_LOG_INFO("rtc_sensor_init");
+    rtc_sensor_configuration.rtc_frequency = 1;      // Setting the frequency of the RTC sensor to 1 Hz
+    rtc_sensor_configuration.rtc_is_running = 0;     // RTC sensor current state
+    rtc_sensor_configuration.rtc_restart = 0;        // RTC sensor restart command
+
+    const nrfx_rtc_t nrfx_rtc_sensor = NRFX_RTC_INSTANCE(2); // Declaring an instance of nrfx_rtc using RTC2 for all available sensors
+    rtc_sensor_configuration.nrfx_rtc = nrfx_rtc_sensor;
     
-    rtc_tmp117_configuration.nrfx_rtc_config = (nrfx_rtc_config_t) NRFX_RTC_DEFAULT_CONFIG;
-    rtc_tmp117_configuration.nrfx_rtc_config.interrupt_priority = 7;
-    rtc_tmp117_configuration.nrfx_rtc_config.prescaler = RTC_TIMER_CLOCK_FREQ/rtc_tmp117_configuration.rtc_frequency - 1;
-    NRF_LOG_INFO("prescaler %u", rtc_tmp117_configuration.nrfx_rtc_config.prescaler);
+    rtc_sensor_configuration.nrfx_rtc_config = (nrfx_rtc_config_t) NRFX_RTC_DEFAULT_CONFIG;
+    rtc_sensor_configuration.nrfx_rtc_config.interrupt_priority = 7;
+    rtc_sensor_configuration.nrfx_rtc_config.prescaler = RTC_TIMER_CLOCK_FREQ/rtc_sensor_configuration.rtc_frequency - 1;
+    NRF_LOG_INFO("prescaler %u", rtc_sensor_configuration.nrfx_rtc_config.prescaler);
 
-    nrfx_rtc_tmp117_init();
+    nrfx_rtc_sensor_init();
 
-    rtc_tmp117_configuration.rtc_counter = 30;  // Setting the counter of the RTC to trigger every 30 seconds
-    rtc_tmp117_set_counter(rtc_tmp117_configuration.rtc_counter);
+    rtc_sensor_configuration.rtc_counter = 30;  // Setting the counter of the RTC sensor to trigger every 30 seconds
+    rtc_sensor_set_counter(rtc_sensor_configuration.rtc_counter);
 }
 
-/**@brief Function to uninitialize the instance of the RTC for the tmp117
+/**@brief Function to uninitialize the instance of the RTC sensor
  */
-void nrfx_rtc_tmp117_uninit(void)
+void nrfx_rtc_sensor_uninit(void)
 {
-    NRF_LOG_INFO("rtc_tmp117_uninit");
-    nrfx_rtc_uninit(&rtc_tmp117_configuration.nrfx_rtc);
+    NRF_LOG_INFO("rtc_sensor_uninit");
+    nrfx_rtc_uninit(&rtc_sensor_configuration.nrfx_rtc);
 }
 
-/**@brief Function to initialize the NRFX instance of the RTC for the tmp117
+/**@brief Function to initialize the NRFX instance of the RTC sensor
  */
-void nrfx_rtc_tmp117_init(void)
+void nrfx_rtc_sensor_init(void)
 {
-    NRF_LOG_INFO("nrfx_rtc_tmp117_init");
-    ret_code_t error_code = nrfx_rtc_init(&rtc_tmp117_configuration.nrfx_rtc, &rtc_tmp117_configuration.nrfx_rtc_config, rtc_tmp117_handler);
+    NRF_LOG_INFO("nrfx_rtc_sensor_init");
+    ret_code_t error_code = nrfx_rtc_init(&rtc_sensor_configuration.nrfx_rtc, &rtc_sensor_configuration.nrfx_rtc_config, rtc_sensor_handler);
     APP_ERROR_CHECK(error_code);
 }
 
-/**@brief Function to configure an RTC instance for the tmp117
+/**@brief Handler for the RTC sensor instance
  */
-void rtc_tmp117_handler(nrfx_rtc_int_type_t interrupt_type)
+void rtc_sensor_handler(nrfx_rtc_int_type_t interrupt_type)
 {
     if (interrupt_type == NRFX_RTC_INT_COMPARE2)
     {
-        NRF_LOG_INFO("rtc_tmp117_handler: NRFX_RTC_INT_COMPARE2");
-        nrfx_rtc_counter_clear(&rtc_tmp117_configuration.nrfx_rtc);
-        nrfx_rtc_int_enable(&rtc_tmp117_configuration.nrfx_rtc, NRF_RTC_INT_COMPARE2_MASK);
+        NRF_LOG_INFO("rtc_sensor_handler: NRFX_RTC_INT_COMPARE2");
+        nrfx_rtc_counter_clear(&rtc_sensor_configuration.nrfx_rtc);
+        nrfx_rtc_int_enable(&rtc_sensor_configuration.nrfx_rtc, NRF_RTC_INT_COMPARE2_MASK);
 
-//        temperature_interrupt_handler();
+        #if TMP117
+        if(tmp117_is_enabled() == 1)
+        {
+            tmp117_handler();
+        }
+        #endif
+
+        #if FDC1004
+        if(fdc1004_is_enabled() == 1)
+        {
+            fdc1004_handler();
+        }
+        #endif
+
+        #if STRAIN_GAUGE
+        if(strain_gauge_is_enabled() == 1)
+        {
+            strain_gauge_handler();
+        }
+        #endif
     }
 }
 
-/**@brief Function to set the counter of the RTC for the tmp117
+/**@brief Function to set the counter of the RTC sensor
 * The counter is a function of the frequency. For example, if the frequency = 8 Hz, a counter value of 80 would trigger the interrupt every 10 seconds...
  */
-void rtc_tmp117_set_counter(uint32_t new_sampling_counter)
+void rtc_sensor_set_counter(uint32_t new_sampling_counter)
 {
-    NRF_LOG_INFO("rtc_tmp117_set_counter");
-    rtc_tmp117_configuration.rtc_counter = new_sampling_counter;
-    ret_code_t error_code = nrfx_rtc_cc_set(&rtc_tmp117_configuration.nrfx_rtc, 2, rtc_tmp117_configuration.rtc_counter, true);
+    NRF_LOG_INFO("rtc_sensor_set_counter");
+    rtc_sensor_configuration.rtc_counter = new_sampling_counter;
+    ret_code_t error_code = nrfx_rtc_cc_set(&rtc_sensor_configuration.nrfx_rtc, 2, rtc_sensor_configuration.rtc_counter, true);
     APP_ERROR_CHECK(error_code);
-    NRF_LOG_INFO("counter %u", rtc_tmp117_configuration.rtc_counter);
+    NRF_LOG_INFO("counter %u", rtc_sensor_configuration.rtc_counter);
 }
 
-/**@brief Function to set the frequency of the RTC for the tmp117
+/**@brief Function to set the frequency of the RTC sensor
 * The frequency is when the RTC timer is triggered
  */
-void rtc_tmp117_set_frequency(uint8_t new_sampling_frequency)
+void rtc_sensor_set_frequency(uint8_t new_sampling_frequency)
 {
-    NRF_LOG_INFO("rtc_tmp117_set_frequency");
+    NRF_LOG_INFO("rtc_sensor_set_frequency");
     
-    nrfx_rtc_tmp117_uninit();
+    nrfx_rtc_sensor_uninit();
     
-    rtc_tmp117_configuration.rtc_frequency = new_sampling_frequency;
-    rtc_tmp117_configuration.nrfx_rtc_config.prescaler =  RTC_TIMER_CLOCK_FREQ/rtc_tmp117_configuration.rtc_frequency - 1;
-    NRF_LOG_INFO("frequency %u", rtc_tmp117_configuration.rtc_frequency);
-    nrfx_rtc_tmp117_init();
+    rtc_sensor_configuration.rtc_frequency = new_sampling_frequency;
+    rtc_sensor_configuration.nrfx_rtc_config.prescaler =  RTC_TIMER_CLOCK_FREQ/rtc_sensor_configuration.rtc_frequency - 1;
+    NRF_LOG_INFO("frequency %u", rtc_sensor_configuration.rtc_frequency);
+    nrfx_rtc_sensor_init();
 }
 
 /** @brief Function to return the number of samples per minute */
-uint8_t rtc_tmp117_get_sampling_frequency(void)
+uint8_t rtc_sensor_get_sampling_frequency(void)
 {
-    NRF_LOG_INFO("rtc_tmp117_get_sampling_frequency");
-    uint8_t sampling_frequency = (uint8_t) 60/(((float)(1/rtc_tmp117_configuration.rtc_frequency))*rtc_tmp117_configuration.rtc_counter);
+    NRF_LOG_INFO("rtc_sensor_get_sampling_frequency");
+    uint8_t sampling_frequency = (uint8_t) 60/(((float)(1/rtc_sensor_configuration.rtc_frequency))*rtc_sensor_configuration.rtc_counter);
     return sampling_frequency;
 }
 
-/**@brief Function to stop the RTC tmp117
+/**@brief Function to stop the RTC sensor
  */
-void rtc_tmp117_stop(void)
+void rtc_sensor_stop(void)
 {
-    NRF_LOG_INFO("rtc_tmp117_stop");
-    if(rtc_tmp117_configuration.rtc_is_running)
+    NRF_LOG_INFO("rtc_sensor_stop");
+    if(rtc_sensor_configuration.rtc_is_running)
     {
-        nrfx_rtc_disable(&rtc_tmp117_configuration.nrfx_rtc);        // Disable the RTC Instance for the tmp117
-        rtc_tmp117_configuration.rtc_is_running = 0;
-        rtc_tmp117_configuration.rtc_restart = 1;
-        NRF_LOG_INFO("RTC tmp117 is stopped and disabled");
+        nrfx_rtc_disable(&rtc_sensor_configuration.nrfx_rtc);        // Disable the RTC Sensor Instance
+        rtc_sensor_configuration.rtc_is_running = 0;
+        rtc_sensor_configuration.rtc_restart = 1;
+        NRF_LOG_INFO("RTC sensor is stopped and disabled");
     }
 }
 
-/**@brief Function to start the RTC tmp117
+/**@brief Function to start the RTC sensor
  */
-void rtc_tmp117_start(void)
+void rtc_sensor_start(void)
 {
-    NRF_LOG_INFO("rtc_tmp117_start");
-    if(rtc_tmp117_configuration.rtc_is_running != 0x01)
+    NRF_LOG_INFO("rtc_sensor_start");
+    if(rtc_sensor_configuration.rtc_is_running != 0x01)
     {
-        nrfx_rtc_enable(&rtc_tmp117_configuration.nrfx_rtc);        // Enable the RTC Instance for the tmp117
-        nrfx_rtc_int_enable(&rtc_tmp117_configuration.nrfx_rtc, NRF_RTC_INT_COMPARE2_MASK);
-        nrfx_rtc_tick_enable(&rtc_tmp117_configuration.nrfx_rtc, true);
-        rtc_tmp117_configuration.rtc_is_running = 1;
-        NRF_LOG_INFO("RTC tmp117 is enabled and has started");
+        nrfx_rtc_enable(&rtc_sensor_configuration.nrfx_rtc);        // Enable the RTC sensor Instance
+        nrfx_rtc_int_enable(&rtc_sensor_configuration.nrfx_rtc, NRF_RTC_INT_COMPARE2_MASK);
+        nrfx_rtc_tick_enable(&rtc_sensor_configuration.nrfx_rtc, true);
+        rtc_sensor_configuration.rtc_is_running = 1;
+        NRF_LOG_INFO("RTC sensor is enabled and has started");
     }
 }
 
-/**@brief Function to restart the RTC tmp117
+/**@brief Function to restart the RTC sensor
  */
-void rtc_tmp117_restart(void)
+void rtc_sensor_restart(void)
 {
-    NRF_LOG_INFO("rtc_tmp117_restart");
-    if(rtc_tmp117_configuration.rtc_is_running == 0x00 && rtc_tmp117_configuration.rtc_restart == 0x01)
+    NRF_LOG_INFO("rtc_sensor_restart");
+    if(rtc_sensor_configuration.rtc_is_running == 0x00 && rtc_sensor_configuration.rtc_restart == 0x01)
     {
-        nrfx_rtc_enable(&rtc_tmp117_configuration.nrfx_rtc);        // Enable an RTC instance for the tmp117
-        nrfx_rtc_int_enable(&rtc_tmp117_configuration.nrfx_rtc, NRF_RTC_INT_COMPARE2_MASK);
-        nrfx_rtc_tick_enable(&rtc_tmp117_configuration.nrfx_rtc, true);
-        rtc_tmp117_configuration.rtc_is_running = 1;
-        rtc_tmp117_configuration.rtc_restart = 0;
-        NRF_LOG_INFO("RTC tmp117 has been Restarted");
+        nrfx_rtc_enable(&rtc_sensor_configuration.nrfx_rtc);        // Enable an RTC sensor instance
+        nrfx_rtc_int_enable(&rtc_sensor_configuration.nrfx_rtc, NRF_RTC_INT_COMPARE2_MASK);
+        nrfx_rtc_tick_enable(&rtc_sensor_configuration.nrfx_rtc, true);
+        rtc_sensor_configuration.rtc_is_running = 1;
+        rtc_sensor_configuration.rtc_restart = 0;
+        NRF_LOG_INFO("RTC sensor has been restarted");
     }
 }
-#endif

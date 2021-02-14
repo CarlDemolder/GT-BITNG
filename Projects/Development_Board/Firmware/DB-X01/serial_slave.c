@@ -1,5 +1,7 @@
 #include "serial_slave.h"
 
+static struct State_Machine_Struct state_machine;
+
 /*
 * @Brief: Function: startup_initialization() is used to initialize the NRF52, TMP117, MAX30003, and CY15B108QI
 */
@@ -221,6 +223,14 @@ void enable_bluetooth_handler(void)
 {
     NRF_LOG_INFO("enable_bluetooth_handler");
 
+    state_machine.ble_response_char[0] = 0x00;
+    state_machine.ble_response_char[1] = BLUETOOTH_MODULE;
+    state_machine.ble_response_char[2] = BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND;
+    state_machine.ble_response_char[3] = 0x00;
+    state_machine.ble_response_char[4] = 0x00;
+    state_machine.ble_response_char[5] = 0x00;
+    state_machine.ble_response_char[6] = 0x00;
+
     uint8_t lf_clock_start_array_data[4] = {0x00, NRF52_MODULE, NRF52_LF_CLOCK_COMMAND, NRF52_LF_CLOCK_START};   
     state_handler(lf_clock_start_array_data); // Start LF Clock 
 
@@ -269,7 +279,7 @@ void bluetooth_handler(uint8_t *settings_char_data_array)
         NRF_LOG_INFO("Command Header and Footer are incorrect");
         NRF_LOG_INFO("Header: %X", settings_char_data_array[0]);
         NRF_LOG_INFO("Footer: %X", settings_char_data_array[CONFIGURATION_SERVICE_SETTINGS_CHAR_LENGTH-1]);
-        uint8_t incorrect_handler_footer_response_array_data[5] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, 0x00, BLUETOOTH_RESPONSE_CHAR_HEADER_FOOTER_INCORRECT};
+        uint8_t incorrect_handler_footer_response_array_data[7] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, 0x00, 0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_HEADER_FOOTER_INCORRECT};
         state_handler(incorrect_handler_footer_response_array_data);
     }
 }
@@ -594,31 +604,30 @@ static void _nrf52_handler(uint8_t *serial_array_data)
                 }
                 #endif
 
-                #if TMP117
-                case NRF52_RTC_TMP117_INIT:
-                    rtc_tmp117_init();
+                case NRF52_RTC_SENSOR_INIT:
+                    rtc_sensor_init();
                     break;
 
-                case NRF52_RTC_TMP117_UNINIT:
-                    nrfx_rtc_tmp117_uninit();
+                case NRF52_RTC_SENSOR_UNINIT:
+                    nrfx_rtc_sensor_uninit();
                     break;
 
-                case NRF52_RTC_TMP117_START:  
-                    rtc_tmp117_start();
+                case NRF52_RTC_SENSOR_START:  
+                    rtc_sensor_start();
                     break;
 
-                case NRF52_RTC_TMP117_STOP:
-                    rtc_tmp117_stop();
+                case NRF52_RTC_SENSOR_STOP:
+                    rtc_sensor_stop();
                     break;
 
-                case NRF52_RTC_TMP117_RESTART:  
-                    rtc_tmp117_restart();
+                case NRF52_RTC_SENSOR_RESTART:  
+                    rtc_sensor_restart();
                     break;
 
-                case NRF52_RTC_TMP117_SET_COUNTER:
+                case NRF52_RTC_SENSOR_SET_COUNTER:
                 {
-                    uint32_t temp_counter = serial_array_data[4] << 8 | serial_array_data[5];  
-                    rtc_tmp117_set_counter(temp_counter);
+                    uint32_t sensor_counter = serial_array_data[4] << 8 | serial_array_data[5];  
+                    rtc_sensor_set_counter(sensor_counter);
                     break;
                 }
                 #endif
@@ -1221,56 +1230,96 @@ static void _fdc1004_handler(uint8_t *serial_array_data)
         case FDC1004_UNINIT_COMMAND:
             NRF_LOG_INFO("FDC1004_MODULE: FDC1004_UNINIT_COMMAND");
             fdc1004_uninit();
+            state_machine.ble_response_char[6] = BLUETOOTH_RESPONSE_CHAR_MESSAGE_RECEIVED;
+            state_handler(state_machine.ble_response_char);
+            _reset_response_char();
             break;
 
         case FDC1004_SOFT_RESET_COMMAND:
             NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SOFT_RESET_COMMAND");
             fdc1004_soft_reset();
+            state_machine.ble_response_char[6] = BLUETOOTH_RESPONSE_CHAR_MESSAGE_RECEIVED;
+            state_handler(state_machine.ble_response_char);
+            _reset_response_char();
             break;
 
         case FDC1004_SET_OFFSET_CALIBRATION_COMMAND:
             NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_OFFSET_CALIBRATION_COMMAND");
             fdc1004_set_offset_calibration(serial_array_data[3], serial_array_data[4], serial_array_data[5], serial_array_data[6]);
+            state_machine.ble_response_char[6] = BLUETOOTH_RESPONSE_CHAR_MESSAGE_RECEIVED;
+            state_handler(state_machine.ble_response_char);
+            _reset_response_char();
             break;
 
         case FDC1004_SET_GAIN_CALIBRATION_COMMAND:
             NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_GAIN_CALIBRATION_COMMAND");
             fdc1004_set_gain_calibration(serial_array_data[3], serial_array_data[4], serial_array_data[5], serial_array_data[6]);
+            state_machine.ble_response_char[6] = BLUETOOTH_RESPONSE_CHAR_MESSAGE_RECEIVED;
+            state_handler(state_machine.ble_response_char);
+            _reset_response_char();
             break;
 
         case FDC1004_SET_MEASUREMENT_RATE_COMMAND:
             NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_MEASUREMENT_RATE_COMMAND");
             fdc1004_set_measurement_rate(serial_array_data[3]);
+            state_machine.ble_response_char[6] = BLUETOOTH_RESPONSE_CHAR_MESSAGE_RECEIVED;
+            state_handler(state_machine.ble_response_char);
+            _reset_response_char();
             break;
 
         case FDC1004_SET_REPEAT_MEASUREMENT_COMMAND:
             NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_REPEAT_MEASUREMENT_COMMAND");
             fdc1004_set_repeat_measurement(serial_array_data[3]);
+            state_machine.ble_response_char[6] = BLUETOOTH_RESPONSE_CHAR_MESSAGE_RECEIVED;
+            state_handler(state_machine.ble_response_char);
+            _reset_response_char();
             break;
 
         case FDC1004_GET_MANUFACTURER_ID_COMMAND:
             NRF_LOG_INFO("FDC1004_MODULE: FDC1004_GET_MANUFACTURER_ID_COMMAND");
-            fdc1004_get_manufacturer_id();
+            uint8_t manufacturer_id[2] = {0};
+            fdc1004_get_manufacturer_id(manufacturer_id);
+            state_machine.ble_response_char[5] = manufacturer_id[0];
+            state_machine.ble_response_char[6] = manufacturer_id[1];
+            state_handler(state_machine.ble_response_char);
+            _reset_response_char();
             break;
 
         case FDC1004_GET_DEVICE_ID_COMMAND:
             NRF_LOG_INFO("FDC1004_MODULE: FDC1004_GET_DEVICE_ID_COMMAND");
-            fdc1004_get_device_id();
+            uint8_t device_id[2] = {0};
+            fdc1004_get_device_id(device_id);
+            state_machine.ble_response_char[5] = device_id[0];
+            state_machine.ble_response_char[6] = device_id[1];
+            state_handler(state_machine.ble_response_char);
+            _reset_response_char();
             break;
 
         case FDC1004_SET_CAPDAC_COMMAND:
             NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_CAPDAC_COMMAND");
             fdc1004_set_capdac(serial_array_data[3], serial_array_data[4]);
+            state_machine.ble_response_char[6] = BLUETOOTH_RESPONSE_CHAR_MESSAGE_RECEIVED;
+            state_handler(state_machine.ble_response_char);
+            _reset_response_char();
             break;
 
-        case FDC1004_TRIGGER_MEASUREMENT_COMMAND:
-            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_TRIGGER_MEASUREMENT_COMMAND");
-            fdc1004_trigger_measurement(serial_array_data[3]);
+        case FDC1004_TRIGGER_SINGLE_MEASUREMENT_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_TRIGGER_SINGLE_MEASUREMENT_COMMAND");
+            fdc1004_trigger_single_measurement(serial_array_data[3]);
+            state_machine.ble_response_char[6] = BLUETOOTH_RESPONSE_CHAR_MESSAGE_RECEIVED;
+            state_handler(state_machine.ble_response_char);
+            _reset_response_char();
             break;
 
         case FDC1004_GET_MEASUREMENT_COMMAND:
             NRF_LOG_INFO("FDC1004_MODULE: FDC1004_GET_MEASUREMENT_COMMAND");
-            fdc1004_get_measurement(serial_array_data[3]);
+            uint8_t measurement[3] = {0};
+            fdc1004_get_measurement(serial_array_data[3], measurement);
+            state_machine.ble_response_char[4] = measurement[0];
+            state_machine.ble_response_char[5] = measurement[1];
+            state_machine.ble_response_char[6] = measurement[2];
+            state_handler(state_machine.ble_response_char);
+            _reset_response_char();
             break;
 
         default:
@@ -1332,7 +1381,7 @@ static void _bluetooth_handler(uint8_t *serial_array_data)
 
         case BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND:
             NRF_LOG_INFO("BLUETOOTH_MODULE: WRITE_RESPONSE_CHAR");
-            uint8_t response_char_data_array[2] = {serial_array_data[3], serial_array_data[4]};
+            uint8_t response_char_data_array[4] = {serial_array_data[3], serial_array_data[4], serial_array_data[5], serial_array_data[6]};
             bluetooth_configuration_service_response_char_write(response_char_data_array);
             break;
 
@@ -1388,4 +1437,11 @@ static void _bluetooth_handler(uint8_t *serial_array_data)
     }
 }
 
-
+static void _reset_response_char(void)
+{
+    NRF_LOG_INFO("_reset_response_char");
+    for(uint8_t i = 3; i < ARRAY_LENGTH(state_machine.ble_response_char); i++)
+    {
+        state_machine.ble_response_char[i] = 0;
+    }
+}

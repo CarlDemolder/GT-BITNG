@@ -2,17 +2,22 @@
 
 #if TMP117
 
-static struct TMP117_CONTROL_STRUCT control_struct;
+static struct TMP117_control_struct control;
+struct FDC1004_Temperature_Register_Struct temperature;
+struct FDC1004_Configuration_Register_Struct configuration;
 
-void tmp117_init(uint8_t configuration_mode, uint8_t averaging_mode)
+void tmp117_init()
 {
     NRF_LOG_INFO("tmp117_init");
 
-    tmp117_unlock_eeprom();
-    tmp117_set_operating_mode(configuration_mode, averaging_mode);
-    tmp117_general_call_reset();
-
     control_struct.interrupt = 0;   // Initializing the interrupt to 0 to start out
+
+    control.operation_mode = TMP117_SHUTDOWN_MODE;    // Initializing the operation mode to shutdown mode
+
+    control.averaging_mode = TMP117_NO_AVERAGING_MODE;    // Initializing the averaging mode to not take an average of the data
+
+    control.device_address = TMP117_SLAVE_ADDRESS;        // Setting the device address to the slave I2C address
+
 
     control_struct.external_memory_write_start_address = 0x000000;    // Start address of the external memory to store temperature data
     control_struct.external_memory_write_end_address = 0x0001F4;      // End address of the external memory to store temperature data
@@ -51,9 +56,62 @@ void tmp117_init(uint8_t configuration_mode, uint8_t averaging_mode)
 //
 //    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
+    _tmp117_unlock_eeprom();
+    tmp117_set_operating_mode(configuration_mode, averaging_mode);
+    _tmp117_general_call_reset();
+
 }
 
-void tmp117_read_chip_id(void)
+/* 
+* Read/Write Configuration register. This register is used to write/read all configuration settings for the TMP117
+* Register address: 0x01
+* D[15], HIGH_ALERT = High alert flag
+* D[14], LOW_ALERT = Low alert flag
+* D[13], DATA_READY = Data ready flag
+* D[12], EEPROM_BUSY = EEPROM busy flag
+* D[11:10], MOD = Set converison mode
+* D[9:7], CONV = Conversion cycle bit
+* D[6:5], AVG = Conversion averaging modes
+* D[4], T/nA = Therm/alert mode select
+* D[3], POL = Alert pin polarity bit
+* D[2], DR/Alert = Alert pin select bit
+* D[1], SOFT_RESET = Software reset bit 
+* D[0], N/A = Not used
+*/
+static void _tmp117_read_configuration_register(void)
+{
+    NRF_LOG_INFO("_tmp117_read_configuration_register");
+
+    i2c_read_registers(control.slave_address[0], configuration.register_pointer[0], control.data_array, control.register_byte_count[0]);
+
+    configuration.high_alert = (control.data_array[0] & 0b10000000) >> 7;
+    configuration.low_alert = (control.data_array[0] & 0b01000000) >> 6;
+    configuration.data_ready = (control.data_array[0] & 0b00100000) >> 5;
+    configuration.eeprom_busy = (control.data_array[0] & 0b00010000) >> 4;
+    configuration.mod = (control.data_array[0] & 0b00001100) >> 2;
+    configuration.conv = ((control.data_array[0] & 0b00000011) << 1) | (control.data_array[1] >> 7);
+    
+    configuration.avg = (control.data_array[
+    offset_calibration_register.integer[i][1] = (control.data_array[0] & 0b11111000) >> 3;
+   
+    offset_calibration_register.decimal[i][0] = (control.data_array[0] & 0b00000111);
+    offset_calibration_register.decimal[i][1] = control.data_array[1];
+}
+
+static void _tmp117_write_configuration_register(void)
+{
+    NRF_LOG_INFO("tmp117_write_configuration_register");
+
+    for(uint8_t i = 0; i < ARRAY_LENGTH(offset_calibration_register.register_pointer); i++)
+    {
+        control.data_array[0] = (offset_calibration_register.integer[i][1] << 3) | offset_calibration_register.decimal[i][0];
+        control.data_array[1] = offset_calibration_register.decimal[i][1];
+
+        i2c_write_registers(control.slave_address[0], control.data_array, control.register_byte_count[0]);
+    }
+}
+
+void tmp117_read_device_id(uint8_t *temp_device_id)
 {
     NRF_LOG_INFO("tmp117_read_chip_id");
     uint8_t register_byte_count = 2;                            // Number of bytes of buffer to read
@@ -61,9 +119,13 @@ void tmp117_read_chip_id(void)
     uint8_t register_address = TMP117_DEVICE_ID_REGISTER;       // TMP117 Device ID stored in register
     uint8_t register_data[register_byte_count];                 // Store data in array
     
-    i2c_read_registers(device_address, register_address, register_data, register_byte_count);
-    control_struct.device_id =  ((register_data[0] << 8) & 0b00001111) | register_data[1];
+    i2c_read_registers(control.device_address, register_address, register_data, register_byte_count);
+    control.device_id =  ((register_data[0] << 8) & 0b00001111) | register_data[1];
+    temp_device_id[0] = control.device_id[0];
+    temp_device_id[1] = control.device_id[1];
 }
+
+void tmp117_get_chip_id(uint8_t *temp_device_id)
 
 void tmp117_read_revision_number(void)
 {
@@ -119,12 +181,11 @@ void tmp117_get_uint8_t(void)
     }
 }
 
-void tmp117_unlock_eeprom(void)
+void _tmp117_unlock_eeprom(void)
 {
     NRF_LOG_INFO("unlock_eeprom_tmp117");
     uint8_t register_byte_count = 3;                                //Slave Address + Register Write Value
-    uint8_t device_address = TMP117_SLAVE_ADDRESS;                  // Slave Address for TMP117, ADD0 = GND
-    
+
     /*tmp117 unlock EEPROM address for writing to configuration register. */
     uint8_t register_address = TMP117_EEPROM_UNLOCK_REGISTER;       // Register for EEPROM Unlock Address
     uint8_t tmp117_eun_value_1 = 0x80;               // EUN Value to Unlock EEPROM 
@@ -135,10 +196,10 @@ void tmp117_unlock_eeprom(void)
     register_data[1] = tmp117_eun_value_1;
     register_data[2] = tmp117_eun_value_2;
     
-    i2c_write_registers(device_address, register_data, register_byte_count);
+    i2c_write_registers(control.device_address, register_data, register_byte_count);
 }
 
-void tmp117_set_operating_mode(uint8_t conversion_mode, uint8_t averaging_mode)
+void tmp117_set_operating_mode(uint8_t operating_mode)
 {
     uint8_t tmp117_config_value_1;
     // MOD[1:0] = 11, ~ Single Shot Mode
@@ -204,6 +265,11 @@ void tmp117_set_operating_mode(uint8_t conversion_mode, uint8_t averaging_mode)
     i2c_write_registers(device_address, register_data, register_byte_count);
     nrf_delay_ms(10);   // Wait 10 ms to allow the register to be written properly 
 }
+
+void tmp117_set_averaging_mode(uint8_t averaging_mode)
+{
+
+
 
 void tmp117_general_call_reset(void)
 {

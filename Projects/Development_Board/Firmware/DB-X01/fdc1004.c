@@ -51,7 +51,7 @@ void fdc1004_init(void)
     fdc1004_soft_reset();              // Soft Reset
     
     // MSB Measurement Configuration Register
-    fdc1004_read_measurement_configuration_register();
+    _fdc1004_read_measurement_configuration_register();
     measurement_configuration_register.cha[0] = 0;        // Assign Positive Channel CDC of Measurement Channel #1 to CIN1
     measurement_configuration_register.cha[1] = 1;        // Assign Positive Channel CDC of Measurement Channel #2 to CIN2
     measurement_configuration_register.cha[2] = 2;        // Assign Positive Channel CDC of Measurement Channel #3 to CIN3
@@ -64,24 +64,24 @@ void fdc1004_init(void)
     measurement_configuration_register.capdac[1] = 0;     // Setting the Offset Capacitance to 0 pF for Measurement Channel #2
     measurement_configuration_register.capdac[2] = 0;     // Setting the Offset Capacitance to 0 pF for Measurement Channel #3
     measurement_configuration_register.capdac[3] = 0;     // Setting the Offset Capacitance to 0 pF for Measurement Channel #4
-    fdc1004_write_measurement_configuration_register();
-     fdc1004_read_measurement_configuration_register();
+    _fdc1004_write_measurement_configuration_register();
+    _fdc1004_read_measurement_configuration_register();
 
     // FDC Configuration Register
-    fdc1004_read_fdc_configuration_register();
+    _fdc1004_read_fdc_configuration_register();
     fdc_configuration_register.rst = 0;                   // Normal Operation
-    fdc_configuration_register.rate = 1;                  // Measurement Rate = 100 Samples per Second 
+    fdc_configuration_register.rate = 3;                  // Measurement Rate = 400 Samples per Second; 100 samples per second per sensor if there are 4 sensors 
     fdc_configuration_register.repeat = 0;                // Repeat disabled
     fdc_configuration_register.meas[0] = 0;               // Measurement Channel #1 Disabled
     fdc_configuration_register.meas[1] = 0;               // Measurement Channel #2 Disabled
     fdc_configuration_register.meas[2] = 0;               // Measurement Channel #3 Disabled
     fdc_configuration_register.meas[3] = 0;               // Measurement Channel #4 Disabled
-    fdc1004_write_fdc_configuration_register();
-    fdc1004_read_fdc_configuration_register();
+    _fdc1004_write_fdc_configuration_register();
+    _fdc1004_read_fdc_configuration_register();
 
 
     // Offset Calibration Register
-    fdc1004_read_offset_calibration_register();
+    _fdc1004_read_offset_calibration_register();
     offset_calibration_register.integer[0][1] = 0;        // Integer part set to 0 pF for Measurement Channel #1
     offset_calibration_register.integer[1][1] = 0;        // Integer part set to 0 pF for Measurement Channel #2
     offset_calibration_register.integer[2][1] = 0;        // Integer part set to 0 pF for Measurement Channel #3
@@ -94,12 +94,12 @@ void fdc1004_init(void)
     offset_calibration_register.decimal[2][1] = 0;        // Decimal part set to 0 pF for Measurement Channel #3
     offset_calibration_register.decimal[3][0] = 0;        // Decimal part set to 0 pF for Measurement Channel #4
     offset_calibration_register.decimal[3][1] = 0;        // Decimal part set to 0 pF for Measurement Channel #4
-    fdc1004_write_offset_calibration_register();
-    fdc1004_read_offset_calibration_register();
+    _fdc1004_write_offset_calibration_register();
+    _fdc1004_read_offset_calibration_register();
 
 
     // Gain Calibration Register
-    fdc1004_read_gain_calibration_register();
+    _fdc1004_read_gain_calibration_register();
     gain_calibration_register.integer[0][1] = 0;          // Integer part of the gain set to 0 for Measurement Channel #1
     gain_calibration_register.integer[1][1] = 0;          // Integer part of the gain set to 0 for Measurement Channel #2
     gain_calibration_register.integer[2][1] = 0;          // Integer part of the gain set to 0 for Measurement Channel #3
@@ -112,8 +112,8 @@ void fdc1004_init(void)
     gain_calibration_register.decimal[2][1] = 0;          // Decimal part of the gain set to 0 for Measurement Channel #3
     gain_calibration_register.decimal[3][0] = 0;          // Decimal part of the gain set to 0 for Measurement Channel #4
     gain_calibration_register.decimal[3][1] = 0;          // Decimal part of the gain set to 0 for Measurement Channel #4
-    fdc1004_write_gain_calibration_register();
-    fdc1004_read_gain_calibration_register();
+    _fdc1004_write_gain_calibration_register();
+    _fdc1004_read_gain_calibration_register();
 
     control.interrupt = 0;    // Initializing the interrupt to 0 to start out
     control.status = 1;       // Setting the status of this sensor to enabled
@@ -122,22 +122,25 @@ void fdc1004_init(void)
 void fdc1004_uninit(void)
 {
     NRF_LOG_INFO("fdc1004_uninit");
-    control.status = 0;
+    control.status = 0;   // Disable the sensor on the board
 }
 
-uint8_t fdc1004_check_status(void)
+/*
+* Used to check if this sensor is enabled on the firmware. That way, the GUI knows what sensors are available on the hardware board. 
+*/
+uint8_t fdc1004_is_enabled(void)
 {
-    NRF_LOG_INFO("fdc1004_check_status");
+    NRF_LOG_INFO("fdc1004_is_enabled");
     return control.status;
 }
 
 void fdc1004_soft_reset(void)
 {
     NRF_LOG_INFO("fdc1004_soft_reset");
-    fdc1004_read_measurement_configuration_register();
+    _fdc1004_read_measurement_configuration_register();
     fdc_configuration_register.rst = 1;                   // Software reset to initiate a device reset. After reset, value will return to 0
-    fdc1004_write_measurement_configuration_register();
-    fdc1004_read_measurement_configuration_register();
+    _fdc1004_write_measurement_configuration_register();
+    _fdc1004_read_measurement_configuration_register();
 }
 
 
@@ -146,16 +149,13 @@ void fdc1004_soft_reset(void)
 * Register address: 0x00, 0x02, 0x04, 0x06
 * D[15:0], MSB_MEASn = Most significant 16 bits of Measurement n (read only) 
 */
-static void fdc1004_read_msb_measurement_register(void)
+static void _fdc1004_read_msb_measurement_register(uint8_t channel)
 {
     NRF_LOG_INFO("fdc1004_read_msb_measurement_register");
 
-    for(uint8_t i = 0; i < ARRAY_LENGTH(msb_measurement_register.register_pointer); i++)
-    {
-        i2c_read_registers(control.slave_address[0], msb_measurement_register.register_pointer[i], control.data_array, control.register_byte_count[0]);
-        msb_measurement_register.msb_measurement[i][0] = control.data_array[0];
-        msb_measurement_register.msb_measurement[i][1] = control.data_array[1];
-    }
+    i2c_read_registers(control.slave_address[0], msb_measurement_register.register_pointer[channel-1], control.data_array, control.register_byte_count[0]);
+    msb_measurement_register.msb_measurement[channel-1][0] = control.data_array[0];
+    msb_measurement_register.msb_measurement[channel-1][1] = control.data_array[1];
 }
 
 /* 
@@ -164,15 +164,12 @@ static void fdc1004_read_msb_measurement_register(void)
 * D[15:8], LSB_MEASn = Least significant 8 bits of Measurement n (read only)
 * D[7:0], RESERVED, always 0 
 */
-static void fdc1004_read_lsb_measurement_register(void)
+static void _fdc1004_read_lsb_measurement_register(uint8_t channel)
 {
     NRF_LOG_INFO("fdc1004_read_lsb_measurement_register");
 
-    for(uint8_t i = 0; i < ARRAY_LENGTH(lsb_measurement_register.register_pointer); i++)
-    {
-        i2c_read_registers(control.slave_address[0], lsb_measurement_register.register_pointer[i], control.data_array, control.register_byte_count[0]);
-        lsb_measurement_register.lsb_measurement[i][0] = control.data_array[0];
-    }
+    i2c_read_registers(control.slave_address[0], lsb_measurement_register.register_pointer[channel-1], control.data_array, control.register_byte_count[0]);
+    lsb_measurement_register.lsb_measurement[channel-1][0] = control.data_array[0];
 }
 
 /**@brief Measurement Configuration Register Structure. This structure contains all values to configure the input channels and
@@ -183,7 +180,7 @@ static void fdc1004_read_lsb_measurement_register(void)
 * D[9:5], CAPDAC = Offset Capacitance; Configure the single-ended measurement capacitince offset: C_offset = CAPDAC x 3.125 pF
 * D[4:0], RESERVED, Always 0 (read only)
 */
-static void fdc1004_read_measurement_configuration_register(void)
+static void _fdc1004_read_measurement_configuration_register(void)
 {
     NRF_LOG_INFO("fdc1004_read_measurement_configuration_register");
 
@@ -196,7 +193,7 @@ static void fdc1004_read_measurement_configuration_register(void)
     }
 }
 
-static void fdc1004_write_measurement_configuration_register(void)
+static void _fdc1004_write_measurement_configuration_register(void)
 {
     NRF_LOG_INFO("fdc1004_write_measurement_configuration_register");
 
@@ -228,7 +225,7 @@ static void fdc1004_write_measurement_configuration_register(void)
 * D[1], DONE_3 = Measurement Complete
 * D[0], DONE_4 = Measurement Complete
 */
-static void fdc1004_read_fdc_configuration_register(void)
+static void _fdc1004_read_fdc_configuration_register(void)
 {
     NRF_LOG_INFO("fdc1004_read_fdc_configuration_register");
 
@@ -249,7 +246,7 @@ static void fdc1004_read_fdc_configuration_register(void)
     fdc_configuration_register.done[3] = (control.data_array[1] & 0b00000001) && 0b00000001;
 }
 
-static void fdc1004_write_fdc_configuration_register(void)
+static void _fdc1004_write_fdc_configuration_register(void)
 {
     NRF_LOG_INFO("fdc1004_write_configuration_register");
 
@@ -272,7 +269,7 @@ static void fdc1004_write_fdc_configuration_register(void)
 * D[15:11], OFFSET_CALn (Integer Part) = Integer portion of the Offset Calibration of Channel CINn
 * D[10:0], OFFSET_CALn (Decimal Part) = Decimal portion of the Offset Calibration of Channel CINn
 */
-static void fdc1004_read_offset_calibration_register(void)
+static void _fdc1004_read_offset_calibration_register(void)
 {
     NRF_LOG_INFO("fdc1004_read_offset_calibration_register");
 
@@ -287,7 +284,7 @@ static void fdc1004_read_offset_calibration_register(void)
     }
 }
 
-static void fdc1004_write_offset_calibration_register(void)
+static void _fdc1004_write_offset_calibration_register(void)
 {
     NRF_LOG_INFO("fdc1004_write_offset_calibration_register");
 
@@ -309,7 +306,7 @@ static void fdc1004_write_offset_calibration_register(void)
 * D[15:14], GAIN_CALn (Integer Part) = Integer portion of the GAIN Calibration of Channel CINn
 * D[13:0], GAIN_CALn (Decimal Part) = Decimal portion of the GAIN Calibration of Channel CINn
 */
-static void fdc1004_read_gain_calibration_register(void)
+static void _fdc1004_read_gain_calibration_register(void)
 {
     NRF_LOG_INFO("fdc1004_read_gain_calibration_register");
 
@@ -324,7 +321,7 @@ static void fdc1004_read_gain_calibration_register(void)
     }
 }
 
-static void fdc1004_write_gain_calibration_register(void)
+static void _fdc1004_write_gain_calibration_register(void)
 {
     NRF_LOG_INFO("fdc1004_write_gain_calibration_register");
 
@@ -343,7 +340,7 @@ static void fdc1004_write_gain_calibration_register(void)
 * Register address: 0xFE
 * D[15:0], Manufacturer ID = Texas Instruments ID (read only)
 */
-static void fdc1004_read_manufacturer_id_register(void)
+static void _fdc1004_read_manufacturer_id_register(void)
 {
     NRF_LOG_INFO("fdc1004_read_manufacturer_id_register");
 
@@ -357,7 +354,7 @@ static void fdc1004_read_manufacturer_id_register(void)
 * Register address: 0xFF
 * D[15:0], Device ID = FDC1004 Device ID (read only)
 */
-static void fdc1004_read_device_id_register(void)
+static void _fdc1004_read_device_id_register(void)
 {
     NRF_LOG_INFO("fdc1004_read_device_id_register");
 
@@ -370,47 +367,114 @@ static void fdc1004_read_device_id_register(void)
 void fdc1004_set_offset_calibration(uint8_t channel, uint8_t integer, uint8_t decimal_1, uint8_t decimal_2)
 {
     NRF_LOG_INFO("fdc1004_set_offset_calibration");
+    _fdc1004_read_offset_calibration_register();
+    offset_calibration_register.integer[channel-1][1] = integer;
+    offset_calibration_register.decimal[channel-1][0] = decimal_1;
+    offset_calibration_register.decimal[channel-1][1] = decimal_2;
+    _fdc1004_write_offset_calibration_register();
+    _fdc1004_read_offset_calibration_register();
 }
 
 void fdc1004_set_gain_calibration(uint8_t channel, uint8_t integer, uint8_t decimal_1, uint8_t decimal_2)
 {
     NRF_LOG_INFO("fdc1004_set_gain_calibration");
+    _fdc1004_read_gain_calibration_register();
+    gain_calibration_register.integer[channel-1][1] = integer;
+    gain_calibration_register.decimal[channel-1][0] = decimal_1;
+    gain_calibration_register.decimal[channel-1][1] = decimal_2;
+    _fdc1004_write_offset_calibration_register();
+    _fdc1004_read_offset_calibration_register();
 }
 
 void fdc1004_set_measurement_rate(uint8_t measurement_rate)
 {
     NRF_LOG_INFO("fdc1004_set_measurement_rate");
+    _fdc1004_read_measurement_configuration_register();
+    fdc_configuration_register.rate = measurement_rate;                  // 1 = 100 S/s, 2 = 200 S/s, 3 = 400 S/s 
+    _fdc1004_write_measurement_configuration_register();
+    _fdc1004_read_measurement_configuration_register();
 }
 
 void fdc1004_set_repeat_measurement(uint8_t repeat_measurement)
 {
     NRF_LOG_INFO("fdc1004_set_repeat_measurement");
+    _fdc1004_read_measurement_configuration_register();
+    fdc_configuration_register.repeat = repeat_measurement;               // 1 = repeat enabled, 0 = repeat disabled
+    _fdc1004_write_measurement_configuration_register();
+    _fdc1004_read_measurement_configuration_register();
 }
 
-void fdc1004_get_manufacturer_id(void)
+void fdc1004_get_manufacturer_id(uint8_t *manufacturer_id)
 {
     NRF_LOG_INFO("fdc1004_get_manufacturer_id");
-    fdc1004_read_manufacturer_id_register();
+    _fdc1004_read_manufacturer_id_register();
+    manufacturer_id[0] = control.manufacturer_id[0];
+    manufacturer_id[1] = control.manufacturer_id[1];
 }
 
-void fdc1004_get_device_id(void)
+void fdc1004_get_device_id(uint8_t *device_id)
 {
     NRF_LOG_INFO("fdc1004_get_device_id");
+    _fdc1004_read_device_id_register();
+    device_id[0] = control.device_id[0];
+    device_id[1] = control.device_id[1];
 }
 
 void fdc1004_set_capdac(uint8_t channel, uint8_t capdac)
 {
     NRF_LOG_INFO("fdc1004_set_capdac");
+    _fdc1004_read_measurement_configuration_register();
+    measurement_configuration_register.capdac[channel-1] = capdac; // C_offset = CAPDAC x 3.125 pF; Single channel capacitance offset
+    _fdc1004_write_measurement_configuration_register();
+    _fdc1004_read_measurement_configuration_register();
 }
 
-void fdc1004_trigger_measurement(uint8_t channel)
+void fdc1004_trigger_single_measurement(uint8_t channel)
 {
-    NRF_LOG_INFO("fdc1004_trigger_measurement");
+    NRF_LOG_INFO("fdc1004_trigger_single_measurement");
+    _fdc1004_read_fdc_configuration_register();
+    /* 
+    * 1. Set repeat = 0
+    * 2. Sett the corresponding MEAS_x field to 1
+    */
+    for(uint8_t i = 0; i < ARRAY_LENGTH(fdc_configuration_register.meas); i++)
+    {
+        if(i == (channel-1))
+        {
+            fdc_configuration_register.meas[i] = 1;   // Enabling the measurement channel to initiate measurement
+        }
+        else
+        {
+            fdc_configuration_register.meas[i] = 0;   // Disabling all other measurement channels
+        }
+    }
+    _fdc1004_write_fdc_configuration_register();
+    _fdc1004_read_fdc_configuration_register();
 }
 
-void fdc1004_get_measurement(uint8_t channel)
+void fdc1004_get_measurement(uint8_t channel, uint8_t *measurement)
 {
     NRF_LOG_INFO("fdc1004_get_measurement");
+    _fdc1004_read_fdc_configuration_register();
+    if(fdc_configuration_register.done[channel-1] == 1)
+    {
+        NRF_LOG_INFO("Channel: %u measurement is done", channel);
+        _fdc1004_read_msb_measurement_register(channel);
+        _fdc1004_read_lsb_measurement_register(channel);
+        measurement[0] = msb_measurement_register.msb_measurement[channel-1][0];
+        measurement[1] = msb_measurement_register.msb_measurement[channel-1][1];
+        measurement[2] = lsb_measurement_register.lsb_measurement[channel-1][0];
+
+        _fdc1004_read_fdc_configuration_register();
+        if(fdc_configuration_register.done[channel-1] == 0)
+        {
+            NRF_LOG_INFO("Channel: %u measurement was properly read", channel);
+        }
+    }
+    else
+    {
+        NRF_LOG_INFO("Channel: %u measurement is not complete", channel);
+    }
 }
 
 #endif

@@ -5,6 +5,7 @@
 static struct MAX30003_Status_Register status_register;
 static struct MAX30003_Data_Flow data_flow;
 
+
 void max30003_read_device_info(void) 
 {
     NRF_LOG_INFO("max30003_read_device_info");

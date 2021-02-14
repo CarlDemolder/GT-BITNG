@@ -143,29 +143,29 @@ struct FDC1004_Control_Struct
 
 };
 
-static void fdc1004_read_msb_measurement_register(void);
+static void _fdc1004_read_msb_measurement_register(uint8_t channel);
 
-static void fdc1004_read_lsb_measurement_register(void);
+static void _fdc1004_read_lsb_measurement_register(uint8_t channel);
 
-static void fdc1004_read_measurement_configuration_register(void);
+static void _fdc1004_read_measurement_configuration_register(void);
 
-static void fdc1004_write_measurement_configuration_register(void);
+static void _fdc1004_write_measurement_configuration_register(void);
 
-static void fdc1004_read_fdc_configuration_register(void);
+static void _fdc1004_read_fdc_configuration_register(void);
 
-static void fdc1004_write_fdc_configuration_register(void);
+static void _fdc1004_write_fdc_configuration_register(void);
 
-static void fdc1004_read_offset_calibration_register(void);
+static void _fdc1004_read_offset_calibration_register(void);
 
-static void fdc1004_write_offset_calibration_register(void);
+static void _fdc1004_write_offset_calibration_register(void);
 
-static void fdc1004_read_gain_calibration_register(void);
+static void _fdc1004_read_gain_calibration_register(void);
 
-static void fdc1004_write_gain_calibration_register(void);
+static void _fdc1004_write_gain_calibration_register(void);
 
-static void fdc1004_read_manufacturer_id_register(void);
+static void _fdc1004_read_manufacturer_id_register(void);
 
-static void fdc1004_read_device_id_register(void);
+static void _fdc1004_read_device_id_register(void);
 
 void fdc1004_init(void);
 
@@ -173,7 +173,7 @@ void fdc1004_uninit(void);
 
 void fdc1004_soft_reset(void);
 
-uint8_t fdc1004_check_status(void);
+uint8_t fdc1004_is_enabled(void);
 
 void fdc1004_set_offset_calibration(uint8_t channel, uint8_t integer, uint8_t decimal_1, uint8_t decimal_2);
 
@@ -183,15 +183,15 @@ void fdc1004_set_measurement_rate(uint8_t measurement_rate);
 
 void fdc1004_set_repeat_measurement(uint8_t repeat_measurement);
 
-void fdc1004_get_manufacturer_id(void);
+void fdc1004_get_manufacturer_id(uint8_t *manufacturer_id);
 
-void fdc1004_get_device_id(void);
+void fdc1004_get_device_id(uint8_t *device_id);
 
 void fdc1004_set_capdac(uint8_t channel, uint8_t capdac);
 
-void fdc1004_trigger_measurement(uint8_t channel);
+void fdc1004_trigger_single_measurement(uint8_t channel);
 
-void fdc1004_get_measurement(uint8_t channel);
+void fdc1004_get_measurement(uint8_t channel, uint8_t *measurement);
 
 #endif
 

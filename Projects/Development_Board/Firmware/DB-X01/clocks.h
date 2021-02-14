@@ -34,7 +34,7 @@ struct RTC_Configuration
 };
 
 static struct RTC_Configuration rtc_ft201x_configuration;
-static struct RTC_Configuration rtc_tmp117_configuration;
+static struct RTC_Configuration rtc_sensor_configuration;
 
 void nrf52_nrfx_clock_init(void);
 void nrf52_nrfx_clock_uninit(void);
@@ -54,15 +54,15 @@ void rtc_ft201x_stop(void);
 void rtc_ft201x_restart(void);
 
 
-void nrfx_rtc_tmp117_init(void);
-void nrfx_rtc_tmp117_uninit(void);
-void rtc_tmp117_init(void);
-void rtc_tmp117_handler(nrfx_rtc_int_type_t int_type);
-void rtc_tmp117_set_counter(uint32_t new_sampling_counter);
-void rtc_tmp117_set_frequency(uint8_t new_sampling_frequency);
-uint8_t rtc_tmp117_get_sampling_frequency(void);
-void rtc_tmp117_start(void);
-void rtc_tmp117_stop(void);
-void rtc_tmp117_restart(void);
+void nrfx_rtc_sensor_init(void);
+void nrfx_rtc_sensor_uninit(void);
+void rtc_sensor_init(void);
+void rtc_sensor_handler(nrfx_rtc_int_type_t int_type);
+void rtc_sensor_set_counter(uint32_t new_sampling_counter);
+void rtc_sensor_set_frequency(uint8_t new_sampling_frequency);
+uint8_t rtc_sensor_get_sampling_frequency(void);
+void rtc_sensor_start(void);
+void rtc_sensor_stop(void);
+void rtc_sensor_restart(void);
 
 #endif /*__CLOCKS_H__*/
