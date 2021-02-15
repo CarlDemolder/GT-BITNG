@@ -48,39 +48,49 @@ BLE_CONFIGURATION_SERVICE_DEF(m_ble_configuration_service);                     
 
 #if TMP117
 BLE_TEMPERATURE_SERVICE_DEF(m_ble_temperature_service);                         /**< Declaring Temperature Service Structure for application */
-#endif
-
-#if ECG
-BLE_ECG_SERVICE_DEF(m_ble_ecg_service);                                         /**< Declaring ECG Service Structure for application */
-#endif
-
-ble_configuration_service_init_t ble_configuration_service_init = {0};
-
-#if TMP117
 ble_temperature_service_init_t ble_temperature_service_init = {0};
 #endif
 
 #if ECG
+BLE_ECG_SERVICE_DEF(m_ble_ecg_service);                                         /**< Declaring ECG Service Structure for application */
 ble_ecg_service_init_t ble_ecg_service_init = {0};
 #endif
+
+#if FDC1004
+BLE_PRESSURE_SERVICE_DEF(m_ble_pressure_service);                               /**< Declaring Pressure Service Structure for application */
+ble_pressure_service_init_t ble_pressure_service_init = {0};
+#endif
+
+ble_configuration_service_init_t ble_configuration_service_init = {0};
 
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
 
 // YOUR_JOB: Use UUIDs for service(s) used in your application.
 
-#if ECG && !TMP117
+#if ECG && !TMP117 && !FDC1004
 ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {ECG_SERVICE_UUID}};  /**< Universally unique service identifiers. */
 #endif
 
-#if !ECG && TMP117
+#if !ECG && TMP117 && !FDC1004
 ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {TEMPERATURE_SERVICE_UUID}};  /**< Universally unique service identifiers. */
 #endif
 
-#if ECG && TMP117
-ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {TEMPERATURE_SERVICE_UUID}, {ECG_SERVICE_UUID}};  /**< Universally unique service identifiers. */
+#if ECG && TMP117 && !FDC1004
+/**< Universally unique service identifiers. */
+ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {TEMPERATURE_SERVICE_UUID}, {ECG_SERVICE_UUID}};  
 #endif
 
-static struct Bluetooth_Control_Struct control_struct;
+#if ECG && TMP117 && FDC1004
+/**< Universally unique service identifiers. */
+ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {TEMPERATURE_SERVICE_UUID}, {ECG_SERVICE_UUID}, {PRESSURE_SERVICE_UUID}}; 
+#endif
+
+#if !ECG && !TMP117 && FDC1004
+/**< Universally unique service identifiers. */
+ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {PRESSURE_SERVICE_UUID}}; 
+#endif
+
+static struct Bluetooth_Control_Struct control;
 
 /**@brief Function for handling Queued Write Module errors.
  *
@@ -99,10 +109,9 @@ void peer_manager_init(void)
 {
     NRF_LOG_INFO("peer_manager_init");
     ble_gap_sec_params_t sec_param;
-    ret_code_t err_code;
 
-    err_code = pm_init();
-    APP_ERROR_CHECK(err_code);
+    control.error_code = pm_init();
+    APP_ERROR_CHECK(control.error_code);
 
     memset(&sec_param, 0, sizeof(ble_gap_sec_params_t));
 
@@ -120,11 +129,11 @@ void peer_manager_init(void)
     sec_param.kdist_peer.enc = 1;
     sec_param.kdist_peer.id = 1;
 
-    err_code = pm_sec_params_set(&sec_param);
-    APP_ERROR_CHECK(err_code);
+    control.error_code = pm_sec_params_set(&sec_param);
+    APP_ERROR_CHECK(control.error_code);
 
-    err_code = pm_register(pm_evt_handler);
-    APP_ERROR_CHECK(err_code);
+    control.error_code = pm_register(pm_evt_handler);
+    APP_ERROR_CHECK(control.error_code);
 }
 
 /**@brief Function for handling Peer Manager events.
@@ -134,8 +143,6 @@ void peer_manager_init(void)
 void pm_evt_handler(pm_evt_t const * p_evt)
 {
     NRF_LOG_INFO("pm_evt_handler");
-
-    ret_code_t err_code;
 
     switch (p_evt->evt_id)
     {
@@ -169,14 +176,14 @@ void pm_evt_handler(pm_evt_t const * p_evt)
         case PM_EVT_STORAGE_FULL:
             // Run garbage collection on the flash.
             NRF_LOG_INFO("PM_EVT_STORAGE_FULL");
-            err_code = fds_gc();
-            if (err_code == FDS_ERR_NO_SPACE_IN_QUEUES)
+            control.error_code = fds_gc();
+            if (control.error_code == FDS_ERR_NO_SPACE_IN_QUEUES)
             {
                 // Retry.
             }
             else
             {
-                APP_ERROR_CHECK(err_code);
+                APP_ERROR_CHECK(control.error_code);
             }
             break;
 
@@ -240,8 +247,8 @@ void delete_bonds(void)
 {
     NRF_LOG_INFO("delete_bonds");
 
-    control_struct.error_code = pm_peers_delete();
-    APP_ERROR_CHECK(control_struct.error_code);
+    control.error_code = pm_peers_delete();
+    APP_ERROR_CHECK(control.error_code);
 }
 
 /**@brief Function for the GAP initialization.
@@ -252,18 +259,17 @@ void delete_bonds(void)
 void gap_params_init(void)
 {
     NRF_LOG_INFO("gap_params_init");
-    ret_code_t err_code;
     ble_gap_conn_params_t gap_conn_params;
     ble_gap_conn_sec_mode_t sec_mode;
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
 
-    err_code = sd_ble_gap_device_name_set(&sec_mode, (const uint8_t *)DEVICE_NAME, strlen(DEVICE_NAME));
-    APP_ERROR_CHECK(err_code);
+    control.error_code = sd_ble_gap_device_name_set(&sec_mode, (const uint8_t *)DEVICE_NAME, strlen(DEVICE_NAME));
+    APP_ERROR_CHECK(control.error_code);
 
     /* YOUR_JOB: Use an appearance value matching the application's use case.
-       err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_);
-       APP_ERROR_CHECK(err_code); */
+       control.error_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_);
+       APP_ERROR_CHECK(control.error_code); */
 
     memset(&gap_conn_params, 0, sizeof(gap_conn_params));
 
@@ -272,22 +278,21 @@ void gap_params_init(void)
     gap_conn_params.slave_latency = SLAVE_LATENCY;
     gap_conn_params.conn_sup_timeout = CONN_SUP_TIMEOUT;
 
-    err_code = sd_ble_gap_ppcp_set(&gap_conn_params);
-    APP_ERROR_CHECK(err_code);
-    if(err_code == NRF_SUCCESS)
+    control.error_code = sd_ble_gap_ppcp_set(&gap_conn_params);
+    APP_ERROR_CHECK(control.error_code);
+    if(control.error_code == NRF_SUCCESS)
     {
         NRF_LOG_INFO("Procedure request succeeded. Connection parameters will be negotiated as requested.");
     }
     else
     {
-        NRF_LOG_INFO("Procedure request failed: %d", err_code);
+        NRF_LOG_INFO("Procedure request failed: %d", control.error_code);
     }
 }
 
 void gap_params_update(uint16_t m_conn_handle)
 {
     NRF_LOG_INFO("gap_params_update");
-    ret_code_t err_code;
     ble_gap_conn_params_t gap_conn_params;
 
     memset(&gap_conn_params, 0, sizeof(gap_conn_params));
@@ -297,15 +302,15 @@ void gap_params_update(uint16_t m_conn_handle)
     gap_conn_params.slave_latency = SLAVE_LATENCY;
     gap_conn_params.conn_sup_timeout = CONN_SUP_TIMEOUT;
 
-    err_code = ble_conn_params_change_conn_params(m_conn_handle, &gap_conn_params);
-    APP_ERROR_CHECK(err_code);
-    if(err_code == NRF_SUCCESS)
+    control.error_code = ble_conn_params_change_conn_params(m_conn_handle, &gap_conn_params);
+    APP_ERROR_CHECK(control.error_code);
+    if(control.error_code == NRF_SUCCESS)
     {
         NRF_LOG_INFO("GAP connection parameters updated.");
     }
     else
     {
-        NRF_LOG_INFO("Procedure request failed: %d", err_code);
+        NRF_LOG_INFO("Procedure request failed: %d", control.error_code);
     }
 }
 
@@ -323,13 +328,12 @@ void gap_params_update(uint16_t m_conn_handle)
 void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
 {
     NRF_LOG_INFO("on_conn_params_evt");
-    ret_code_t err_code;
 
     if (p_evt->evt_type == BLE_CONN_PARAMS_EVT_FAILED)
     {
         NRF_LOG_INFO("BLE_CONN_PARAMS_EVT_FAILED");
-        err_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_CONN_INTERVAL_UNACCEPTABLE);
-        APP_ERROR_CHECK(err_code);
+        control.error_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_CONN_INTERVAL_UNACCEPTABLE);
+        APP_ERROR_CHECK(control.error_code);
     }
 }
 
@@ -347,7 +351,6 @@ void conn_params_error_handler(uint32_t nrf_error)
 void conn_params_init(void)
 {
     NRF_LOG_INFO("conn_params_init");
-    ret_code_t err_code;
     ble_conn_params_init_t cp_init;
 
     memset(&cp_init, 0, sizeof(cp_init));
@@ -361,8 +364,8 @@ void conn_params_init(void)
     cp_init.evt_handler = on_conn_params_evt;
     cp_init.error_handler = conn_params_error_handler;
 
-    err_code = ble_conn_params_init(&cp_init);
-    APP_ERROR_CHECK(err_code);
+    control.error_code = ble_conn_params_init(&cp_init);
+    APP_ERROR_CHECK(control.error_code);
 }
 
 /**@brief Function for handling advertising events.
@@ -374,7 +377,6 @@ void conn_params_init(void)
 void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 {
     NRF_LOG_INFO("on_adv_evt");
-    ret_code_t err_code;
 
     switch (ble_adv_evt)
     {
@@ -396,7 +398,6 @@ void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 void advertising_init(void)
 {
     NRF_LOG_INFO("advertising_init");
-    ret_code_t err_code;
     ble_advertising_init_t adv_init;
 
     memset(&adv_init, 0, sizeof(adv_init));
@@ -413,8 +414,8 @@ void advertising_init(void)
 
     adv_init.evt_handler = on_adv_evt;
 
-    err_code = ble_advertising_init(&m_advertising, &adv_init);
-    APP_ERROR_CHECK(err_code);
+    control.error_code = ble_advertising_init(&m_advertising, &adv_init);
+    APP_ERROR_CHECK(control.error_code);
 
     ble_advertising_conn_cfg_tag_set(&m_advertising, APP_BLE_CONN_CFG_TAG);
 }
@@ -424,8 +425,8 @@ void advertising_init(void)
 void set_advertising_power(void)
 {
     NRF_LOG_INFO("set_advertising_power");
-    ret_code_t err_code = sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_ADV, m_advertising.adv_handle, 4);
-    APP_ERROR_CHECK(err_code);
+    control.error_code = sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_ADV, m_advertising.adv_handle, 4);
+    APP_ERROR_CHECK(control.error_code);
 }
 
 /**@brief Function for starting advertising.
@@ -433,8 +434,8 @@ void set_advertising_power(void)
 void advertising_start(void)
 {
     NRF_LOG_INFO("advertising_start");
-    ret_code_t err_code = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
-    APP_ERROR_CHECK(err_code);
+    control.error_code = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
+    APP_ERROR_CHECK(control.error_code);
 }
 
 /**@brief Function to stop advertising.
@@ -442,8 +443,8 @@ void advertising_start(void)
 void advertising_stop(void)
 {
     NRF_LOG_INFO("advertising_stop");
-    ret_code_t err_code = sd_ble_gap_adv_stop(m_advertising.adv_handle);
-    APP_ERROR_CHECK(err_code);
+    control.error_code = sd_ble_gap_adv_stop(m_advertising.adv_handle);
+    APP_ERROR_CHECK(control.error_code);
 }
 
 
@@ -452,8 +453,8 @@ void advertising_stop(void)
 void gatt_init(void)
 {
     NRF_LOG_INFO("gatt_init");
-    ret_code_t err_code = nrf_ble_gatt_init(&m_gatt, NULL);
-    APP_ERROR_CHECK(err_code);
+    control.error_code = nrf_ble_gatt_init(&m_gatt, NULL);
+    APP_ERROR_CHECK(control.error_code);
 }
 
 /**@brief Function for initializing the BLE stack
@@ -473,18 +474,18 @@ void ble_stack_init(void)
         NRF_LOG_INFO("SOFT DEVICE IS DISABLED");
     }
 
-    control_struct.error_code = nrf_sdh_enable_request();
-    APP_ERROR_CHECK(control_struct.error_code);
+    control.error_code = nrf_sdh_enable_request();
+    APP_ERROR_CHECK(control.error_code);
 
     // Configure the BLE stack using the default settings.
     // Fetch the start address of the application RAM.
     uint32_t ram_start = 0;
-    control_struct.error_code = nrf_sdh_ble_default_cfg_set(APP_BLE_CONN_CFG_TAG, &ram_start);
-    APP_ERROR_CHECK(control_struct.error_code);
+    control.error_code = nrf_sdh_ble_default_cfg_set(APP_BLE_CONN_CFG_TAG, &ram_start);
+    APP_ERROR_CHECK(control.error_code);
 
     // Enable BLE stack.
-    control_struct.error_code = nrf_sdh_ble_enable(&ram_start);
-    APP_ERROR_CHECK(control_struct.error_code);
+    control.error_code = nrf_sdh_ble_enable(&ram_start);
+    APP_ERROR_CHECK(control.error_code);
 
     // Register a handler for BLE events.
     NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
@@ -498,7 +499,7 @@ void ble_stack_init(void)
 void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
 {
     NRF_LOG_INFO("ble_evt_handler");
-    control_struct.error_code = NRF_SUCCESS;
+    control.error_code = NRF_SUCCESS;
     NRF_LOG_INFO("BLE Configuration Service Event Received. Event type = %d", p_ble_evt->header.evt_id); 
 
     switch (p_ble_evt->header.evt_id)
@@ -510,30 +511,30 @@ void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
         case BLE_GAP_EVT_CONNECTED:
             NRF_LOG_INFO("BLE_GAP_EVT_CONNECTED");
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
-            control_struct.error_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
-            APP_ERROR_CHECK(control_struct.error_code);
+            control.error_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
+            APP_ERROR_CHECK(control.error_code);
             gap_params_update(m_conn_handle); // Once all Services have been discovered, change the GAP Connection Parameters
             break;
 
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
             NRF_LOG_INFO("BLE_GAP_EVT_PHY_UPDATE_REQUEST");
             ble_gap_phys_t const phys = {.rx_phys = BLE_GAP_PHY_AUTO, .tx_phys = BLE_GAP_PHY_AUTO};
-            control_struct.error_code = sd_ble_gap_phy_update(p_ble_evt->evt.gap_evt.conn_handle, &phys);
-            APP_ERROR_CHECK(control_struct.error_code);
+            control.error_code = sd_ble_gap_phy_update(p_ble_evt->evt.gap_evt.conn_handle, &phys);
+            APP_ERROR_CHECK(control.error_code);
             break;
 
         case BLE_GATTC_EVT_TIMEOUT:
             // Disconnect on GATT Client timeout event.
             NRF_LOG_INFO("BLE_GATTC_EVT_TIMEOUT");
-            control_struct.error_code = sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-            APP_ERROR_CHECK(control_struct.error_code);
+            control.error_code = sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+            APP_ERROR_CHECK(control.error_code);
             break;
 
         case BLE_GATTS_EVT_TIMEOUT:
             // Disconnect on GATT Server timeout event.
             NRF_LOG_INFO("BLE_GATTS_EVT_TIMEOUT");
-            control_struct.error_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-            APP_ERROR_CHECK(control_struct.error_code);
+            control.error_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+            APP_ERROR_CHECK(control.error_code);
             break;
 
         case BLE_GATTS_EVT_WRITE:
@@ -558,7 +559,6 @@ void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
  */
 static void on_configuration_service_evt(ble_configuration_service_t *p_cus_service, configuration_service_evt_t *p_evt)
 {
-    ret_code_t err_code;
     NRF_LOG_INFO("on_configuration_service_evt");
     switch(p_evt->evt_type)
     {
@@ -601,7 +601,6 @@ static void on_configuration_service_evt(ble_configuration_service_t *p_cus_serv
  #if TMP117
 static void on_temperature_service_evt(ble_temperature_service_t *p_cus_service, temperature_service_evt_t *p_evt)
 {
-    ret_code_t err_code;
     NRF_LOG_INFO("on_temperature_service_evt");
     switch(p_evt->evt_type)
     {
@@ -643,7 +642,6 @@ static void on_temperature_service_evt(ble_temperature_service_t *p_cus_service,
 #if ECG
 static void on_ecg_service_evt(ble_ecg_service_t *p_cus_service, ecg_service_evt_t *p_evt)
 {
-    ret_code_t err_code;
     NRF_LOG_INFO("on_ecg_service_evt");
     switch(p_evt->evt_type)
     {
@@ -673,6 +671,49 @@ static void on_ecg_service_evt(ble_ecg_service_t *p_cus_service, ecg_service_evt
 }
 #endif
 
+/**@brief Function for handling the Pressure Service Service events.
+ *
+ * @details This function will be called for all Pressure Service events which are passed to
+ *          the application.
+ *
+ * @param[in]   p_cus_service  Pressure Service structure.
+ * @param[in]   p_evt          Event received from the Pressure Service.
+ *
+ */
+ #if FDC1004
+static void on_pressure_service_evt(ble_pressure_service_t *p_cus_service, pressure_service_evt_t *p_evt)
+{
+    NRF_LOG_INFO("on_pressure_service_evt");
+    switch(p_evt->evt_type)
+    {
+        case PRESSURE_SERVICE_EVT_INSTANT_PRESSURE_CHAR_NOTIFICATION_ENABLED:
+            NRF_LOG_INFO("PRESSURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_ENABLED");
+            break;
+
+        case PRESSURE_SERVICE_EVT_INSTANT_PRESSURE_CHAR_NOTIFICATION_DISABLED:
+            NRF_LOG_INFO("PRESSURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_DISABLED");
+            break;
+
+        case PRESSURE_SERVICE_EVT_CONNECTED:
+            NRF_LOG_INFO("PRESSURE_SERVICE_EVT_CONNECTED");
+            break;
+
+        case PRESSURE_SERVICE_EVT_DISCONNECTED:
+            NRF_LOG_INFO("PRESSURE_SERVICE_EVT_DISCONNECTED");
+            break;
+        
+        case PRESSURE_SERVICE_EVT_WRITE:
+            NRF_LOG_INFO("PRESSURE_SERVICE_EVT_WRITE");
+            break;
+
+        default:
+              break;
+    }
+}
+#endif
+
+
+
 /**@brief Function for initializing services that will be used by the application.
  */
 void services_init(void)
@@ -684,14 +725,14 @@ void services_init(void)
     // Initialize Queued Write Module.
     qwr_init.error_handler = nrf_qwr_error_handler;
 
-    control_struct.error_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
-    APP_ERROR_CHECK(control_struct.error_code);
+    control.error_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
+    APP_ERROR_CHECK(control.error_code);
 
 //    // DFU Related Event Handlers
 //    dfus_init.evt_handler = ble_dfu_evt_handler;
 //
-//    control_struct.error_code = ble_dfu_buttonless_init(&dfus_init);
-//    APP_ERROR_CHECK(control_struct.error_code);
+//    control.error_code = ble_dfu_buttonless_init(&dfus_init);
+//    APP_ERROR_CHECK(control.error_code);
 
     ble_configuration_service_init.evt_handler = on_configuration_service_evt;    // Initialize Configuration Service
 
@@ -705,20 +746,26 @@ void services_init(void)
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.crc_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.crc_char_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.response_char_attr_md.write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.crc_char_attr_md.write_perm);
 
-    control_struct.error_code = ble_configuration_service_initialize(&m_ble_configuration_service, &ble_configuration_service_init);
-    APP_ERROR_CHECK(control_struct.error_code);
+    control.error_code = ble_configuration_service_initialize(&m_ble_configuration_service, &ble_configuration_service_init);
+    APP_ERROR_CHECK(control.error_code);
+
+    control.request_received = 0;     // Flag to determine if the bluetooth device has sent a request or command
 
     #if TMP117
     ble_temperature_service_init.evt_handler = on_temperature_service_evt;        // Initialize Temperature Service
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.temp_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.temp_char_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.response_char_attr_md.write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.temp_char_attr_md.write_perm);
 
-    control_struct.error_code = ble_temperature_service_initialize(&m_ble_temperature_service, &ble_temperature_service_init);
-    APP_ERROR_CHECK(control_struct.error_code);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.instant_temp_char_attr_md.cccd_write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.instant_temp_char_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.instant_temp_char_attr_md.write_perm);
+
+    control.error_code = ble_temperature_service_initialize(&m_ble_temperature_service, &ble_temperature_service_init);
+    APP_ERROR_CHECK(control.error_code);
     #endif
 
     #if ECG
@@ -726,33 +773,49 @@ void services_init(void)
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.response_char_attr_md.write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.write_perm);
 
-    control_struct.error_code = ble_ecg_service_initialize(&m_ble_ecg_service, &ble_ecg_service_init);
-    APP_ERROR_CHECK(control_struct.error_code);
+    control.error_code = ble_ecg_service_initialize(&m_ble_ecg_service, &ble_ecg_service_init);
+    APP_ERROR_CHECK(control.error_code);
+    #endif
+
+    #if FDC1004
+    ble_pressure_service_init.evt_handler = on_pressure_service_evt;        // Initialize Pressure Service
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_pressure_service_init.instant_pressure_char_attr_md.cccd_write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_pressure_service_init.instant_pressure_char_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_pressure_service_init.instant_pressure_char_attr_md.write_perm);
+
+    control.error_code = ble_pressure_service_initialize(&m_ble_pressure_service, &ble_pressure_service_init);
+    APP_ERROR_CHECK(control.error_code);
     #endif
 }
 
 void bluetooth_configuration_service_settings_char_read(uint8_t *settings_char_data_array)
 {
     NRF_LOG_INFO("bluetooth_configuration_service_settings_char_read");
+    control.request_received = 1;
     bluetooth_handler(settings_char_data_array);
 }
 
 void bluetooth_configuration_service_response_char_write(uint8_t *response_char_data_array)
 {
     NRF_LOG_INFO("bluetooth_configuration_service_response_char_write");
-    memcpy(ble_configuration_service_init.response_char, response_char_data_array, CONFIGURATION_SERVICE_RESPONSE_CHAR_LENGTH);
-    control_struct.error_code = configuration_service_response_char_write(&m_ble_configuration_service, response_char_data_array);   // Update the Response Characteristic
-    APP_ERROR_CHECK(control_struct.error_code);
+    if(control.request_received == 1)
+    {
+        memcpy(ble_configuration_service_init.response_char, response_char_data_array, CONFIGURATION_SERVICE_RESPONSE_CHAR_LENGTH);
+        control.error_code = configuration_service_response_char_write(&m_ble_configuration_service, response_char_data_array);   // Update the Response Characteristic
+        APP_ERROR_CHECK(control.error_code);
+        control.request_received = 0;
+    }
 }
 
 void bluetooth_configuration_service_crc_char_write(uint8_t *crc_char_data_array)
 {
     NRF_LOG_INFO("bluetooth_configuration_service_crc_char_write");
     memcpy(ble_configuration_service_init.crc_char, crc_char_data_array, CONFIGURATION_SERVICE_CRC_CHAR_LENGTH);
-    control_struct.error_code = configuration_service_crc_char_write(&m_ble_configuration_service, crc_char_data_array);   // Update the CRC Characteristic
-    APP_ERROR_CHECK(control_struct.error_code);
+    control.error_code = configuration_service_crc_char_write(&m_ble_configuration_service, crc_char_data_array);   // Update the CRC Characteristic
+    APP_ERROR_CHECK(control.error_code);
 }
 
 #if TMP117
@@ -760,9 +823,27 @@ void bluetooth_temperature_service_temp_char_write(uint8_t *temp_char_data_array
 {
     NRF_LOG_INFO("bluetooth_temperature_service_temp_char_write");
     memcpy(ble_temperature_service_init.temp_char, temp_char_data_array, TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH);
-    control_struct.error_code = temperature_service_temp_char_write(&m_ble_temperature_service, temp_char_data_array);   // Update the Temp Characteristic
-    APP_ERROR_CHECK(control_struct.error_code);
+    control.error_code = temperature_service_temp_char_write(&m_ble_temperature_service, temp_char_data_array);   // Update the Temp Characteristic
+    APP_ERROR_CHECK(control.error_code);
 }
+
+void bluetooth_temperature_service_instant_temp_char_write(uint8_t *instant_temp_char_data_array)
+{
+    NRF_LOG_INFO("bluetooth_temperature_service_instant_temp_char_write");
+    memcpy(ble_temperature_service_init.instant_temp_char, instant_temp_char_data_array, TEMPERATURE_SERVICE_INSTANT_TEMP_CHAR_LENGTH);
+    control.error_code = temperature_service_instant_temp_char_write(&m_ble_temperature_service, instant_temp_char_data_array);   // Update the Temp Characteristic
+    APP_ERROR_CHECK(control.error_code);
+}
+
+void bluetooth_transmit_temperature_recording_session(void)
+{
+//    NRF_LOG_INFO("bluetooth_transmit_recording_session");
+//    uint8_t temp_data_array[64];
+//    ecg_get_data_packet(temp_data_array, 64);
+//
+//    ecg_stop_recording_session();
+}
+
 #endif
 
 #if ECG
@@ -770,12 +851,10 @@ void bluetooth_ecg_service_ecg_char_write(uint8_t *ecg_char_data_array)
 {
     NRF_LOG_INFO("bluetooth_ecg_service_ecg_char_write");
     memcpy(ble_ecg_service_init.ecg_char, ecg_char_data_array, ECG_SERVICE_ECG_CHAR_LENGTH);
-    control_struct.error_code = ecg_service_ecg_char_write(&m_ble_ecg_service, ecg_char_data_array);   // Update the ECG Characteristic
-    APP_ERROR_CHECK(control_struct.error_code);
+    control.error_code = ecg_service_ecg_char_write(&m_ble_ecg_service, ecg_char_data_array);   // Update the ECG Characteristic
+    APP_ERROR_CHECK(control.error_code);
 }
-#endif
 
-#if ECG
 void bluetooth_transmit_ecg_recording_session(void)
 {
     NRF_LOG_INFO("bluetooth_transmit_recording_session");
@@ -786,14 +865,13 @@ void bluetooth_transmit_ecg_recording_session(void)
 }
 #endif
 
-#if TMP117
-void bluetooth_transmit_temperature_recording_session(void)
+#if FDC1004
+void bluetooth_pressure_service_instant_pressure_char_write(uint8_t *instant_pressure_char_data_array)
 {
-//    NRF_LOG_INFO("bluetooth_transmit_recording_session");
-//    uint8_t temp_data_array[64];
-//    ecg_get_data_packet(temp_data_array, 64);
-//
-//    ecg_stop_recording_session();
+    NRF_LOG_INFO("bluetooth_pressure_service_instant_pressure_char_write");
+    memcpy(ble_pressure_service_init.instant_pressure_char, instant_pressure_char_data_array, PRESSURE_SERVICE_INSTANT_PRESSURE_CHAR_LENGTH);
+    control.error_code = pressure_service_instant_pressure_char_write(&m_ble_pressure_service, instant_pressure_char_data_array);   // Update the Temp Characteristic
+    APP_ERROR_CHECK(control.error_code);
 }
 #endif
 
@@ -821,11 +899,11 @@ void bluetooth_transmit_hardware_board_version(void)
 void bluetooth_disconnect(void)
 {
     NRF_LOG_INFO("bluetooth_disconnect");
-    control_struct.error_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-    APP_ERROR_CHECK(control_struct.error_code);
-    if (control_struct.error_code != NRF_SUCCESS)
+    control.error_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+    APP_ERROR_CHECK(control.error_code);
+    if (control.error_code != NRF_SUCCESS)
     {
-        NRF_LOG_INFO("Failed to disconnect connection. Connection handle: %d Error: %d", m_conn_handle, control_struct.error_code);
+        NRF_LOG_INFO("Failed to disconnect connection. Connection handle: %d Error: %d", m_conn_handle, control.error_code);
     }
     else
     {
@@ -838,8 +916,8 @@ void bluetooth_disconnect(void)
 //void ble_dfu_async_svci_init(void)
 //{
 //    // Initialize the async SVCI interface to bootloader before any interrupts are enabled.
-//    control_struct.error_code = ble_dfu_buttonless_async_svci_init();
-//    APP_ERROR_CHECK(control_struct.error_code);
+//    control.error_code = ble_dfu_buttonless_async_svci_init();
+//    APP_ERROR_CHECK(control.error_code);
 //}
 //
 //// YOUR_JOB: Update this code if you want to do anything given a DFU event (optional).

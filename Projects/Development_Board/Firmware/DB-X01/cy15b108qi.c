@@ -5,14 +5,14 @@
 static struct CY15B108QI_Status_Register status_register;
 static struct CY15B108QI_Device_ID_Register device_id_register;
 static struct CY15B108QI_Unique_ID_Register unique_id_register;
-static struct CY15B108QI_Control_Struct control_struct;
+static struct CY15B108QI_Control_Struct control;
 
 void cy15b108qi_init(void)
 {
     NRF_LOG_INFO("cy15b108qi_init");
-    control_struct.start_address = CY15B108QI_FIRST_WRITE_ADDRESS;
-    control_struct.write_address = control_struct.start_address;
-    NRF_LOG_INFO("control_struct.write_address: %X", control_struct.write_address);
+    control.start_address = CY15B108QI_FIRST_WRITE_ADDRESS;
+    control.write_address = control.start_address;
+    NRF_LOG_INFO("control.write_address: %X", control.write_address);
 }
 
 void cy15b108qi_uninit(void)
@@ -34,11 +34,11 @@ void cy15b108qi_read_status_register(void)
 {
     NRF_LOG_INFO("_cy15b108qi_read_status_register");
 
-    control_struct.command[0] = RDSR_OPCODE_COMMAND;
-    uint8_t temp_data_array_length = ARRAY_LENGTH(control_struct.command) + ARRAY_LENGTH(status_register.data_array);
+    control.command[0] = RDSR_OPCODE_COMMAND;
+    uint8_t temp_data_array_length = ARRAY_LENGTH(control.command) + ARRAY_LENGTH(status_register.data_array);
     uint8_t temp_data_array[temp_data_array_length];
 
-    spim_read_data_array(control_struct.command, ARRAY_LENGTH(control_struct.command), temp_data_array, temp_data_array_length);
+    spim_read_data_array(control.command, ARRAY_LENGTH(control.command), temp_data_array, temp_data_array_length);
     status_register.data_array[0] = temp_data_array[1];
 
     status_register.wel = (status_register.data_array[0] & 0b00000010) && 0b00000010;
@@ -56,15 +56,15 @@ void cy15b108qi_write_status_register(void)
 {
     NRF_LOG_INFO("_cy15b108qi_write_status_register");
 
-    control_struct.command[0] = WRSR_OPCODE_COMMAND;
+    control.command[0] = WRSR_OPCODE_COMMAND;
 
     status_register.data_array[0] = status_register.wel << 1;
     status_register.data_array[0] = (status_register.bp0 << 2) | status_register.data_array[0];
     status_register.data_array[0] = (status_register.bp1 << 3) | status_register.data_array[0];
     status_register.data_array[0] = (status_register.wpen << 7) | status_register.data_array[0];
 
-    uint8_t temp_data_struct[ARRAY_LENGTH(control_struct.command) + ARRAY_LENGTH(status_register.data_array)];
-    temp_data_struct[0] = control_struct.command[0];
+    uint8_t temp_data_struct[ARRAY_LENGTH(control.command) + ARRAY_LENGTH(status_register.data_array)];
+    temp_data_struct[0] = control.command[0];
     temp_data_struct[1] = status_register.data_array[0];
 
     spim_write_data_array(temp_data_struct, ARRAY_LENGTH(temp_data_struct));
@@ -79,9 +79,9 @@ void cy15b108qi_set_write_enable_latch_command(void)
 {
     NRF_LOG_INFO("cy15b108qi_set_write_enable_latch_command");
 
-    control_struct.command[0] = WREN_OPCODE_COMMAND;
+    control.command[0] = WREN_OPCODE_COMMAND;
 
-    spim_write_data_array(control_struct.command, ARRAY_LENGTH(control_struct.command));
+    spim_write_data_array(control.command, ARRAY_LENGTH(control.command));
 }
 
 /*
@@ -92,9 +92,9 @@ void cy15b108qi_reset_write_enable_latch_command(void)
 {
     NRF_LOG_INFO("cy15b108qi_reset_write_enable_latch_command");
 
-    control_struct.command[0]= WRDI_OPCODE_COMMAND;
+    control.command[0]= WRDI_OPCODE_COMMAND;
 
-    spim_write_data_array(control_struct.command, ARRAY_LENGTH(control_struct.command));
+    spim_write_data_array(control.command, ARRAY_LENGTH(control.command));
 }
 
 
@@ -108,10 +108,10 @@ void cy15b108qi_read_device_id_command(void)
 {
     NRF_LOG_INFO("cy15b108qi_read_device_id_command");
 
-    control_struct.command[0] = RDID_OPCODE_COMMAND;
-    uint8_t temp_data_array_length = ARRAY_LENGTH(device_id_register.data_array) + ARRAY_LENGTH(control_struct.command);
+    control.command[0] = RDID_OPCODE_COMMAND;
+    uint8_t temp_data_array_length = ARRAY_LENGTH(device_id_register.data_array) + ARRAY_LENGTH(control.command);
     uint8_t temp_data_array[temp_data_array_length];
-    spim_read_data_array(control_struct.command, ARRAY_LENGTH(control_struct.command), temp_data_array, temp_data_array_length);
+    spim_read_data_array(control.command, ARRAY_LENGTH(control.command), temp_data_array, temp_data_array_length);
 
     for(uint8_t i = 0; i < ARRAY_LENGTH(device_id_register.data_array); i++)
     {
@@ -152,12 +152,12 @@ void cy15b108qi_read_unique_id_command(void)
 {
     NRF_LOG_INFO("cy15b108qi_read_unique_id_command");
 
-    control_struct.command[0] = RUID_OPCODE_COMMAND;
+    control.command[0] = RUID_OPCODE_COMMAND;
 
-    uint8_t temp_data_array_length = ARRAY_LENGTH(unique_id_register.unique_id) + ARRAY_LENGTH(control_struct.command);
+    uint8_t temp_data_array_length = ARRAY_LENGTH(unique_id_register.unique_id) + ARRAY_LENGTH(control.command);
     uint8_t temp_data_array[temp_data_array_length];
 
-    spim_read_data_array(control_struct.command, ARRAY_LENGTH(control_struct.command), temp_data_array, temp_data_array_length);
+    spim_read_data_array(control.command, ARRAY_LENGTH(control.command), temp_data_array, temp_data_array_length);
 
     for(uint8_t i = 0; i < ARRAY_LENGTH(unique_id_register.unique_id); i++)
     {
@@ -175,9 +175,9 @@ void cy15b108qi_enter_deep_power_down_mode_command(void)
 {
     NRF_LOG_INFO("cy15b108qi_enter_deep_power_down_mode_command");
 
-    control_struct.command[0]= DPD_OPCODE_COMMAND;
+    control.command[0]= DPD_OPCODE_COMMAND;
 
-    spim_write_data_array(control_struct.command, ARRAY_LENGTH(control_struct.command));
+    spim_write_data_array(control.command, ARRAY_LENGTH(control.command));
 }
 
 /*
@@ -188,9 +188,9 @@ void cy15b108qi_exit_deep_power_down_mode_command(void)
 {
     NRF_LOG_INFO("cy15b108qi_exit_deep_power_down_mode_command");
 
-    control_struct.command[0]= 0x00;
+    control.command[0]= 0x00;
 
-    spim_write_data_array(control_struct.command, ARRAY_LENGTH(control_struct.command));
+    spim_write_data_array(control.command, ARRAY_LENGTH(control.command));
     nrf_delay_us(DEEP_POWER_DOWN_MODE_DELAY);    // Delay 250 us to allow the CY15B108QI to wake up
 }
 
@@ -202,9 +202,9 @@ void cy15b108qi_enter_hibernation_mode_command(void)
 {
     NRF_LOG_INFO("cy15b108qi_enter_hibernate_mode_command");
 
-    control_struct.command[0]= HBN_OPCODE_COMMAND;
+    control.command[0]= HBN_OPCODE_COMMAND;
 
-    spim_write_data_array(control_struct.command, ARRAY_LENGTH(control_struct.command));
+    spim_write_data_array(control.command, ARRAY_LENGTH(control.command));
 }
 
 /*
@@ -215,9 +215,9 @@ void cy15b108qi_exit_hibernation_mode_command(void)
 {
     NRF_LOG_INFO("cy15b108qi_exit_hibernate_mode_command");
 
-    control_struct.command[0]= 0x00;
+    control.command[0]= 0x00;
 
-    spim_write_data_array(control_struct.command, ARRAY_LENGTH(control_struct.command));
+    spim_write_data_array(control.command, ARRAY_LENGTH(control.command));
     nrf_delay_ms(HIBERNATION_MODE_DELAY);    // Delay 5 ms to allow the CY15B108QI to wake up
 }
 
@@ -227,23 +227,23 @@ void cy15b108qi_exit_hibernation_mode_command(void)
 * to be written into the memory. The upper four bits of the three-byte addressare ignored. Subsequent bytes are data bytes, 
 * which are written sequentially.
 */
-void cy15b108qi_write_data_command(uint8_t *data_array, uint8_t data_array_size)
+void cy15b108qi_write_data_command(uint8_t *data_array, uint8_t data_array_size, uint32_t start_write_address)
 {
     NRF_LOG_INFO("_cy15b108qi_write_data_command");
 
-    control_struct.command[0] = WRITE_OPCODE_COMMAND;
-
-    uint32_t temp_data_array_size = data_array_size + ARRAY_LENGTH(control_struct.command) + ARRAY_LENGTH(control_struct.address_array);
+    control.command[0] = WRITE_OPCODE_COMMAND;
+    control.write_address = start_write_address;
+    uint32_t temp_data_array_size = data_array_size + ARRAY_LENGTH(control.command) + ARRAY_LENGTH(control.address_array);
     uint8_t temp_data_array[temp_data_array_size];
-    NRF_LOG_INFO("control_struct.write_address: %X", control_struct.write_address);
+    NRF_LOG_INFO("control.write_address: %X", control.write_address);
     NRF_LOG_INFO("data_array_size: %u", data_array_size);    
     NRF_LOG_INFO("temp_data_array_size: %u", temp_data_array_size);
-    _get_address_array(control_struct.write_address);
+    _get_address_array(control.write_address);
     
-    temp_data_array[0] = control_struct.command[0]; 
-    temp_data_array[1] = control_struct.address_array[0];
-    temp_data_array[2] = control_struct.address_array[1];
-    temp_data_array[3] = control_struct.address_array[2];
+    temp_data_array[0] = control.command[0]; 
+    temp_data_array[1] = control.address_array[0];
+    temp_data_array[2] = control.address_array[1];
+    temp_data_array[3] = control.address_array[2];
     
     for(uint8_t i = 0; i < data_array_size; i++)
     {
@@ -251,8 +251,6 @@ void cy15b108qi_write_data_command(uint8_t *data_array, uint8_t data_array_size)
     }
     
     spim_write_data_array(temp_data_array, temp_data_array_size);
-    control_struct.write_address += data_array_size;
-    NRF_LOG_INFO("new control_struct.write_address: %X", control_struct.write_address);
 }
 
 /*
@@ -264,18 +262,18 @@ uint8_t cy15b108qi_read_data_command(uint32_t address)
 {
     NRF_LOG_INFO("_cy15b108qi_read_data_command");
 
-    control_struct.command[0] = READ_OPCODE_COMMAND;
+    control.command[0] = READ_OPCODE_COMMAND;
 
-    uint32_t write_data_array_size = ARRAY_LENGTH(control_struct.command) + ARRAY_LENGTH(control_struct.address_array);
+    uint32_t write_data_array_size = ARRAY_LENGTH(control.command) + ARRAY_LENGTH(control.address_array);
     NRF_LOG_INFO("write_data_array_size: %u", write_data_array_size);
     uint8_t write_data_array[write_data_array_size];
     
     _get_address_array(address);
     
-    write_data_array[0] = control_struct.command[0]; 
-    write_data_array[1] = control_struct.address_array[0];
-    write_data_array[2] = control_struct.address_array[1];
-    write_data_array[3] = control_struct.address_array[2];
+    write_data_array[0] = control.command[0]; 
+    write_data_array[1] = control.address_array[0];
+    write_data_array[2] = control.address_array[1];
+    write_data_array[3] = control.address_array[2];
     
     uint8_t temp_read_data_array_length = write_data_array_size + 1;
     uint8_t temp_read_data_array[temp_read_data_array_length];
@@ -296,18 +294,18 @@ void cy15b108qi_fast_read_data_command(uint8_t *read_data_array, uint8_t read_da
 {
     NRF_LOG_INFO("_cy15b108qi_read_data_command");
 
-    control_struct.command[0] = FSTRD_OPCODE_COMMAND;
+    control.command[0] = FSTRD_OPCODE_COMMAND;
 
-    uint32_t write_data_array_size = ARRAY_LENGTH(control_struct.command) + ARRAY_LENGTH(control_struct.address_array) + 1;    // Extra Dummy Byte
+    uint32_t write_data_array_size = ARRAY_LENGTH(control.command) + ARRAY_LENGTH(control.address_array) + 1;    // Extra Dummy Byte
     uint8_t write_data_array[write_data_array_size];
     NRF_LOG_INFO("write_data_array_size: %u", write_data_array_size);
 
     _get_address_array(start_address);
     
-    write_data_array[0] = control_struct.command[0]; 
-    write_data_array[1] = control_struct.address_array[0];
-    write_data_array[2] = control_struct.address_array[1];
-    write_data_array[3] = control_struct.address_array[2];
+    write_data_array[0] = control.command[0]; 
+    write_data_array[1] = control.address_array[0];
+    write_data_array[2] = control.address_array[1];
+    write_data_array[3] = control.address_array[2];
     write_data_array[4] = 0x00;                                       // Dummy Byte
 
     uint8_t temp_read_data_array_length = write_data_array_size + read_data_array_size;
@@ -325,14 +323,14 @@ void cy15b108qi_fast_read_data_command(uint8_t *read_data_array, uint8_t read_da
 static void _get_address_array(uint32_t address)
 {
     NRF_LOG_INFO("_get_address_array");
-    control_struct.address_array[0] = (uint8_t)((address & 0b00000000000011110000000000000000) >> 16);
-    control_struct.address_array[1] = (uint8_t)((address & 0b00000000000000001111111100000000) >> 8);
-    control_struct.address_array[2] = (uint8_t)(address & 0b000000000000000000000000011111111);
+    control.address_array[0] = (uint8_t)((address & 0b00000000000011110000000000000000) >> 16);
+    control.address_array[1] = (uint8_t)((address & 0b00000000000000001111111100000000) >> 8);
+    control.address_array[2] = (uint8_t)(address & 0b000000000000000000000000011111111);
 }
 
 uint32_t cy15b108qi_get_current_write_address(void)
 {
     NRF_LOG_INFO("cy15b108qi_get_current_write_address");
-    return control_struct.write_address;
+    return control.write_address;
 }
 #endif

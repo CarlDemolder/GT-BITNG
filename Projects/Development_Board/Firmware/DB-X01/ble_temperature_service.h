@@ -14,14 +14,16 @@ NRF_SDH_BLE_OBSERVER(_name ## _obs, BLE_HRS_BLE_OBSERVER_PRIO, ble_temperature_s
 
 enum TEMPERATURE_SERVICE_CHAR_LENGTHS
 {
-    TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH = 250
+    TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH = 250,
+    TEMPERATURE_SERVICE_INSTANT_TEMP_CHAR_LENGTH = 2
 };
 
 // Defining the custom service 16 bit UUID
 enum TEMPERATURE_SERVICE_UUID
 {
     TEMPERATURE_SERVICE_UUID = 0x8CD5,
-    TEMPERATURE_SERVICE_TEMP_CHAR_UUID = 0x46AD
+    TEMPERATURE_SERVICE_TEMP_CHAR_UUID = 0x46AD,
+    TEMPERATURE_SERVICE_INSTANT_TEMP_CHAR_UUID = 0x46AF
 };
 
 typedef struct ble_temperature_service_s ble_temperature_service_t;   // Forward declaration of the ble_cus_t type.
@@ -32,6 +34,9 @@ typedef enum
     TEMPERATURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_ENABLED,           /**< Temp char notification enabled event. */
     TEMPERATURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_DISABLED,          /**< Temp char notification disabled event. */
     TEMPERATURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION,                   /**< Temp char notification event. */
+    TEMPERATURE_SERVICE_EVT_INSTANT_TEMP_CHAR_NOTIFICATION_ENABLED,   /**< Instant Temp char notification enabled event. */
+    TEMPERATURE_SERVICE_EVT_INSTANT_TEMP_CHAR_NOTIFICATION_DISABLED,  /**< Instant Temp char notification disabled event. */
+    TEMPERATURE_SERVICE_EVT_INSTANT_TEMP_CHAR_NOTIFICATION,           /**< Instant Temp char notification event. */
     TEMPERATURE_SERVICE_EVT_DISCONNECTED,                             /**< Temperature Service disconnected event. */
     TEMPERATURE_SERVICE_EVT_CONNECTED,                                /**< Temperature Service connected event. */
     TEMPERATURE_SERVICE_EVT_WRITE,                                    /**< Temperature Service write event. */
@@ -54,16 +59,24 @@ struct ble_temperature_service_s
     temperature_service_evt_handler_t evt_handler;                    /**< Event handler to be called for handling events in the Custom Service. */
     uint16_t service_handle;                                          /**< Handle of Custom Service (as provided by the BLE stack). */
     ble_gatts_char_handles_t temp_char_handles;                       /**< Handles related to the Temp characteristic. */
+    ble_gatts_char_handles_t instant_temp_char_handles;               /**< Handles related to the Instant Temp characteristic. */
     uint16_t conn_handle;                                             /**< Handle of the current connection (as provided by the BLE stack, is BLE_CONN_HANDLE_INVALID if not in a connection). */
     uint8_t uuid_type; 
+};
+
+struct BLE_Temperature_Service_Control_Struct
+{
+    ret_code_t error_code;
 };
 
 /**@brief Temperature Service init structure. This contains all options and data needed for initialization of the service.*/
 typedef struct
 {
-    temperature_service_evt_handler_t evt_handler;                    /**< Event handler to be called for handling events in the Custom Service. */
-    uint8_t temp_char[TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH];          /**< Temp Characteristic */
-    ble_srv_cccd_security_mode_t temp_char_attr_md;                   /**< Initial security level for Temp characteristics attribute */
+    temperature_service_evt_handler_t evt_handler;                                /**< Event handler to be called for handling events in the Custom Service. */
+    uint8_t temp_char[TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH];                      /**< Temp Characteristic */
+    uint8_t instant_temp_char[TEMPERATURE_SERVICE_INSTANT_TEMP_CHAR_LENGTH];      /**< Instant Temp Characteristic */
+    ble_srv_cccd_security_mode_t temp_char_attr_md;                               /**< Initial security level for Temp characteristics attribute */
+    ble_srv_cccd_security_mode_t instant_temp_char_attr_md;                       /**< Initial security level for Instant Temp characteristics attribute */
 } ble_temperature_service_init_t;
 
 void ble_temperature_service_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
@@ -73,6 +86,10 @@ uint32_t ble_temperature_service_initialize(ble_temperature_service_t *p_cus, co
 uint32_t temperature_service_temp_char_add(ble_temperature_service_t *p_cus, const ble_temperature_service_init_t *p_cus_init);
 
 uint32_t temperature_service_temp_char_write(ble_temperature_service_t *p_cus, uint8_t *new_temp_char_array);
+
+uint32_t temperature_service_instant_temp_char_add(ble_temperature_service_t *p_cus, const ble_temperature_service_init_t *p_cus_init);
+
+uint32_t temperature_service_instant_temp_char_write(ble_temperature_service_t *p_cus, uint8_t *new_instant_temp_char_array);
 
 static void temperature_service_on_connect(ble_temperature_service_t *p_cus, ble_evt_t const *p_ble_evt);
 

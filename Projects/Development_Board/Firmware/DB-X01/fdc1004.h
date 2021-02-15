@@ -32,6 +32,8 @@ enum FDC1004_CONSTANTS
     FDC1004_GAIN_CAL_CIN4 = 0X14,
     FDC1004_MANUFACTURER_ID = 0XFE,
     FDC1004_DEVICE_ID = 0XFF,
+    FDC1004_TRIGGER_MEASUREMENT_MODE = 0X20,
+    FDC1004_READ_MEASUREMENT_MODE = 0X21,
 };
 
 /**@brief MSB Measurement Register Structure. This structure contains all values read from the MSB Measurement Register.
@@ -78,7 +80,7 @@ struct FDC1004_Measurement_Configuration_Register_Struct
 */
 struct FDC1004_FDC_Configuration_Register_Struct
 {
-    uint8_t register_pointer[1];                    /**< Pointer Address to Register */
+    uint8_t register_pointer;                       /**< Pointer Address to Register */
     uint8_t rst;                                    /**< Reset */
     uint8_t rate;                                   /**< Measurement Rate */
     uint8_t repeat;                                 /**< Repeat Measurements */
@@ -123,25 +125,60 @@ struct FDC1004_Gain_Calibration_Register_Struct
 */
 struct FDC1004_Control_Struct
 {
-    uint8_t slave_address[1];                       /**< Variable to store the slave address of the device */
-    uint8_t register_pointer[1];                    /**< Variable to store the pointer to the register */
-    uint8_t register_byte_count[1];                 /**< Variable to number of registers to read from */
-    uint8_t data_array[2];                          /**< Variable to store data array to read and write */
+    uint8_t slave_address;                          /**< Variable to store the slave address of the device */
+    uint8_t register_pointer;                       /**< Variable to store the pointer to the register */
+    uint8_t register_byte_count;                    /**< Variable to number of registers to read from */
+    uint8_t i2c_data[2];                            /**< Variable to store data array to read and write */
 
-    uint8_t manufacturer_id_register_pointer[1];    /**< Variable to record the Manufacturer ID register pointer */
-    uint8_t device_id_register_pointer[1];          /**< Variable to record the Device ID register pointer */
+    uint8_t manufacturer_id_register_pointer;       /**< Variable to record the Manufacturer ID register pointer */
+    uint8_t device_id_register_pointer;             /**< Variable to record the Device ID register pointer */
     
     uint8_t manufacturer_id[2];                     /**< Variable to record the manufacturer ID (0x5449) in an uint8_t array format */
     uint8_t device_id[2];                           /**< Variable to record the Device ID (0x1004) in an uint8_t array format */
 
-    uint8_t CIN1_array[4][3];                       /**< Variable to record the raw capacitance value for Channel #1-4 */
-
+    uint8_t cin_data[4][3];                         /**< Variable to record the raw capacitance value for Channel #1-4 */
+    uint8_t cin_status[4];                          /**< Variable to track which inputs are enabled */
     ret_code_t error_code;                          /**< Variable to track errors */
 
     uint8_t status;                                 /**< Variable to determine if sensor is enabled or disabled */  
     uint8_t interrupt;                              /**< Variable to record when the data interrupt flag */
-
 };
+
+/* Public Functions */
+
+void fdc1004_init(void);
+
+void fdc1004_uninit(void);
+
+void fdc1004_soft_reset(void);
+
+uint8_t fdc1004_is_enabled(void);
+
+void fdc1004_set_offset_calibration(uint8_t channel, uint8_t integer, uint8_t decimal_1, uint8_t decimal_2);
+
+void fdc1004_set_gain_calibration(uint8_t channel, uint8_t integer, uint8_t decimal_1, uint8_t decimal_2);
+
+void fdc1004_set_measurement_rate(uint8_t measurement_rate);
+
+void fdc1004_set_repeat_measurement(uint8_t repeat_measurement);
+
+void fdc1004_get_manufacturer_id(uint8_t *manufacturer_id);
+
+void fdc1004_get_device_id(uint8_t *device_id);
+
+void fdc1004_set_capdac(uint8_t channel, uint8_t capdac);
+
+void fdc1004_enable_channel(uint8_t channel);
+
+void fdc1004_disable_channel(uint8_t channel);
+
+void fdc1004_trigger_single_measurement(uint8_t channel);
+
+void fdc1004_get_measurement(uint8_t channel, uint8_t *measurement);
+
+void fdc1004_interrupt_handler(void);
+
+/* Static Functions */
 
 static void _fdc1004_read_msb_measurement_register(uint8_t channel);
 
@@ -167,31 +204,7 @@ static void _fdc1004_read_manufacturer_id_register(void);
 
 static void _fdc1004_read_device_id_register(void);
 
-void fdc1004_init(void);
-
-void fdc1004_uninit(void);
-
-void fdc1004_soft_reset(void);
-
-uint8_t fdc1004_is_enabled(void);
-
-void fdc1004_set_offset_calibration(uint8_t channel, uint8_t integer, uint8_t decimal_1, uint8_t decimal_2);
-
-void fdc1004_set_gain_calibration(uint8_t channel, uint8_t integer, uint8_t decimal_1, uint8_t decimal_2);
-
-void fdc1004_set_measurement_rate(uint8_t measurement_rate);
-
-void fdc1004_set_repeat_measurement(uint8_t repeat_measurement);
-
-void fdc1004_get_manufacturer_id(uint8_t *manufacturer_id);
-
-void fdc1004_get_device_id(uint8_t *device_id);
-
-void fdc1004_set_capdac(uint8_t channel, uint8_t capdac);
-
-void fdc1004_trigger_single_measurement(uint8_t channel);
-
-void fdc1004_get_measurement(uint8_t channel, uint8_t *measurement);
+static void _fdc1004_read_measurement(uint8_t channel);
 
 #endif
 

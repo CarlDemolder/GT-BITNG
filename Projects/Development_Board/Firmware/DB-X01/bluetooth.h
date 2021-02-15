@@ -13,6 +13,10 @@
 #include "ble_ecg_service.h"
 #endif
 
+#if FDC1004
+#include "ble_pressure_service.h"
+#endif
+
 #include "serial_slave.h"
 
 #include "nrf_dfu_ble_svci_bond_sharing.h"
@@ -25,6 +29,7 @@
 struct Bluetooth_Control_Struct
 {
     ret_code_t error_code;          /**< Variable to track errors */
+    uint8_t request_received;       /**< Variable to track if the bluetooth device sent a request */
 
 };
 
@@ -53,12 +58,17 @@ void bluetooth_configuration_service_crc_char_write(uint8_t *crc_char_data_array
 
 #if TMP117
 void bluetooth_temperature_service_temp_char_write(uint8_t *temp_char_data_array);
+void bluetooth_temperature_service_instant_temp_char_write(uint8_t *instant_temp_char_data_array);
 void bluetooth_transmit_temperature_recording_session(void);
 #endif
 
 #if ECG
 void bluetooth_ecg_service_ecg_char_write(uint8_t *ecg_char_data_array);
 void bluetooth_transmit_ecg_recording_session(void);
+#endif
+
+#if FDC1004
+void bluetooth_pressure_service_instant_pressure_char_write(uint8_t *instant_pressure_char_data_array);
 #endif
 
 void bluetooth_transmit_firmware_version(void);

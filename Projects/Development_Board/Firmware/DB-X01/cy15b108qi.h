@@ -87,7 +87,7 @@ void cy15b108qi_set_write_enable_latch_command(void);
 
 void cy15b108qi_reset_write_enable_latch_command(void);
 
-void cy15b108qi_write_data_command(uint8_t *data_array, uint8_t data_array_size);
+void cy15b108qi_write_data_command(uint8_t *data_array, uint8_t data_array_size, uint32_t start_write_register);
 
 void cy15b108qi_fast_read_data_command(uint8_t *read_data_array, uint8_t read_data_array_size, uint32_t start_address);
 

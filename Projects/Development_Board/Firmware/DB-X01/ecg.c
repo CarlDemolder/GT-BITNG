@@ -96,7 +96,7 @@ void ecg_interrupt_handler(void)
 
             /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
             
-            cy15b108qi_write_data_command(cy15b108qi_voltage_array, ARRAY_LENGTH(cy15b108qi_voltage_array));
+//            cy15b108qi_write_data_command(cy15b108qi_voltage_array, ARRAY_LENGTH(cy15b108qi_voltage_array));
 
             /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
             
@@ -248,8 +248,8 @@ void ecg_start_recording_session(void)
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    uint8_t nrfx_rtc_start_tmp117_array_data[4] = {0x00, NRF52_MODULE, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_TMP117_START};
-    state_handler(nrfx_rtc_start_tmp117_array_data); // NRFX Start TMP117 RTC
+//    uint8_t nrfx_rtc_start_tmp117_array_data[4] = {0x00, NRF52_MODULE, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_TMP117_START};
+//    state_handler(nrfx_rtc_start_tmp117_array_data); // NRFX Start TMP117 RTC
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -299,5 +299,36 @@ void ecg_stop_recording_session(void)
     uint8_t spim_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
     state_handler(spim_disable_array_data); // Disable SPIM Module
 }
+
+
+//    #if !MAX30003
+//        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+//
+//        uint8_t spim_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+//        state_handler(spim_enable_array_data); // Enable SPIM Module
+//
+//        uint8_t spim_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
+//        state_handler(spim_init_array_data); // Initialize SPIM Module
+//
+//        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+//
+//        uint8_t spim_select_cs_pin_array_data[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, CY15B108QI_CS_PIN};
+//        state_handler(spim_select_cs_pin_array_data); // Set Chip Select Pin to CY15B108QI for the SPIM Module
+//
+//        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+//
+//        uint8_t cy15b108qi_enter_hibernation_array_data[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_ENTER_HIBERNATION_MODE_COMMAND};
+//        state_handler(cy15b108qi_enter_hibernation_array_data);
+//
+//        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+//
+//        uint8_t spim_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
+//        state_handler(spim_uninit_array_data); // Uninitialize SPIM Module
+//
+//        uint8_t spim_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
+//        state_handler(spim_disable_array_data); // Disable SPIM Module
+//
+//        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+//    #endif
 
 #endif

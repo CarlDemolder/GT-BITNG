@@ -18,7 +18,7 @@
 enum RTC_Constants
 {
     RTC_TIMER_CLOCK_FREQ = 32768,                     // Clock frequency of the RTC timer used to implement the app timer module
-    NRFX_RTC_AVAILABLE = 2                           // RTC0 is reserved for Soft Device, RTC1 is used by TWI, RTC2 is available for RTC
+    NRFX_RTC_AVAILABLE = 2                            // RTC0 is reserved for Soft Device, RTC1 is used by TWI, RTC2 is available for RTC
 };
 
 

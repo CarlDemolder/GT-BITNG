@@ -259,22 +259,22 @@ void rtc_sensor_handler(nrfx_rtc_int_type_t interrupt_type)
         #if TMP117
         if(tmp117_is_enabled() == 1)
         {
-            tmp117_handler();
+            tmp117_interrupt_handler();
         }
         #endif
 
         #if FDC1004
         if(fdc1004_is_enabled() == 1)
         {
-            fdc1004_handler();
+            fdc1004_interrupt_handler();
         }
         #endif
 
         #if STRAIN_GAUGE
-        if(strain_gauge_is_enabled() == 1)
-        {
-            strain_gauge_handler();
-        }
+//        if(strain_gauge_is_enabled() == 1)
+//        {
+//            strain_gauge_handler();
+//        }
         #endif
     }
 }
@@ -311,6 +311,7 @@ uint8_t rtc_sensor_get_sampling_frequency(void)
 {
     NRF_LOG_INFO("rtc_sensor_get_sampling_frequency");
     uint8_t sampling_frequency = (uint8_t) 60/(((float)(1/rtc_sensor_configuration.rtc_frequency))*rtc_sensor_configuration.rtc_counter);
+    NRF_LOG_INFO("RTC Sensor Sampling Frequency: %u", sampling_frequency);
     return sampling_frequency;
 }
 
