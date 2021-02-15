@@ -2,20 +2,24 @@
 
 #if MAX30003
 
-static struct MAX30003_Status_Register status_register;
+static struct MAX30003_Status_Register_Struct status_register;
 static struct MAX30003_Control_Struct control;
-static struct MAX30003_Interrupt_Register interrupt1_register;
-static struct MAX30003_Interrupt_Register interrupt2_register;
-static struct MAX30003_Interrupt_Manager_Register interrupt_manager_register;
-static struct MAX30003_Dynamic_Mode_Manager_Register dynamic_mode_manager_register;
-static struct MAX30003_Info_Register info_register;
-static struct MAX30003_General_Configuration_Register general_configuration_register;
-static struct MAX30003_Calibration_Configuration_Register calibration_configuration_register;
-static struct MAX30003_Input_Multiplexer_Configuration_Register input_multiplexer_configuration_register;
-static struct MAX30003_ECG_Configuration_Register ecg_configuration_register;
-static struct MAX30003_RTOR1_Configuration_Register rtor1_configuration_register;
-static struct MAX30003_RTOR2_Configuration_Register rtor2_configuration_register;
-static struct MAX30003_ECG_FIFO_Memory_Register ecg_fifo_memory_register;
+static struct MAX30003_Interrupt_Register_Struct interrupt1_register;
+static struct MAX30003_Interrupt_Register_Struct interrupt2_register;
+static struct MAX30003_Interrupt_Manager_Register_Struct interrupt_manager_register;
+static struct MAX30003_Dynamic_Mode_Manager_Register_Struct dynamic_mode_manager_register;
+static struct MAX30003_Info_Register_Struct info_register;
+static struct MAX30003_General_Configuration_Register_Struct general_configuration_register;
+static struct MAX30003_Calibration_Configuration_Register_Struct calibration_configuration_register;
+static struct MAX30003_Input_Multiplexer_Configuration_Register_Struct input_multiplexer_configuration_register;
+static struct MAX30003_ECG_Configuration_Register_Struct ecg_configuration_register;
+static struct MAX30003_RTOR1_Configuration_Register_Struct rtor1_configuration_register;
+static struct MAX30003_RTOR2_Configuration_Register_Struct rtor2_configuration_register;
+static struct MAX30003_ECG_FIFO_Memory_Register_Struct ecg_fifo_memory_register;
+static struct MAX30003_Software_Reset_Register_Struct software_reset_register;
+static struct MAX30003_Synchronization_Register_Struct synchronization_register;
+static struct MAX30003_FIFO_Reset_Register_Struct fifo_reset_register;
+
 
 /* Public Functions */
 
@@ -24,8 +28,19 @@ void max30003_init(void)
     NRF_LOG_INFO("max30003_init");
 
     control.register_byte_count = 3;    // Number of bytes per register
+    control.long_term_storage = 0;      // Initially set the long term data storage off
 
-    info_register.pointer = MAX30003_INFO;
+    control.external_memory_start_address = MAX30003_EXTERNAL_MEMORY_START_ADDRESS;     // Start address of the external memory to store ECG data
+    control.external_memory_end_address = MAX30003_EXTERNAL_MEMORY_END_ADDRESS;         // End address of the external memory to store ECG data
+    
+    control.external_memory_write_start_address = control.external_memory_start_address;            // Initializing the start address to the memory start address
+    control.external_memory_write_current_address = control.external_memory_write_start_address;    // Initializing the current write address to the write start address
+
+    control.external_memory_transmit_start_address = 0;             // The transmitting start address is set the write start address
+    control.external_memory_transmit_end_address = 0;               // The transmitting end address is set to the write end address
+    control.external_memory_transmit_current_address = 0;           // The transmitting current address is set to the transmit start address
+
+    info_register.register_pointer = MAX30003_INFO;
     status_register.register_pointer = MAX30003_STATUS;
     interrupt1_register.register_pointer = MAX30003_EN_INT1;
     interrupt1_register.register_pointer = MAX30003_EN_INT2;
@@ -40,6 +55,10 @@ void max30003_init(void)
     rtor2_configuration_register.register_pointer = MAX30003_CNFG_RTOR2;
     ecg_fifo_memory_register.register_pointer = MAX30003_ECG_FIFO_BURST;
 
+    software_reset_register.register_pointer = MAX30003_SW_RS;
+    synchronization_register.register_pointer = MAX30003_SYNCH;
+    fifo_reset_register.register_pointer = MAX30003_FIFO_RST;
+
     max30003_soft_reset();              // Soft Reset
     max30003_init_pin_interrupt();      // Initializing the interrupt pin
 
@@ -48,26 +67,26 @@ void max30003_init(void)
 
     // Interrupt Manager
     // MAX30003_MNGR_INT_ADDRESS, 0x78, 0x00, 0x04
-    max30003_read_interrupt_manager_register();
+    _max30003_read_interrupt_manager_register();
     interrupt_manager_register.efit = 0x1F;                           // DEFAULT: ECG FIFO INTERRUPT THRESHOLD = 32 WORDS
     interrupt_manager_register.clr_fast = 0x00;                       // DEFAULT: FAST MODE INTERRUPT CLEAR BEHAVIOR = FSTINT REMAINS ACTIVE UNTIL THE FAST MODE IS DISENGAGED
     interrupt_manager_register.clr_rrint = 0x00;                      // DEFAULT: R-R DETECT INTERRUPT CLEAR BEHAVIOR = CLEAR RRINT ON STATUS REGISTER READ BACK
     interrupt_manager_register.clr_samp = 0x01;                       // DEFAULT: SAMPLE SYNCHRONIZATION PULSE CLEAR BEHAVIOR = SELF CLEAR SAMP AFTER 1/4 OF 1 DATA RATE CYCLE
     interrupt_manager_register.samp_it = 0x00;                        // DEFAULT: SAMPLE SYNCHRONIZATION PULSE FREQUENCY = ISSUED EVERY SAMPLE INSTANT
-    max30003_write_interrupt_manager_register();
-    max30003_read_interrupt_manager_register();
+    _max30003_write_interrupt_manager_register();
+    _max30003_read_interrupt_manager_register();
 
     // Dynamic Mode Manager
     // MAX30003_MNGR_DYN_ADDRESS, 0x3F, 0x00, 0x00
-    max30003_read_dynamic_mode_manager_register();
+    _max30003_read_dynamic_mode_manager_register();
     dynamic_mode_manager_register.fast = 0x00;                        // DEFAULT: ECG CHANNEL FAST RECOVERY MODE SELECTION = NORMAL MODE (FAST RECOVERY MODE DISABLED)
     dynamic_mode_manager_register.fast_th = 0x3F;                     // DEFAULT: AUTOMATIC FAST RECOVERY THRESHOLD = (DISABLED DUE TO FAST)
-    max30003_write_dynamic_mode_manager_register();
-    max30003_read_dynamic_mode_manager_register();
+    _max30003_write_dynamic_mode_manager_register();
+    _max30003_read_dynamic_mode_manager_register();
 
     // General Configuration
     // MAX30003_CNFG_GEN_ADDRESS, 0x08, 0x10, 0x07
-    max30003_read_general_configuration_register();
+    _max30003_read_general_configuration_register();
     general_configuration_register.en_ulp_lon = 0x00;                 // DEFAULT: ULTRA-LOW POWER LEAD-ON DETECTION ENABLE = ULP LEAD-ON DETECTION DISABLED
     general_configuration_register.fmstr = 0x00;                      // DEFAULT: MASTER CLOCK FREQUENCY = 32768 Hz
     general_configuration_register.en_ecg = 0x01;                     // ECG CHANNEL ENABLE = 1
@@ -79,61 +98,61 @@ void max30003_init(void)
     general_configuration_register.rbiasv = 0x01;                     // RESISTIVE BIAS MODE VALUE SELECTION = 100 M OHM
     general_configuration_register.rbiasp = 0x01;                     // RESISTIVE BIAS ON POSITIVE INPUT = 1
     general_configuration_register.rbiasn = 0x01;                     // RESISTIVE BIAS ON NEGATIVE INPUT = 1
-    max30003_write_general_configuration_register();
-    max30003_read_general_configuration_register();
+    _max30003_write_general_configuration_register();
+    _max30003_read_general_configuration_register();
 
     // Calibration Configuration
     // MAX30003_CNFG_CAL_ADDRESS, 0x70, 0x48, 0x00
-    max30003_read_calibration_configuration_register();
+    _max30003_read_calibration_configuration_register();
     calibration_configuration_register.en_vcal = 0x01;                // CALIBRATION SOURCE (VCALP & VCALN) ENABLE = 1
     calibration_configuration_register.vmode = 0x01;                  // CALIBRATION SOURCE MODE SELECTION = BIPOLAR
     calibration_configuration_register.vmag = 0x01;                   // CALIBRATION SOURCE MAGNITUDE SELECTION = 0.50 mV
     calibration_configuration_register.fcal = 0x04;                   // DEFAULT: CALIBRATION SOURCE FREQUENCY SELECTION = 1 Hz
     calibration_configuration_register.fifty = 0x01;                  // DEFAULT: CALIBRATION SOURCE DUTY CYCLE MODE SELECTION = 1 (THIGH = 50%; THIGH[10:0] IGNORED)
     calibration_configuration_register.thigh = 0x0000;                // DEFAULT: CALIBRATION SOURCE TIME HIGH SELECTION = 0 (VALUE IS IGNORED IF FIFTY = 1)
-    max30003_write_calibration_configuration_register();
-    max30003_read_calibration_configuration_register();
+    _max30003_write_calibration_configuration_register();
+    _max30003_read_calibration_configuration_register();
     
     // EMUX Configuration
     // MAX30003_CNFG_EMUX_ADDRESS, 0x0B, 0x00, 0x00
-    max30003_read_input_multiplexer_configuration_register();
+    _max30003_read_input_multiplexer_configuration_register();
     input_multiplexer_configuration_register.pol = 0x00;              // DEFAULT: ECG INPUT POLARITY SELECTION = NON-INVERTED
     input_multiplexer_configuration_register.openp = 0x00;            // ECGP INPUT SWITCH = ECGP IS INTERNALLY CONNECTED TO ECG AFE CHANNEL
     input_multiplexer_configuration_register.openn = 0x00;            // ECGN INPUT SWITCH = ECGN IS INTERNALLY CONNECTED TO ECG AFE CHANNEL
     input_multiplexer_configuration_register.calp_sel = 0x02;         // ECGP CALIBRATION SELECTION = INPUT CONNECTED TO VCALP
     input_multiplexer_configuration_register.caln_sel = 0x03;         // ECGN CALIBRATION SELECTION = INPUT CONNECTED TO VCALN
-    max30003_write_input_multiplexer_configuration_register();
-    max30003_read_input_multiplexer_configuration_register();
+    _max30003_write_input_multiplexer_configuration_register();
+    _max30003_read_input_multiplexer_configuration_register();
 
     // ECG Configuration
     // MAX30003_CNFG_ECG_ADDRESS, 0x80, 0x50, 0x00
-    max30003_read_ecg_configuration_register();
+    _max30003_read_ecg_configuration_register();
     ecg_configuration_register.rate = 0x02;                           // DEFAULT: ECG DATA RATE = 128 SPS
     ecg_configuration_register.gain = 0x00;                           // DEFAULT: ECG CHANNEL GAIN SETTING = 20 V/V
     ecg_configuration_register.dhpf = 0x01;                           // DEFAULT: ECG CHANNEL DIGITAL HIGH-PASS FILTER CUTOFF FREQUENCY = 0.50 Hz
     ecg_configuration_register.dlpf = 0x01;                           // DEFAULT: ECG CHANNEL DIGITAL LOW-PASS FILTER CUTOFF FREQUENCY = 40 Hz
-    max30003_write_ecg_configuration_register();
-    max30003_read_ecg_configuration_register();
+    _max30003_write_ecg_configuration_register();
+    _max30003_read_ecg_configuration_register();
 
     // R-R #1 Configuration => R-R DETECTION DISABLED
     // MAX30003_CNFG_RTOR1_ADDRESS, 0x3F, 0x23, 0x00
-    max30003_read_rtor1_configuration_register();
+    _max30003_read_rtor1_configuration_register();
     rtor1_configuration_register.wndw = 0x03;                         // DEFAULT: WIDTH OF THE AVERAGING WINDOW = 12 * 8 ms
     rtor1_configuration_register.gain = 0x0F;                         // DEFAULT: R-R GAIN = AUTOSCALE (DEFAULT)
     rtor1_configuration_register.en_rtor = 0x00;                      // DEFAULT: ECG RTOR DTECTION ENABLE = 0
     rtor1_configuration_register.pavg = 0x02;                         // DEFAULT: R-R PEAK AVERAGING WEIGHT FACOTR = 8
     rtor1_configuration_register.ptsf = 0x03;                         // DEFAULT: R-R PEAK THRESHOLD SCALING FACTOR = 4/8
-    max30003_write_rtor1_configuration_register();
-    max30003_read_rtor1_configuration_register();
+    _max30003_write_rtor1_configuration_register();
+    _max30003_read_rtor1_configuration_register();
 
     // R-R #2 Configuration => R-R DETECTION DISABLED
     // MAX30003_CNFG_RTOR2_ADDRESS, 0x20, 0x24, 0x00
-    max30003_read_rtor2_configuration_register();
+    _max30003_read_rtor2_configuration_register();
     rtor2_configuration_register.hoff = 0x20;                         // DEFAULT: t_HOLD_OFF_MIN = 32 * 8 ms, 
     rtor2_configuration_register.ravg = 0x02;                         // DEFAULT: R-R INTERVAL AVERAGING WEIGHT FACTOR = 8
     rtor2_configuration_register.rhsf = 0x04;                         // DEFAULT: R-R INTERVAL HOLD OFF SCALING FACTOR = 4/8
-    max30003_write_rtor2_configuration_register();
-    max30003_read_rtor2_configuration_register();
+    _max30003_write_rtor2_configuration_register();
+    _max30003_read_rtor2_configuration_register();
 
     control.counter = 0;                                                  // Counter to iterate through measurements taken
     control.samples_per_interrupt = interrupt_manager_register.efit + 1;  // Setting the default Samples recored per interrupt
@@ -167,15 +186,15 @@ void max30003_set_samples_per_interrupt(uint8_t temp_samples_per_interrupt)
     NRF_LOG_INFO("max30003_set_samples_per_interrupt");
     if(temp_samples_per_interrupt > MAX30003_MAX_FIFO_WORDS)
     {
-        data_flow.samples_per_interrupt = MAX30003_MAX_FIFO_WORDS;
+        control.samples_per_interrupt = MAX30003_MAX_FIFO_WORDS;
     }
     else
     {
-        data_flow.samples_per_interrupt = temp_samples_per_interrupt;
+        control.samples_per_interrupt = temp_samples_per_interrupt;
     }
-    interrupt_manager_register.efit = data_flow.samples_per_interrupt - 1;
-    max30003_write_interrupt_manager_register();
-    max30003_read_interrupt_manager_register();
+    interrupt_manager_register.efit = control.samples_per_interrupt - 1;
+    _max30003_write_interrupt_manager_register();
+    _max30003_read_interrupt_manager_register();
 }
 
 void max30003_set_samples_per_second(uint16_t temp_samples_per_second)
@@ -184,33 +203,33 @@ void max30003_set_samples_per_second(uint16_t temp_samples_per_second)
     switch(temp_samples_per_second)
     {
         case MAX30003_SPS_128:
-            data_flow.samples_per_second = MAX30003_SPS_128;
+            control.samples_per_second = MAX30003_SPS_128;
             ecg_configuration_register.rate = 0x02;                           // DEFAULT: ECG DATA RATE = 128 SPS
             return;
 
         case MAX30003_SPS_256:
-            data_flow.samples_per_second = MAX30003_SPS_256;
+            control.samples_per_second = MAX30003_SPS_256;
             ecg_configuration_register.rate = 0x01;
             return;
 
         case MAX30003_SPS_512:
-            data_flow.samples_per_second = MAX30003_SPS_512;
+            control.samples_per_second = MAX30003_SPS_512;
             ecg_configuration_register.rate = 0x00;
             return;
 
         default:
-            data_flow.samples_per_second = MAX30003_SPS_128;
+            control.samples_per_second = MAX30003_SPS_128;
             ecg_configuration_register.rate = 0x02;                           // DEFAULT: ECG DATA RATE = 128 SPS
             return;
     }
-    max30003_write_ecg_configuration_register();
-    max30003_read_ecg_configuration_register();
+    _max30003_write_ecg_configuration_register();
+    _max30003_read_ecg_configuration_register();
 }
 
 void max30003_start_recording(void)
 {
     NRF_LOG_INFO("max30003_start_recording");
-    max30003_write_fifo_reset_register();           // Reset the FIFO to clear the FIFO
+    _max30003_write_fifo_reset_register();           // Reset the FIFO to clear the FIFO
     max30003_interrupt1_enable();                   // Interrupt #1 Enable
     max30003_enable_pin_interrupt();                // Enable the interrupt of the NRF52
     max30003_sync();                                // Synchronize the clock frequency of the MAX30003 with the NRF52
@@ -219,59 +238,159 @@ void max30003_start_recording(void)
 uint8_t max30003_get_samples_per_interrupt(void)
 {
     NRF_LOG_INFO("max30003_get_samples_per_interrupt");
-    return data_flow.samples_per_interrupt;
+    return control.samples_per_interrupt;
 }
 
 uint8_t max30003_get_samples_per_second(void)
 {
     NRF_LOG_INFO("max30003_get_samples_per_second");
-    return data_flow.samples_per_second;
+    return control.samples_per_second;
 }
 
 uint8_t max30003_get_bytes_per_sample(void)
 {
     NRF_LOG_INFO("max30003_get_bytes_per_sample");
-    return data_flow.bytes_per_sample;
+    return control.bytes_per_sample;
 }
 
 void max30003_interrupt1_enable(void)
 {
     NRF_LOG_INFO("max30003_interrupt1_enable");
-    max30003_read_interrupt1_register();
+    _max30003_read_interrupt1_register();
     interrupt1_register.en_eint = 1;        // Enable Interrupt when FIFO Buffer has been filled
     interrupt1_register.int1b_port = 3;     // Open-Drain nMOS Driver with Internal 125k Ohm pullup resistance
-    max30003_write_interrupt1_register();
-    max30003_read_interrupt1_register();    // Verify Register
+    _max30003_write_interrupt1_register();
+    _max30003_read_interrupt1_register();    // Verify Register
 }
 
 void max30003_interrupt1_disable(void)
 {
     NRF_LOG_INFO("max30003_interrupt1_disable");
-    max30003_read_interrupt1_register();
+    _max30003_read_interrupt1_register();
     interrupt1_register.en_eint = 0;        // Disable Interrupt when FIFO Buffer has been filled
     interrupt1_register.int1b_port = 0;     // Disabled (Three-state)
-    max30003_write_interrupt1_register();
-    max30003_read_interrupt1_register();    // Verify Register
+    _max30003_write_interrupt1_register();
+    _max30003_read_interrupt1_register();    // Verify Register
 }
 
 void max30003_interrupt2_enable(void)
 {
     NRF_LOG_INFO("max30003_interrupt2_enable");
-    max30003_read_interrupt2_register();
+    _max30003_read_interrupt2_register();
     interrupt2_register.en_eovf = 1;        // 
     interrupt2_register.int1b_port = 3;     // Open-Drain nMOS Driver with Internal 125k Ohm pullup resistance
-    max30003_write_interrupt2_register();
-    max30003_read_interrupt2_register();    // Verify Register
+    _max30003_write_interrupt2_register();
+    _max30003_read_interrupt2_register();    // Verify Register
 }
 
 void max30003_interrupt2_disable(void)
 {
     NRF_LOG_INFO("max30003_interrupt2_disable");
-    max30003_read_interrupt2_register();
+    _max30003_read_interrupt2_register();
     interrupt2_register.en_eovf = 0;        // Disable Interrupt when ECG FIFO Overflow has occured
     interrupt2_register.int1b_port = 0;     // Disabled (Three-state)
-    max30003_write_interrupt2_register();
-    max30003_read_interrupt2_register();    // Verify Register
+    _max30003_write_interrupt2_register();
+    _max30003_read_interrupt2_register();    // Verify Register
+}
+
+/* 
+* Read ECG FIFO Memory Register to read the following values:
+* D[23:6], ECG_VOLTAGE = ECG Sample Voltage Data; 18 Bit ECG Voltage Information at the Requested Sample Rate in Left Justified Two's Complement Format
+* D[5:3], ETAG = DATA Tag; Data condition Tag
+* D[2:0], PTAG = ???
+*/
+void max30003_read_ecg_fifo_memory(void)
+{
+    NRF_LOG_INFO("max30003_read_ecg_fifo_memory_register");
+    NRF_LOG_INFO("control.samples_per_interrupt: %u", control.samples_per_interrupt);
+    _max30003_spim_read_registers(ecg_fifo_memory_register.register_pointer, ecg_fifo_memory_register.data_array, control.samples_per_interrupt*3);
+    uint32_t temp_ecg_voltage = 0;
+    control.counter = 0;
+    for(uint8_t i = 0; i < control.samples_per_interrupt*3; i=i+3)
+    {
+        temp_ecg_voltage = 0;
+        temp_ecg_voltage = (ecg_fifo_memory_register.data_array[i+2] & 0b11000000) >> 6;
+        temp_ecg_voltage = temp_ecg_voltage | (((uint32_t) ecg_fifo_memory_register.data_array[i+1]) << 2);
+        temp_ecg_voltage = temp_ecg_voltage | (((uint32_t) ecg_fifo_memory_register.data_array[i]) << 10); 
+//        NRF_LOG_INFO("temp_ecg_voltage: %X", temp_ecg_voltage);
+        ecg_fifo_memory_register.ecg_voltage[control.counter] = (uint16_t)((temp_ecg_voltage & 0b00000000000000111111111111111100)>>2);
+        ecg_fifo_memory_register.etag[control.counter] = (ecg_fifo_memory_register.data_array[i+2] & 0b00111000) >> 3;
+        ecg_fifo_memory_register.ptag[control.counter] = ecg_fifo_memory_register.data_array[i+2] & 0b00000111;
+        NRF_LOG_INFO("W: %u, R:%X %X %X, V: %X", (control.counter+1), ecg_fifo_memory_register.data_array[i], 
+        ecg_fifo_memory_register.data_array[i+1], ecg_fifo_memory_register.data_array[i+2], ecg_fifo_memory_register.ecg_voltage[control.counter]);
+        NRF_LOG_INFO("ETAG: %X, PTAG: %X", ecg_fifo_memory_register.etag[control.counter], ecg_fifo_memory_register.ptag[control.counter]);
+        NRF_LOG_INFO("");
+        control.counter++;
+    }
+    NRF_LOG_INFO("Counter: %u", control.counter);
+}
+
+void max30003_get_ecg_voltage(uint16_t* data_array, uint8_t data_array_size)
+{
+    NRF_LOG_INFO("max30003_get_ecg_voltage");
+    for(int i = 0; i < data_array_size; i++)
+    {
+        data_array[i] = ecg_fifo_memory_register.ecg_voltage[i];
+    }
+}
+
+void max30003_soft_reset(void) 
+{
+    NRF_LOG_INFO("max_30003_soft_reset");
+    _max30003_write_software_reset_register();
+    nrf_delay_ms(MAX30003_DELAY); // Delay the MCU to allow the MAX30003 to go through a soft reset
+}
+
+void max30003_sync(void) 
+{
+    NRF_LOG_INFO("max30003_sync");
+    _max30003_write_synchronize_register();
+}
+
+uint8_t max30003_get_status_register_eovf(void)
+{
+    _max30003_read_status_register();
+    return status_register.eovf;
+}
+
+void max30003_init_pin_interrupt(void)
+{
+    NRF_LOG_INFO("max30003_init_pin_interrupt");
+    nrf_gpio_pin_dir_set(MAX30003_INT1_PIN, NRF_GPIO_PIN_DIR_INPUT);
+    nrfx_gpiote_in_config_t max30003_interrupt_config = NRFX_GPIOTE_CONFIG_IN_SENSE_HITOLO(true);
+
+    ret_code_t error_code = nrfx_gpiote_in_init(MAX30003_INT1_PIN, &max30003_interrupt_config, max30003_pin_interrupt_handler);
+    
+    NRF_LOG_INFO(" nrfx_gpiote_in_init: %d: \r\n", error_code);
+    APP_ERROR_CHECK(error_code);
+}
+
+void max30003_enable_pin_interrupt(void)
+{
+    NRF_LOG_INFO("max30003_enable_interrupt");
+    nrfx_gpiote_in_event_enable(MAX30003_INT1_PIN, true);
+    nrf_delay_ms(MAX30003_DELAY);
+}
+
+void max30003_disable_pin_interrupt(void)
+{
+    NRF_LOG_INFO("max30003_disable_interrupt");
+    nrfx_gpiote_in_event_enable(MAX30003_INT1_PIN, false);
+}
+
+void max30003_pin_interrupt_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+{
+    NRF_LOG_INFO("max30003_interrupt_handler");
+    UNUSED_PARAMETER(pin);
+    UNUSED_PARAMETER(action);
+
+    ecg_interrupt_handler();    // Call to Overall ECG Manager to manage ECG workflow
+}
+
+void max30003_fifo_reset(void)
+{
+    NRF_LOG_INFO("max30003_fifo_reset");
+    _max30003_write_fifo_reset_register();
 }
 
 /* Static Functions */
@@ -293,7 +412,7 @@ void max30003_interrupt2_disable(void)
 * D[1], LDOFF_NH = ECGN is above the high threshold (VTHH)
 * D[0], LDOFF_NL = ECGN is below the low threshold (VTHL)
 */
-void max30003_read_status_register(void)
+static void _max30003_read_status_register(void)
 {
     _max30003_spim_read_registers(status_register.register_pointer, control.spi_data, control.register_byte_count);
 
@@ -343,7 +462,7 @@ void max30003_read_status_register(void)
 * D[7] - D[2], NOT USED
 * D[1:0], INTB_TYPE1 = INT1B Port Type (EN_INT1 Selections)
 */
-void max30003_read_interrupt1_register(void)
+static void _max30003_read_interrupt1_register(void)
 {
     _max30003_spim_read_registers(interrupt1_register.register_pointer, control.spi_data, control.register_byte_count);
 
@@ -372,7 +491,7 @@ void max30003_read_interrupt1_register(void)
     NRF_LOG_INFO("interrupt1_register.int1b_port: %u", interrupt1_register.int1b_port);
 }
 
-void max30003_write_interrupt1_register(void)
+static void _max30003_write_interrupt1_register(void)
 {
     NRF_LOG_INFO("max30003_write_interrupt1_register");
     control.spi_data[0] = interrupt1_register.en_eint << 7;
@@ -404,7 +523,7 @@ void max30003_write_interrupt1_register(void)
 * D[7] - D[2], NOT USED
 * D[1:0], INTB_TYPE0 = INT2B Port Type (EN_INT2 Selections)
 */
-void max30003_read_interrupt2_register(void)
+static void _max30003_read_interrupt2_register(void)
 {
     NRF_LOG_INFO("max30003_read_interrupt2_register");
     _max30003_spim_read_registers(interrupt2_register.register_pointer, control.spi_data, control.register_byte_count);
@@ -434,20 +553,20 @@ void max30003_read_interrupt2_register(void)
     NRF_LOG_INFO("interrupt2_register.int1b_port: %u", interrupt2_register.int1b_port);
 }
 
-void max30003_write_interrupt2_register(void)
+static void _max30003_write_interrupt2_register(void)
 {
     NRF_LOG_INFO("max30003_write_interrupt2_register");
-    interrupt2_register.data_array[0] = interrupt2_register.en_eint << 7;
-    interrupt2_register.data_array[0] = (interrupt2_register.en_eovf << 6) | interrupt2_register.data_array[0];
-    interrupt2_register.data_array[0] = (interrupt2_register.en_fstint << 5) | interrupt2_register.data_array[0];
-    interrupt2_register.data_array[0] = (interrupt2_register.en_dcloffint << 4) | interrupt2_register.data_array[0];
+    control.spi_data[0] = interrupt2_register.en_eint << 7;
+    control.spi_data[0] = (interrupt2_register.en_eovf << 6) | control.spi_data[0];
+    control.spi_data[0] = (interrupt2_register.en_fstint << 5) | control.spi_data[0];
+    control.spi_data[0] = (interrupt2_register.en_dcloffint << 4) | control.spi_data[0];
 
-    interrupt2_register.data_array[1] = interrupt2_register.en_lonint << 3;
-    interrupt2_register.data_array[1] = (interrupt2_register.en_rrint << 2) | interrupt2_register.data_array[1];
-    interrupt2_register.data_array[1] = (interrupt2_register.en_samp << 1) | interrupt2_register.data_array[1];
-    interrupt2_register.data_array[1] = interrupt2_register.en_pllint | interrupt2_register.data_array[1];
+    control.spi_data[1] = interrupt2_register.en_lonint << 3;
+    control.spi_data[1] = (interrupt2_register.en_rrint << 2) | control.spi_data[1];
+    control.spi_data[1] = (interrupt2_register.en_samp << 1) | control.spi_data[1];
+    control.spi_data[1] = interrupt2_register.en_pllint | control.spi_data[1];
 
-    interrupt2_register.data_array[2] = interrupt2_register.int1b_port;
+    control.spi_data[2] = interrupt2_register.int1b_port;
 
     _max30003_spim_write_registers(interrupt2_register.register_pointer, control.spi_data, control.register_byte_count);
 }
@@ -462,7 +581,7 @@ void max30003_write_interrupt2_register(void)
 * D[2], CLR_SAMP = Sample Synchronization Pulse clear behavoir
 * D[1:0], SAMP_IT = Sample Synchronization Pulse Frequency
 */
-void max30003_read_interrupt_manager_register(void)
+static void _max30003_read_interrupt_manager_register(void)
 {
     NRF_LOG_INFO("max30003_read_interrupt_manager_register");
     _max30003_spim_read_registers(interrupt_manager_register.register_pointer, control.spi_data, control.register_byte_count);
@@ -482,7 +601,7 @@ void max30003_read_interrupt_manager_register(void)
     NRF_LOG_INFO("interrupt_manager_register.samp_it: %u", interrupt_manager_register.samp_it);
 }
 
-void max30003_write_interrupt_manager_register(void)
+static void _max30003_write_interrupt_manager_register(void)
 {
     NRF_LOG_INFO("max30003_write_interrupt_manager_register");
     control.spi_data[0] = interrupt_manager_register.efit << 3;
@@ -503,7 +622,7 @@ void max30003_write_interrupt_manager_register(void)
 * D[21:16], FAST_TH = Automatic Fast Recovery Threshold
 * D[15:0], NOT USED 
 */
-void max30003_read_dynamic_mode_manager_register(void)
+static void _max30003_read_dynamic_mode_manager_register(void)
 {
     NRF_LOG_INFO("max30003_read_dynamic_mode_manager_register");
     _max30003_spim_read_registers(dynamic_mode_manager_register.register_pointer, control.spi_data, control.register_byte_count);
@@ -515,13 +634,16 @@ void max30003_read_dynamic_mode_manager_register(void)
     NRF_LOG_INFO("dynamic_mode_manager_register.fast_th: %u", dynamic_mode_manager_register.fast_th);
 }
 
-void max30003_write_dynamic_mode_manager_register(void)
+static void _max30003_write_dynamic_mode_manager_register(void)
 {
     NRF_LOG_INFO("max30003_write_dynamic_mode_manager_register");
-    dynamic_mode_manager_register.data_array[0] = dynamic_mode_manager_register.fast << 6;
-    dynamic_mode_manager_register.data_array[0] = dynamic_mode_manager_register.fast_th | dynamic_mode_manager_register.data_array[0];
+    control.spi_data[0] = dynamic_mode_manager_register.fast << 6;
+    control.spi_data[0] = dynamic_mode_manager_register.fast_th | control.spi_data[0];
 
-    _max30003_spim_write_registers(MAX30003_MNGR_DYN_ADDRESS, control.spi_data, control.register_byte_count);
+    control.spi_data[1] = 0;
+    control.spi_data[2] = 0;
+
+    _max30003_spim_write_registers(dynamic_mode_manager_register.register_pointer, control.spi_data, control.register_byte_count);
 }
 
 /* 
@@ -530,11 +652,13 @@ void max30003_write_dynamic_mode_manager_register(void)
 * A Software Reset is identical to power-cycling the device
 * Execution occurs only if DIN[23:0] = 0x000000
 */
-void max30003_write_software_reset_register(void)
+static void _max30003_write_software_reset_register(void)
 {
     NRF_LOG_INFO("max30003_write_software_reset_register");
-    uint8_t data_array[3] = {0};
-    _max30003_spim_write_registers(MAX30003_SW_RST_ADDRESS, data_array, ARRAY_LENGTH(data_array));
+    control.spi_data[0] = 0;
+    control.spi_data[1] = 0;
+    control.spi_data[2] = 0;
+    _max30003_spim_write_registers(software_reset_register.register_pointer, control.spi_data, control.register_byte_count);
 }
 
 /* 
@@ -545,11 +669,13 @@ void max30003_write_software_reset_register(void)
 * If a FIFO overflow event occurs and a portion of the record is lost, it is recommended to use the SYNCH command to recover and restart the recording
 * 
 */
-void max30003_write_synchronize_register(void)
+static void _max30003_write_synchronize_register(void)
 {
     NRF_LOG_INFO("max30003_write_synchronize_register");
-    uint8_t data_array[3] = {0};
-    _max30003_spim_write_registers(MAX30003_SYNCH_ADDRESS, data_array, ARRAY_LENGTH(data_array));
+    control.spi_data[0] = 0;
+    control.spi_data[1] = 0;
+    control.spi_data[2] = 0;
+    _max30003_spim_write_registers(synchronization_register.register_pointer, control.spi_data, control.register_byte_count);
 }
 
 /* 
@@ -559,11 +685,13 @@ void max30003_write_synchronize_register(void)
 * FIFO_RST can be used to quickly recover from a FIFO overflow state
 * Execution occurs only if DIN[23:0] = 0x000000 
 */
-void max30003_write_fifo_reset_register(void)
+static void _max30003_write_fifo_reset_register(void)
 {
     NRF_LOG_INFO("max30003_write_fifo_reset_register");
-    uint8_t data_array[3] = {0};
-    _max30003_spim_write_registers(MAX30003_FIFO_RST_ADDRESS, data_array, ARRAY_LENGTH(data_array));
+    control.spi_data[0] = 0;
+    control.spi_data[1] = 0;
+    control.spi_data[2] = 0;
+    _max30003_spim_write_registers(fifo_reset_register.register_pointer, control.spi_data, control.register_byte_count);
 }
 
 /* 
@@ -575,13 +703,13 @@ void max30003_write_fifo_reset_register(void)
 * Due to internal initialization procedures, this command will not read-back valid data if it is the first command executed following either
 * a power-cycle event, or a SW_RST event.
 */
-void max30003_read_info_register(void)
+static void _max30003_read_info_register(void)
 {
     NRF_LOG_INFO("max30003_read_info_register");
-    _max30003_spim_read_registers(MAX30003_INFO_ADDRESS, info_register.data_array, ARRAY_LENGTH(info_register.data_array));
+    _max30003_spim_read_registers(info_register.register_pointer, control.spi_data, control.register_byte_count);
 
-    info_register.info_id = ((info_register.data_array[0] & 0b11110000) >> 2) | ((info_register.data_array[1] & 0b00110000) >> 4);
-    info_register.rev_id = info_register.data_array[0] & 0b00001111;
+    info_register.info_id = ((control.spi_data[0] & 0b11110000) >> 2) | ((control.spi_data[1] & 0b00110000) >> 4);
+    info_register.rev_id = control.spi_data[0] & 0b00001111;
      
     NRF_LOG_INFO("info_register.info_id: %u", info_register.info_id);
     NRF_LOG_INFO("info_register.rev_id: %u", info_register.rev_id);
@@ -602,22 +730,22 @@ void max30003_read_info_register(void)
 * D[1], RBIASP = Enables Resistive Bias on Positive Input
 * D[0], RBIASN = Enables Resistive Bias on Negative Input
 */
-void max30003_read_general_configuration_register(void)
+static void _max30003_read_general_configuration_register(void)
 {
     NRF_LOG_INFO("max30003_read_general_configuration_register");
-    _max30003_spim_read_registers(MAX30003_CNFG_GEN_ADDRESS, general_configuration_register.data_array, ARRAY_LENGTH(general_configuration_register.data_array));
+    _max30003_spim_read_registers(general_configuration_register.register_pointer, control.spi_data, control.register_byte_count);
 
-    general_configuration_register.en_ulp_lon = (general_configuration_register.data_array[0] & 0b11000000) >> 6;
-    general_configuration_register.fmstr = (general_configuration_register.data_array[0] & 0b00110000) >> 4;
-    general_configuration_register.en_ecg = (general_configuration_register.data_array[0] & 0b00001000) && 0b00001000;
-    general_configuration_register.en_dcloff = (general_configuration_register.data_array[1] & 0b00110000) >> 4;
-    general_configuration_register.dcloff_ipol = (general_configuration_register.data_array[1] & 0b00001000) && 0b00001000;
-    general_configuration_register.dcloff_imag = general_configuration_register.data_array[1] & 0b00000111;
-    general_configuration_register.dcloff_vth = (general_configuration_register.data_array[2] & 0b11000000) >> 6;
-    general_configuration_register.en_rbias = (general_configuration_register.data_array[2] & 0b00110000) >> 4;
-    general_configuration_register.rbiasv = (general_configuration_register.data_array[2] & 0b00001100) >> 2;
-    general_configuration_register.rbiasp = (general_configuration_register.data_array[2] & 0b00000010) >> 1;
-    general_configuration_register.rbiasn = general_configuration_register.data_array[2] & 0b00000001;
+    general_configuration_register.en_ulp_lon = (control.spi_data[0] & 0b11000000) >> 6;
+    general_configuration_register.fmstr = (control.spi_data[0] & 0b00110000) >> 4;
+    general_configuration_register.en_ecg = (control.spi_data[0] & 0b00001000) && 0b00001000;
+    general_configuration_register.en_dcloff = (control.spi_data[1] & 0b00110000) >> 4;
+    general_configuration_register.dcloff_ipol = (control.spi_data[1] & 0b00001000) && 0b00001000;
+    general_configuration_register.dcloff_imag = control.spi_data[1] & 0b00000111;
+    general_configuration_register.dcloff_vth = (control.spi_data[2] & 0b11000000) >> 6;
+    general_configuration_register.en_rbias = (control.spi_data[2] & 0b00110000) >> 4;
+    general_configuration_register.rbiasv = (control.spi_data[2] & 0b00001100) >> 2;
+    general_configuration_register.rbiasp = (control.spi_data[2] & 0b00000010) >> 1;
+    general_configuration_register.rbiasn = control.spi_data[2] & 0b00000001;
 
     NRF_LOG_INFO("general_configuration_register.en_ulp_lon: %u", general_configuration_register.en_ulp_lon);
     NRF_LOG_INFO("general_configuration_register.fmstr: %u", general_configuration_register.fmstr);
@@ -632,24 +760,24 @@ void max30003_read_general_configuration_register(void)
     NRF_LOG_INFO("general_configuration_register.rbiasn: %u", general_configuration_register.rbiasn);
 }
 
-void max30003_write_general_configuration_register(void)
+static void _max30003_write_general_configuration_register(void)
 {
     NRF_LOG_INFO("max30003_write_general_configuration_register");
-    general_configuration_register.data_array[0] = general_configuration_register.en_ulp_lon << 6;
-    general_configuration_register.data_array[0] = (general_configuration_register.fmstr << 4) | general_configuration_register.data_array[0];
-    general_configuration_register.data_array[0] = (general_configuration_register.en_ecg << 3) | general_configuration_register.data_array[0];
+    control.spi_data[0] = general_configuration_register.en_ulp_lon << 6;
+    control.spi_data[0] = (general_configuration_register.fmstr << 4) | control.spi_data[0];
+    control.spi_data[0] = (general_configuration_register.en_ecg << 3) | control.spi_data[0];
     
-    general_configuration_register.data_array[1] = general_configuration_register.en_dcloff << 4;
-    general_configuration_register.data_array[1] = (general_configuration_register.dcloff_ipol << 3) | general_configuration_register.data_array[1];
-    general_configuration_register.data_array[1] = general_configuration_register.dcloff_imag | general_configuration_register.data_array[1];
+    control.spi_data[1] = general_configuration_register.en_dcloff << 4;
+    control.spi_data[1] = (general_configuration_register.dcloff_ipol << 3) | control.spi_data[1];
+    control.spi_data[1] = general_configuration_register.dcloff_imag | control.spi_data[1];
     
-    general_configuration_register.data_array[2] = general_configuration_register.dcloff_vth << 6;
-    general_configuration_register.data_array[2] = (general_configuration_register.en_rbias << 4) | general_configuration_register.data_array[2];
-    general_configuration_register.data_array[2] = (general_configuration_register.rbiasv << 2) | general_configuration_register.data_array[2];
-    general_configuration_register.data_array[2] = (general_configuration_register.rbiasp << 1) | general_configuration_register.data_array[2];
-    general_configuration_register.data_array[2] = general_configuration_register.rbiasn | general_configuration_register.data_array[2];
+    control.spi_data[2] = general_configuration_register.dcloff_vth << 6;
+    control.spi_data[2] = (general_configuration_register.en_rbias << 4) | control.spi_data[2];
+    control.spi_data[2] = (general_configuration_register.rbiasv << 2) | control.spi_data[2];
+    control.spi_data[2] = (general_configuration_register.rbiasp << 1) | control.spi_data[2];
+    control.spi_data[2] = general_configuration_register.rbiasn | control.spi_data[2];
 
-    _max30003_spim_write_registers(MAX30003_CNFG_GEN_ADDRESS, general_configuration_register.data_array, ARRAY_LENGTH(general_configuration_register.data_array));
+    _max30003_spim_write_registers(general_configuration_register.register_pointer, control.spi_data, control.register_byte_count);
 }
 
 /* 
@@ -663,17 +791,17 @@ void max30003_write_general_configuration_register(void)
 * D[11], FIFTY = Calibration Soruce Duty Cycle Mode Selection
 * D[10:0], THIGH = Calibration Source Time High Selection
 */
-void max30003_read_calibration_configuration_register(void)
+static void _max30003_read_calibration_configuration_register(void)
 {
     NRF_LOG_INFO("max30003_read_calibration_configuration_register");
-    _max30003_spim_read_registers(MAX30003_CNFG_CAL_ADDRESS, calibration_configuration_register.data_array, ARRAY_LENGTH(calibration_configuration_register.data_array));
+    _max30003_spim_read_registers(calibration_configuration_register.register_pointer, control.spi_data, control.register_byte_count);
 
-    calibration_configuration_register.en_vcal = (calibration_configuration_register.data_array[0] & 0b01000000) && 0b01000000;
-    calibration_configuration_register.vmode = (calibration_configuration_register.data_array[0] & 0b00100000) && 0b00100000;
-    calibration_configuration_register.vmag = (calibration_configuration_register.data_array[0] & 0b00010000) && 0b00010000;
-    calibration_configuration_register.fcal = (calibration_configuration_register.data_array[1] & 0b01110000) >> 4;
-    calibration_configuration_register.fifty = (calibration_configuration_register.data_array[1] & 0b00001000) && 0b00001000;
-    calibration_configuration_register.thigh = ((calibration_configuration_register.data_array[1] & 0b00000111) << 8) | (calibration_configuration_register.data_array[2] & 0b11111111);
+    calibration_configuration_register.en_vcal = (control.spi_data[0] & 0b01000000) && 0b01000000;
+    calibration_configuration_register.vmode = (control.spi_data[0] & 0b00100000) && 0b00100000;
+    calibration_configuration_register.vmag = (control.spi_data[0] & 0b00010000) && 0b00010000;
+    calibration_configuration_register.fcal = (control.spi_data[1] & 0b01110000) >> 4;
+    calibration_configuration_register.fifty = (control.spi_data[1] & 0b00001000) && 0b00001000;
+    calibration_configuration_register.thigh = ((control.spi_data[1] & 0b00000111) << 8) | (control.spi_data[2] & 0b11111111);
 
     NRF_LOG_INFO("calibration_configuration_register.en_vcal: %u", calibration_configuration_register.en_vcal);
     NRF_LOG_INFO("calibration_configuration_register.vmode: %u", calibration_configuration_register.vmode);
@@ -683,20 +811,20 @@ void max30003_read_calibration_configuration_register(void)
     NRF_LOG_INFO("calibration_configuration_register.thigh: %u", calibration_configuration_register.thigh);
 }
 
-void max30003_write_calibration_configuration_register(void)
+static void _max30003_write_calibration_configuration_register(void)
 {
     NRF_LOG_INFO("max30003_write_calibration_configuration_register");
-    calibration_configuration_register.data_array[0] = calibration_configuration_register.en_vcal << 6;
-    calibration_configuration_register.data_array[0] = (calibration_configuration_register.vmode << 5) | calibration_configuration_register.data_array[0];
-    calibration_configuration_register.data_array[0] = (calibration_configuration_register.vmag << 4) | calibration_configuration_register.data_array[0];
+    control.spi_data[0] = calibration_configuration_register.en_vcal << 6;
+    control.spi_data[0] = (calibration_configuration_register.vmode << 5) | control.spi_data[0];
+    control.spi_data[0] = (calibration_configuration_register.vmag << 4) | control.spi_data[0];
     
-    calibration_configuration_register.data_array[1] = calibration_configuration_register.fcal << 4;
-    calibration_configuration_register.data_array[1] = (calibration_configuration_register.fifty << 3) | calibration_configuration_register.data_array[1];
-    calibration_configuration_register.data_array[1] = (uint8_t)((calibration_configuration_register.thigh & 0b0000011100000000) >> 8 )  | calibration_configuration_register.data_array[1];
+    control.spi_data[1] = calibration_configuration_register.fcal << 4;
+    control.spi_data[1] = (calibration_configuration_register.fifty << 3) | control.spi_data[1];
+    control.spi_data[1] = (uint8_t)((calibration_configuration_register.thigh & 0b0000011100000000) >> 8 )  | control.spi_data[1];
     
-    calibration_configuration_register.data_array[2] = (uint8_t)(calibration_configuration_register.thigh & 0b0000000011111111);
+    control.spi_data[2] = (uint8_t)(calibration_configuration_register.thigh & 0b0000000011111111);
 
-    _max30003_spim_write_registers(MAX30003_CNFG_CAL_ADDRESS, calibration_configuration_register.data_array, ARRAY_LENGTH(calibration_configuration_register.data_array));
+    _max30003_spim_write_registers(calibration_configuration_register.register_pointer, control.spi_data, control.register_byte_count);
 }
 
 /* 
@@ -709,16 +837,16 @@ void max30003_write_calibration_configuration_register(void)
 * D[17:16], CALN_SEL = ECGN Calibration Selection
 * D[15:0], NOT USED
 */
-void max30003_read_input_multiplexer_configuration_register(void)
+static void _max30003_read_input_multiplexer_configuration_register(void)
 {
     NRF_LOG_INFO("max30003_read_input_multiplexer_configuration_register");
-    _max30003_spim_read_registers(MAX30003_CNFG_EMUX_ADDRESS, input_multiplexer_configuration_register.data_array, ARRAY_LENGTH(input_multiplexer_configuration_register.data_array));
+    _max30003_spim_read_registers(input_multiplexer_configuration_register.register_pointer, control.spi_data, control.register_byte_count);
 
-    input_multiplexer_configuration_register.pol = (input_multiplexer_configuration_register.data_array[0] & 0b10000000) && 0b10000000;
-    input_multiplexer_configuration_register.openp = (input_multiplexer_configuration_register.data_array[0] & 0b00100000) && 0b00100000;
-    input_multiplexer_configuration_register.openn = (input_multiplexer_configuration_register.data_array[0] & 0b00010000) && 0b00010000;
-    input_multiplexer_configuration_register.calp_sel = (input_multiplexer_configuration_register.data_array[0] & 0b00001100) >> 2;
-    input_multiplexer_configuration_register.caln_sel = input_multiplexer_configuration_register.data_array[0] & 0b00000011;
+    input_multiplexer_configuration_register.pol = (control.spi_data[0] & 0b10000000) && 0b10000000;
+    input_multiplexer_configuration_register.openp = (control.spi_data[0] & 0b00100000) && 0b00100000;
+    input_multiplexer_configuration_register.openn = (control.spi_data[0] & 0b00010000) && 0b00010000;
+    input_multiplexer_configuration_register.calp_sel = (control.spi_data[0] & 0b00001100) >> 2;
+    input_multiplexer_configuration_register.caln_sel = control.spi_data[0] & 0b00000011;
 
     NRF_LOG_INFO("input_multiplexer_configuration_register.pol: %u", input_multiplexer_configuration_register.pol);
     NRF_LOG_INFO("input_multiplexer_configuration_register.openp: %u", input_multiplexer_configuration_register.openp);
@@ -727,16 +855,19 @@ void max30003_read_input_multiplexer_configuration_register(void)
     NRF_LOG_INFO("input_multiplexer_configuration_register.caln_sel: %u", input_multiplexer_configuration_register.caln_sel);
 }
 
-void max30003_write_input_multiplexer_configuration_register(void)
+static void _max30003_write_input_multiplexer_configuration_register(void)
 {
     NRF_LOG_INFO("max30003_write_input_multiplexer_configuration_register");
-    input_multiplexer_configuration_register.data_array[0] = input_multiplexer_configuration_register.pol << 7;
-    input_multiplexer_configuration_register.data_array[0] = (input_multiplexer_configuration_register.openp << 5) | input_multiplexer_configuration_register.data_array[0];
-    input_multiplexer_configuration_register.data_array[0] = (input_multiplexer_configuration_register.openn << 4) | input_multiplexer_configuration_register.data_array[0];
-    input_multiplexer_configuration_register.data_array[0] = (input_multiplexer_configuration_register.calp_sel << 2) | input_multiplexer_configuration_register.data_array[0];
-    input_multiplexer_configuration_register.data_array[0] = input_multiplexer_configuration_register.caln_sel | input_multiplexer_configuration_register.data_array[0];
+    control.spi_data[0] = input_multiplexer_configuration_register.pol << 7;
+    control.spi_data[0] = (input_multiplexer_configuration_register.openp << 5) | control.spi_data[0];
+    control.spi_data[0] = (input_multiplexer_configuration_register.openn << 4) | control.spi_data[0];
+    control.spi_data[0] = (input_multiplexer_configuration_register.calp_sel << 2) | control.spi_data[0];
+    control.spi_data[0] = input_multiplexer_configuration_register.caln_sel | control.spi_data[0];
     
-    _max30003_spim_write_registers(MAX30003_CNFG_EMUX_ADDRESS, input_multiplexer_configuration_register.data_array, ARRAY_LENGTH(input_multiplexer_configuration_register.data_array));
+    control.spi_data[1] = 0;
+    control.spi_data[2] = 0;
+
+    _max30003_spim_write_registers(input_multiplexer_configuration_register.register_pointer, control.spi_data, control.register_byte_count);
 }
 
 /* 
@@ -749,16 +880,16 @@ void max30003_write_input_multiplexer_configuration_register(void)
 * D[13:12], DLPF = ECGP Channel Digital Low-Pass Filter Cutoff Frequency
 * D[11:0], NOT USED
 */
-void max30003_read_ecg_configuration_register(void)
+static void _max30003_read_ecg_configuration_register(void)
 {
     NRF_LOG_INFO("max30003_read_ecg_configuration_register");
-    _max30003_spim_read_registers(MAX30003_CNFG_ECG_ADDRESS, ecg_configuration_register.data_array, ARRAY_LENGTH(ecg_configuration_register.data_array));
+    _max30003_spim_read_registers(ecg_configuration_register.register_pointer, control.spi_data, control.register_byte_count);
 
-    ecg_configuration_register.rate = (ecg_configuration_register.data_array[0] & 0b11000000) >> 6;
-    ecg_configuration_register.gain = ecg_configuration_register.data_array[0] & 0b00000011;
+    ecg_configuration_register.rate = (control.spi_data[0] & 0b11000000) >> 6;
+    ecg_configuration_register.gain = control.spi_data[0] & 0b00000011;
 
-    ecg_configuration_register.dhpf = (ecg_configuration_register.data_array[1] & 0b01000000) && 0b01000000;
-    ecg_configuration_register.dlpf = (ecg_configuration_register.data_array[1] & 0b00110000) >> 4;
+    ecg_configuration_register.dhpf = (control.spi_data[1] & 0b01000000) && 0b01000000;
+    ecg_configuration_register.dlpf = (control.spi_data[1] & 0b00110000) >> 4;
 
     NRF_LOG_INFO("ecg_configuration_register.rate: %u", ecg_configuration_register.rate);
     NRF_LOG_INFO("ecg_configuration_register.gain: %u", ecg_configuration_register.gain);
@@ -766,15 +897,17 @@ void max30003_read_ecg_configuration_register(void)
     NRF_LOG_INFO("ecg_configuration_register.dlpf: %u", ecg_configuration_register.dlpf);
 }
 
-void max30003_write_ecg_configuration_register(void)
+static void _max30003_write_ecg_configuration_register(void)
 {
     NRF_LOG_INFO("max30003_write_ecg_configuration_register");
-    ecg_configuration_register.data_array[0] = ecg_configuration_register.rate << 6;
-    ecg_configuration_register.data_array[0] = ecg_configuration_register.gain | ecg_configuration_register.data_array[0];
-    ecg_configuration_register.data_array[1] = (ecg_configuration_register.dhpf << 6) | ecg_configuration_register.data_array[1];
-    ecg_configuration_register.data_array[1] = (ecg_configuration_register.dlpf << 4) | ecg_configuration_register.data_array[1];
+    control.spi_data[0] = ecg_configuration_register.rate << 6;
+    control.spi_data[0] = ecg_configuration_register.gain | control.spi_data[0];
+    control.spi_data[1] = (ecg_configuration_register.dhpf << 6) | control.spi_data[1];
+    control.spi_data[1] = (ecg_configuration_register.dlpf << 4) | control.spi_data[1];
+
+    control.spi_data[2] = 0;
     
-    _max30003_spim_write_registers(MAX30003_CNFG_ECG_ADDRESS, ecg_configuration_register.data_array, ARRAY_LENGTH(ecg_configuration_register.data_array));
+    _max30003_spim_write_registers(ecg_configuration_register.register_pointer, control.spi_data, control.register_byte_count);
 }
 
 /* 
@@ -787,17 +920,17 @@ void max30003_write_ecg_configuration_register(void)
 * D[11:8], PTSF = R to R Peak Threshold Scaling Factor
 * D[7:0], NOT USED
 */
-void max30003_read_rtor1_configuration_register(void)
+static void _max30003_read_rtor1_configuration_register(void)
 {
     NRF_LOG_INFO("max30003_read_rtor1_configuration_register");
-    _max30003_spim_read_registers(MAX30003_CNFG_RTOR1_ADDRESS, rtor1_configuration_register.data_array, ARRAY_LENGTH(rtor1_configuration_register.data_array));
+    _max30003_spim_read_registers(rtor1_configuration_register.register_pointer, control.spi_data, control.register_byte_count);
 
-    rtor1_configuration_register.wndw = (rtor1_configuration_register.data_array[0] & 0b11110000) >> 4;
-    rtor1_configuration_register.gain = rtor1_configuration_register.data_array[0] & 0b00001111;
+    rtor1_configuration_register.wndw = (control.spi_data[0] & 0b11110000) >> 4;
+    rtor1_configuration_register.gain = control.spi_data[0] & 0b00001111;
 
-    rtor1_configuration_register.en_rtor = (rtor1_configuration_register.data_array[1] & 0b10000000) && 0b10000000;
-    rtor1_configuration_register.pavg = (rtor1_configuration_register.data_array[1] & 0b00110000) >> 4;
-    rtor1_configuration_register.ptsf = rtor1_configuration_register.data_array[1] & 0b00001111;
+    rtor1_configuration_register.en_rtor = (control.spi_data[1] & 0b10000000) && 0b10000000;
+    rtor1_configuration_register.pavg = (control.spi_data[1] & 0b00110000) >> 4;
+    rtor1_configuration_register.ptsf = control.spi_data[1] & 0b00001111;
 
     NRF_LOG_INFO("rtor1_configuration_register.wndw: %u", rtor1_configuration_register.wndw);
     NRF_LOG_INFO("rtor1_configuration_register.gain: %u", rtor1_configuration_register.gain);
@@ -806,16 +939,18 @@ void max30003_read_rtor1_configuration_register(void)
     NRF_LOG_INFO("rtor1_configuration_register.ptsf: %u", rtor1_configuration_register.ptsf);
 }
 
-void max30003_write_rtor1_configuration_register(void)
+static void _max30003_write_rtor1_configuration_register(void)
 {
     NRF_LOG_INFO("max30003_write_rtor1_configuration_register");
-    rtor1_configuration_register.data_array[0] = rtor1_configuration_register.wndw << 4;
-    rtor1_configuration_register.data_array[0] = rtor1_configuration_register.gain | rtor1_configuration_register.data_array[0];
-    rtor1_configuration_register.data_array[1] = (rtor1_configuration_register.en_rtor << 7) | rtor1_configuration_register.data_array[1];
-    rtor1_configuration_register.data_array[1] = (rtor1_configuration_register.pavg << 4) | rtor1_configuration_register.data_array[1];
-    rtor1_configuration_register.data_array[1] = rtor1_configuration_register.ptsf | rtor1_configuration_register.data_array[1];
+    control.spi_data[0] = rtor1_configuration_register.wndw << 4;
+    control.spi_data[0] = rtor1_configuration_register.gain | control.spi_data[0];
+    control.spi_data[1] = (rtor1_configuration_register.en_rtor << 7) | control.spi_data[1];
+    control.spi_data[1] = (rtor1_configuration_register.pavg << 4) | control.spi_data[1];
+    control.spi_data[1] = rtor1_configuration_register.ptsf | control.spi_data[1];
     
-    _max30003_spim_write_registers(MAX30003_CNFG_RTOR1_ADDRESS, rtor1_configuration_register.data_array, ARRAY_LENGTH(rtor1_configuration_register.data_array));
+    control.spi_data[2];
+
+    _max30003_spim_write_registers(rtor1_configuration_register.register_pointer, control.spi_data, control.register_byte_count);
 }
 
 /* 
@@ -828,124 +963,31 @@ void max30003_write_rtor1_configuration_register(void)
 * D[10:8], RHSF = R to R Interval Hold Off Scaling Factor; Fraction of the R to R Average Interval Used for the Dynamic Portion of the Holdoff Criteria
 * D[7:0], NOT USED
 */
-void max30003_read_rtor2_configuration_register(void)
+static void _max30003_read_rtor2_configuration_register(void)
 {
     NRF_LOG_INFO("max30003_read_rtor2_configuration_register");
-    _max30003_spim_read_registers(MAX30003_CNFG_RTOR2_ADDRESS, rtor2_configuration_register.data_array, ARRAY_LENGTH(rtor2_configuration_register.data_array));
+    _max30003_spim_read_registers(rtor2_configuration_register.register_pointer, control.spi_data, control.register_byte_count);
 
-    rtor2_configuration_register.hoff = rtor2_configuration_register.data_array[0] & 0b00111111;
+    rtor2_configuration_register.hoff = control.spi_data[0] & 0b00111111;
 
-    rtor2_configuration_register.ravg = (rtor2_configuration_register.data_array[1] & 0b00110000) >> 4;
-    rtor2_configuration_register.rhsf = rtor2_configuration_register.data_array[1] & 0b00000111;
+    rtor2_configuration_register.ravg = (control.spi_data[1] & 0b00110000) >> 4;
+    rtor2_configuration_register.rhsf = control.spi_data[1] & 0b00000111;
 
     NRF_LOG_INFO("rtor2_configuration_register.hoff: %u", rtor2_configuration_register.hoff);
     NRF_LOG_INFO("rtor2_configuration_register.ravg: %u", rtor2_configuration_register.ravg);
     NRF_LOG_INFO("rtor2_configuration_register.rhsf: %u", rtor2_configuration_register.rhsf);
 }
 
-void max30003_write_rtor2_configuration_register(void)
+static void _max30003_write_rtor2_configuration_register(void)
 {
     NRF_LOG_INFO("max30003_write_rtor2_configuration_register");
-    rtor2_configuration_register.data_array[0] = rtor2_configuration_register.hoff;
-    rtor2_configuration_register.data_array[1] = rtor2_configuration_register.ravg << 4;
-    rtor2_configuration_register.data_array[1] = rtor2_configuration_register.rhsf | rtor2_configuration_register.data_array[1];
+    control.spi_data[0] = rtor2_configuration_register.hoff;
+    control.spi_data[1] = rtor2_configuration_register.ravg << 4;
+    control.spi_data[1] = rtor2_configuration_register.rhsf | control.spi_data[1];
     
-    _max30003_spim_write_registers(MAX30003_CNFG_RTOR2_ADDRESS, rtor2_configuration_register.data_array, ARRAY_LENGTH(rtor2_configuration_register.data_array));
-}
+    control.spi_data[2] = 0;
 
-/* 
-* Read ECG FIFO Memory Register to read the following values:
-* D[23:6], ECG_VOLTAGE = ECG Sample Voltage Data; 18 Bit ECG Voltage Information at the Requested Sample Rate in Left Justified Two's Complement Format
-* D[5:3], ETAG = DATA Tag; Data condition Tag
-* D[2:0], PTAG = ???
-*/
-void max30003_read_ecg_fifo_memory_register(void)
-{
-    NRF_LOG_INFO("max30003_read_ecg_fifo_memory_register");
-    NRF_LOG_INFO("data_flow.samples_per_interrupt: %u", data_flow.samples_per_interrupt);
-    _max30003_spim_read_registers(MAX30003_ECG_FIFO_BURST_ADDRESS, ecg_fifo_memory_register.data_array, data_flow.samples_per_interrupt*3);
-    uint32_t temp_ecg_voltage = 0;
-    data_flow.counter = 0;
-    for(uint8_t i = 0; i < data_flow.samples_per_interrupt*3; i=i+3)
-    {
-        temp_ecg_voltage = 0;
-        temp_ecg_voltage = (ecg_fifo_memory_register.data_array[i+2] & 0b11000000) >> 6;
-        temp_ecg_voltage = temp_ecg_voltage | (((uint32_t) ecg_fifo_memory_register.data_array[i+1]) << 2);
-        temp_ecg_voltage = temp_ecg_voltage | (((uint32_t) ecg_fifo_memory_register.data_array[i]) << 10); 
-//        NRF_LOG_INFO("temp_ecg_voltage: %X", temp_ecg_voltage);
-        ecg_fifo_memory_register.ecg_voltage[data_flow.counter] = (uint16_t)((temp_ecg_voltage & 0b00000000000000111111111111111100)>>2);
-        ecg_fifo_memory_register.etag[data_flow.counter] = (ecg_fifo_memory_register.data_array[i+2] & 0b00111000) >> 3;
-        ecg_fifo_memory_register.ptag[data_flow.counter] = ecg_fifo_memory_register.data_array[i+2] & 0b00000111;
-        NRF_LOG_INFO("W: %u, R:%X %X %X, V: %X", (data_flow.counter+1), ecg_fifo_memory_register.data_array[i], 
-        ecg_fifo_memory_register.data_array[i+1], ecg_fifo_memory_register.data_array[i+2], ecg_fifo_memory_register.ecg_voltage[data_flow.counter]);
-        NRF_LOG_INFO("ETAG: %X, PTAG: %X", ecg_fifo_memory_register.etag[data_flow.counter], ecg_fifo_memory_register.ptag[data_flow.counter]);
-        NRF_LOG_INFO("");
-        data_flow.counter++;
-    }
-    NRF_LOG_INFO("Counter: %u", data_flow.counter);
-}
-
-void max30003_get_ecg_voltage(uint16_t* data_array, uint8_t data_array_size)
-{
-    NRF_LOG_INFO("max30003_get_ecg_voltage");
-    for(int i = 0; i < data_array_size; i++)
-    {
-        data_array[i] = ecg_fifo_memory_register.ecg_voltage[i];
-    }
-}
-
-void max30003_soft_reset(void) 
-{
-    NRF_LOG_INFO("max_30003_soft_reset");
-    uint8_t data_array[3] = {0x00};
-    _max30003_spim_write_registers(MAX30003_SW_RST_ADDRESS, data_array, ARRAY_LENGTH(data_array));
-    nrf_delay_ms(MAX30003_DELAY); // Delay the MCU to allow the MAX30003 to go through a soft reset
-}
-
-void max30003_sync(void) 
-{
-    NRF_LOG_INFO("max30003_sync");
-    uint8_t data_array[3] = {0x00};
-    _max30003_spim_write_registers(MAX30003_SYNCH_ADDRESS, data_array, ARRAY_LENGTH(data_array));
-}
-
-uint8_t max30003_get_status_register_eovf(void)
-{
-    return status_register.eovf;
-}
-
-void max30003_init_pin_interrupt(void)
-{
-    NRF_LOG_INFO("max30003_init_pin_interrupt");
-    nrf_gpio_pin_dir_set(MAX30003_INT1_PIN, NRF_GPIO_PIN_DIR_INPUT);
-    nrfx_gpiote_in_config_t max30003_interrupt_config = NRFX_GPIOTE_CONFIG_IN_SENSE_HITOLO(true);
-
-    ret_code_t error_code = nrfx_gpiote_in_init(MAX30003_INT1_PIN, &max30003_interrupt_config, max30003_pin_interrupt_handler);
-    
-    NRF_LOG_INFO(" nrfx_gpiote_in_init: %d: \r\n", error_code);
-    APP_ERROR_CHECK(error_code);
-}
-
-void max30003_enable_pin_interrupt(void)
-{
-    NRF_LOG_INFO("max30003_enable_interrupt");
-    nrfx_gpiote_in_event_enable(MAX30003_INT1_PIN, true);
-    nrf_delay_ms(MAX30003_DELAY);
-}
-
-void max30003_disable_pin_interrupt(void)
-{
-    NRF_LOG_INFO("max30003_disable_interrupt");
-    nrfx_gpiote_in_event_enable(MAX30003_INT1_PIN, false);
-}
-
-void max30003_pin_interrupt_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
-{
-    NRF_LOG_INFO("max30003_interrupt_handler");
-    UNUSED_PARAMETER(pin);
-    UNUSED_PARAMETER(action);
-
-    ecg_interrupt_handler();    // Call to Overall ECG Manager to manage ECG workflow
+    _max30003_spim_write_registers(rtor2_configuration_register.register_pointer, control.spi_data, control.register_byte_count);
 }
 
 static void _max30003_spim_read_registers(uint8_t register_address, uint8_t *data_array, uint8_t data_array_size)
