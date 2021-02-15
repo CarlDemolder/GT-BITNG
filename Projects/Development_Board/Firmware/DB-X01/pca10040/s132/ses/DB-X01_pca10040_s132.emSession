@@ -57,17 +57,17 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="68" y="1006" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../serial_slave.c" selected="0" top="918" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="1006" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../serial_slave.c" selected="0" top="1006" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../main.c" selected="0" top="0" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="32" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../common.h" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="5" y="198" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../i2c.c" selected="0" top="123" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="198" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../i2c.c" selected="0" top="198" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="20" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../clocks.h" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="29" y="313" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../clocks.c" selected="0" top="237" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="1" y="290" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../tmp117.c" selected="0" top="265" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="45" y="206" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../tmp117.h" selected="0" top="30" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="65" y="252" useTextEdit="1" openedFrom="C:/Users/cdemolde/Documents/GitHub/GT-BITNG/Projects/Development_Board/Firmware/DB-X01/tmp117.c" useBinaryEdit="0" left="0" path="../../../cy15b108qi.c" selected="0" top="218" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="313" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../clocks.c" selected="0" top="313" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="290" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../tmp117.c" selected="0" top="290" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="206" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../tmp117.h" selected="0" top="206" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="252" useTextEdit="1" openedFrom="C:/Users/cdemolde/Documents/GitHub/GT-BITNG/Projects/Development_Board/Firmware/DB-X01/tmp117.c" useBinaryEdit="0" left="0" path="../../../cy15b108qi.c" selected="0" top="252" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="90" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../cy15b108qi.h" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="110" y="98" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../ecg.c" selected="0" top="57" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="98" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../ecg.c" selected="0" top="98" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="510" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../max30003.c" selected="1" top="453" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="29" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../max30003.h" selected="0" top="6" codecName="Default"/>
  </Files>
