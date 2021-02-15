@@ -30,11 +30,13 @@ enum MAX30003_Registers
 
 enum MAX30003_ECG_Constants
 {
-    MAX30003_MAX_FIFO_WORDS = 0x20,     // 32 is the max number of words available to read from the FIFO
-    MAX30003_DELAY = 1,                        // Appropriate delay to let the MAX30003
+    MAX30003_MAX_FIFO_WORDS = 0x20,             // 32 is the max number of words available to read from the FIFO
+    MAX30003_DELAY = 1,                         // Appropriate delay to let the MAX30003
     MAX30003_SPS_128 = 128,
     MAX30003_SPS_256 = 256,
-    MAX30003_SPS_512 = 512
+    MAX30003_SPS_512 = 512, 
+    MAX30003_EXTERNAL_MEMORY_START_ADDRESS = 0x0001F5,
+    MAX30003_EXTERNAL_MEMORY_END_ADDRESS = 0x0FFFFF,
 };
 
 enum MAX30003_ECG_Data_Tags
@@ -47,8 +49,40 @@ enum MAX30003_ECG_Data_Tags
     MAX30003_OVERFLOW = 0b00000111          // FIFO Overflow
 };
 
+/**@brief Control Structure. This structure contains all variables that are used in the MAX30003 driver.*/
+struct MAX30003_Control_Struct
+{
+    ret_code_t error_code;                                  /**< Variable to track errors */
+
+    uint8_t counter;                                        /**< counter to iterate through values */
+    uint8_t samples_per_interrupt;                          /**< Counter value to record the number of samples per interrupt */
+    uint8_t samples_per_bluetooth_transmission;             /**< Variable to record the number of samples per bluetooth transmission */
+    uint8_t bytes_per_bluetooth_transmission;               /**< Variable to record the number of bytes per bluetooth transmission */
+    uint32_t samples_per_recording_session;                 /**< Variable to record the number of samples per recording session */
+    uint32_t bytes_per_recording_session;                   /**< Variable to record the number of bytes per recording session */
+    uint32_t current_sample_count;                          /**< Variable to record the current sample count */         
+    uint32_t samples_per_second;                            /**< Variable to record the number of samples per minute */
+    uint32_t bytes_left_to_transmit;                        /**< Variable to record the number of bytes left to transmit over BLE/USB */
+    uint8_t bytes_per_sample;                               /**< Variable to record the number of bytes per samples */
+
+    uint8_t spi_data[3];                                    /**< Array to store SPI Data */
+    uint8_t register_byte_count;                            /**< Number of bytes per register */
+
+    uint8_t long_term_storage;                              /**< Variable to record a flag to determine if the data is going to be stored long term */
+
+    uint32_t external_memory_write_start_address;           /**< Variable to record the start address to store values in the external memory */
+    uint32_t external_memory_write_current_address;         /**< Variable to record the current address to store values in the external memory */
+    
+    uint32_t external_memory_start_address;                 /**< Variable to record the start address of the external memory */
+    uint32_t external_memory_end_address;                   /**< Variable to record the end address of the external memory */
+
+    uint32_t external_memory_transmit_start_address;        /**< Variable to record the start address to transmit stored values of the external memory over BLE/USB */
+    uint32_t external_memory_transmit_end_address;          /**< Variable to record the end address to transmit stored values of the external memory over BLE/USB */
+    uint32_t external_memory_transmit_current_address;      /**< Variable to record the current address to transmit stored values of the external memory over BLE/USB */
+};
+
 /**@brief Status Register Structure. This structure contains all values read from the Status Register.*/
-struct MAX30003_Status_Register
+struct MAX30003_Status_Register_Struct
 {
     uint8_t register_pointer;       /**< Register Value */
     uint8_t eint;                   /**< Register Value */
@@ -66,7 +100,7 @@ struct MAX30003_Status_Register
 };
 
 /**@brief Interrupt Register Structure. This structure contains all values to read/write from the Interrupt Register.*/
-struct MAX30003_Interrupt_Register
+struct MAX30003_Interrupt_Register_Struct
 {
     uint8_t register_pointer;       /**< Register Value */
     uint8_t en_eint;                /**< Register Value */
@@ -82,7 +116,7 @@ struct MAX30003_Interrupt_Register
 };
 
 /**@brief Interrupt Manager Register Structure. This structure contains all values read from the Interrupt Manager Register.*/
-struct MAX30003_Interrupt_Manager_Register
+struct MAX30003_Interrupt_Manager_Register_Struct
 {
     uint8_t register_pointer;       /**< Register Value */
     uint8_t efit;                   /**< Register Value */
@@ -93,7 +127,7 @@ struct MAX30003_Interrupt_Manager_Register
 };
 
 /**@brief Dynamic Mode Manager Register Structure. This structure contains all values read from the Dynamic Mode Manager Register.*/
-struct MAX30003_Dynamic_Mode_Manager_Register
+struct MAX30003_Dynamic_Mode_Manager_Register_Struct
 {
     uint8_t register_pointer;       /**< Register Value */
     uint8_t fast;                   /**< Register Value */
@@ -101,7 +135,7 @@ struct MAX30003_Dynamic_Mode_Manager_Register
 };
 
 /**@brief Info Register Structure. This contains all values read from the Info Register.*/
-struct MAX30003_Info_Register
+struct MAX30003_Info_Register_Struct
 {
     uint8_t register_pointer;       /**< Register Value */
     uint8_t info_id;                /**< Register Value */
@@ -109,7 +143,7 @@ struct MAX30003_Info_Register
 };
 
 /**@brief General Configuration Register Structure. This structure contains all values read from the General Configuration Register.*/
-struct MAX30003_General_Configuration_Register
+struct MAX30003_General_Configuration_Register_Struct
 {
     uint8_t register_pointer;       /**< Register Value */
     uint8_t en_ulp_lon;             /**< Register Value */
@@ -126,7 +160,7 @@ struct MAX30003_General_Configuration_Register
 };
 
 /**@brief Calibration Configuration Register Structure. This structure contains all values read from the Calibration Configuration Register.*/
-struct MAX30003_Calibration_Configuration_Register
+struct MAX30003_Calibration_Configuration_Register_Struct
 {
     uint8_t register_pointer;       /**< Register Value */
     uint8_t en_vcal;                /**< Register Value */
@@ -138,7 +172,7 @@ struct MAX30003_Calibration_Configuration_Register
 };
 
 /**@brief Input Multiplexer Configuration Register Structure. This structure contains all values read from the Input Multiplexer Configuration Register.*/
-struct MAX30003_Input_Multiplexer_Configuration_Register
+struct MAX30003_Input_Multiplexer_Configuration_Register_Struct
 {
     uint8_t register_pointer;       /**< Register Value */
     uint8_t pol;                    /**< Register Value */
@@ -149,7 +183,7 @@ struct MAX30003_Input_Multiplexer_Configuration_Register
 };
 
 /**@brief ECG Configuration Register Structure. This structure contains all values read from the ECG Configuration Register.*/
-struct MAX30003_ECG_Configuration_Register
+struct MAX30003_ECG_Configuration_Register_Struct
 {
     uint8_t register_pointer;       /**< Register Value */
     uint8_t rate;                   /**< Register Value */
@@ -159,7 +193,7 @@ struct MAX30003_ECG_Configuration_Register
 }; 
 
 /**@brief RTOR1 Configuration Register Structure. This structure contains all values read from the RTOR1 Configuration Register.*/
-struct MAX30003_RTOR1_Configuration_Register
+struct MAX30003_RTOR1_Configuration_Register_Struct
 {
     uint8_t register_pointer;       /**< Register Value */
     uint8_t wndw;                   /**< Register Value */
@@ -170,7 +204,7 @@ struct MAX30003_RTOR1_Configuration_Register
 };
 
 /**@brief RTOR2 Configuration Register Structure. This structure contains all values read from the RTOR2 Configuration Register.*/
-struct MAX30003_RTOR2_Configuration_Register
+struct MAX30003_RTOR2_Configuration_Register_Struct
 {
     uint8_t register_pointer;       /**< Register Value */
     uint8_t hoff;                   /**< Register Value */
@@ -179,26 +213,31 @@ struct MAX30003_RTOR2_Configuration_Register
 };
 
 /**@brief FIFO Memory Register Structure. This structure contains all values read from the RTO Configuration Register.*/
-struct MAX30003_ECG_FIFO_Memory_Register
+struct MAX30003_ECG_FIFO_Memory_Register_Struct
 {
+    uint8_t register_pointer;                                       /**< Register Value */    
     uint8_t data_array[(MAX30003_MAX_FIFO_WORDS+1)*3];              /**< Register Value, Number of words to read from the FIFO, 3 bytes per word */
     uint16_t ecg_voltage[(MAX30003_MAX_FIFO_WORDS+1)];              /**< Register Value */
     uint8_t etag[(MAX30003_MAX_FIFO_WORDS+1)];                      /**< Register Value */  
     uint8_t ptag[(MAX30003_MAX_FIFO_WORDS+1)];                      /**< Register Value */ 
 };
 
-
-struct MAX30003_Control_Struct
+struct MAX30003_Software_Reset_Register_Struct
 {
-    uint8_t counter;                                                /**< counter to iterate through values */
-    uint8_t samples_per_interrupt;                                  /**< Counter value to record the number of samples per interrupt */
-    uint16_t samples_per_second;                                    /**< Sampling frequency */
-    uint8_t bytes_per_sample;                                       /**< Bytes per Sample */
-    uint8_t spi_data[3];                                            /**< Array to store SPI Data */
-    uint8_t register_byte_count;                                    /**< Number of bytes per register */
+    uint8_t register_pointer;       /**< Register Value */
 };
 
-//Function Prototypes:
+struct MAX30003_Synchronization_Register_Struct
+{
+    uint8_t register_pointer;       /**< Register Value */
+};
+
+struct MAX30003_FIFO_Reset_Register_Struct
+{
+    uint8_t register_pointer;       /**< Register Value */
+};
+
+/* Public Functions */
 void max30003_read_device_info(void);
 
 void max30003_read_device_status(void);
@@ -227,58 +266,6 @@ void max30003_interrupt2_enable(void);
 
 void max30003_interrupt2_disable(void);
 
-void max30003_read_status_register(void);
-
-void max30003_read_interrupt1_register(void);
-
-void max30003_write_interrupt1_register(void);
-
-void max30003_read_interrupt2_register(void);
-
-void max30003_write_interrupt2_register(void);
-
-void max30003_read_interrupt_manager_register(void);
-
-void max30003_write_interrupt_manager_register(void);
-
-void max30003_read_dynamic_mode_manager_register(void);
-
-void max30003_write_dynamic_mode_manager_register(void);
-
-void max30003_write_software_reset_register(void);
-
-void max30003_write_synchronize_register(void);
-
-void max30003_write_fifo_reset_register(void);
-
-void max30003_read_info_register(void);
-
-void max30003_read_general_configuration_register(void);
-
-void max30003_write_general_configuration_register(void);
-
-void max30003_read_calibration_configuration_register(void);
-
-void max30003_write_calibration_configuration_register(void);
-
-void max30003_read_input_multiplexer_configuration_register(void);
-
-void max30003_write_input_multiplexer_configuration_register(void);
-
-void max30003_read_ecg_configuration_register(void);
-
-void max30003_write_ecg_configuration_register(void);
-
-void max30003_read_rtor1_configuration_register(void);
-
-void max30003_write_rtor1_configuration_register(void);
-
-void max30003_read_rtor2_configuration_register(void);
-
-void max30003_write_rtor2_configuration_register(void);
-
-void max30003_read_ecg_fifo_memory_register(void);
-
 void max30003_get_ecg_voltage(uint16_t* data_array, uint8_t data_array_size);
 
 void max30003_soft_reset(void);
@@ -292,6 +279,64 @@ void max30003_enable_pin_interrupt(void);
 void max30003_disable_pin_interrupt(void);
 
 void max30003_pin_interrupt_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+
+void max30003_fifo_reset(void);
+
+void max30003_read_ecg_fifo_memory(void);
+
+/* Static Functions */
+
+static void _max30003_read_status_register(void);
+
+static void _max30003_read_interrupt1_register(void);
+
+static void _max30003_write_interrupt1_register(void);
+
+static void _max30003_read_interrupt2_register(void);
+
+static void _max30003_write_interrupt2_register(void);
+
+static void _max30003_read_interrupt_manager_register(void);
+
+static void _max30003_write_interrupt_manager_register(void);
+
+static void _max30003_read_dynamic_mode_manager_register(void);
+
+static void _max30003_write_dynamic_mode_manager_register(void);
+
+static void _max30003_write_software_reset_register(void);
+
+static void _max30003_write_synchronize_register(void);
+
+static void _max30003_write_fifo_reset_register(void);
+
+static void _max30003_read_info_register(void);
+
+static void _max30003_read_general_configuration_register(void);
+
+static void _max30003_write_general_configuration_register(void);
+
+static void _max30003_read_calibration_configuration_register(void);
+
+static void _max30003_write_calibration_configuration_register(void);
+
+static void _max30003_read_input_multiplexer_configuration_register(void);
+
+static void _max30003_write_input_multiplexer_configuration_register(void);
+
+static void _max30003_read_ecg_configuration_register(void);
+
+static void _max30003_write_ecg_configuration_register(void);
+
+static void _max30003_read_rtor1_configuration_register(void);
+
+static void _max30003_write_rtor1_configuration_register(void);
+
+static void _max30003_read_rtor2_configuration_register(void);
+
+static void _max30003_write_rtor2_configuration_register(void);
+
+static void _max30003_read_ecg_fifo_memory_register(void);
 
 static void _max30003_spim_read_register(uint8_t register_address, uint8_t *data_array, uint8_t data_array_size);
 

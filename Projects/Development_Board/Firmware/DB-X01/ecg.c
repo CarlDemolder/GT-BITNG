@@ -54,12 +54,9 @@ void ecg_interrupt_handler(void)
 
         /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-        uint8_t read_status_register_array_data[3] = {0x00, MAX30003_MODULE, MAX30003_READ_STATUS_REGISTER_COMMAND};
-        state_handler(read_status_register_array_data); // Read the MAX30003 Status Register to determine if the FIFO Memory has overflown
-
         if(max30003_get_status_register_eovf())   // Check to see if one needs to issue a fifo reset to clear the cache
         {
-            uint8_t write_fifo_memory_array_data[3] = {0x00, MAX30003_MODULE, MAX30003_WRITE_FIFO_RESET_REGISTER_COMMAND};
+            uint8_t write_fifo_memory_array_data[3] = {0x00, MAX30003_MODULE, MAX30003_FIFO_RESET_COMMAND};
             state_handler(write_fifo_memory_array_data); // Write to the MAX30003 FIFO Memory Register to Reset the FIFO Memory 
         }
         else

@@ -1094,81 +1094,6 @@ static void _max30003_handler(uint8_t *serial_command)
 
     switch(serial_command[2])
     {
-        case MAX30003_READ_INFO_REGISTER_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_INFO_REGISTER_COMMAND");
-            max30003_read_info_register();
-            break;
-
-        case MAX30003_READ_STATUS_REGISTER_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_STATUS_REGISTER_COMMAND");
-            max30003_read_status_register();
-            break;
-
-        case MAX30003_READ_GENERAL_CONFIGURATION_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_GENERAL_CONFIGURATION_COMMAND");
-            max30003_read_general_configuration_register();
-            break;
-
-        case MAX30003_WRITE_GENERAL_CONFIGURATION_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_GENERAL_CONFIGURATION_COMMAND");
-            max30003_write_general_configuration_register();
-            break;
-
-        case MAX30003_READ_CALIBRATION_CONFIGURATION_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_CALIBRATION_CONFIGURATION_COMMAND");
-            max30003_read_calibration_configuration_register();
-            break;
-
-        case MAX30003_WRITE_CALIBRATION_CONFIGURATION_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_CALIBRATION_CONFIGURATION_COMMAND");
-            max30003_write_calibration_configuration_register();
-            break;
-
-        case MAX30003_READ_INPUT_MULTIPLEXER_CONFIGURATION_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_INPUT_MULTIPLEXER_CONFIGURATION_COMMAND");
-            max30003_read_input_multiplexer_configuration_register();
-            break;
-
-        case MAX30003_WRITE_INPUT_MULTIPLEXER_CONFIGURATION_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_INPUT_MULTIPLEXER_CONFIGURATION_COMMAND");
-            max30003_write_input_multiplexer_configuration_register();
-            break;
-
-        case MAX30003_READ_ECG_CONFIGURATION_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_ECG_CONFIGURATION_COMMAND");
-            max30003_read_ecg_configuration_register();
-            break;
-
-        case MAX30003_WRITE_ECG_CONFIGURATION_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_ECG_CONFIGURATION_COMMAND");
-            max30003_write_ecg_configuration_register();
-            break;
-
-        case MAX30003_READ_RTOR1_CONFIGURATION_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_RTOR1_CONFIGURATION_COMMAND");
-            max30003_read_rtor1_configuration_register();
-            break;
-
-        case MAX30003_WRITE_RTOR1_CONFIGURATION_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_RTOR1_CONFIGURATION_COMMAND");
-            max30003_write_rtor1_configuration_register();
-            break;
-
-        case MAX30003_READ_RTOR2_CONFIGURATION_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_RTOR2_CONFIGURATION_COMMAND");
-            max30003_read_rtor2_configuration_register();
-            break;
-
-        case MAX30003_WRITE_RTOR2_CONFIGURATION_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_RTOR2_CONFIGURATION_COMMAND");
-            max30003_write_rtor2_configuration_register();
-            break;
-
-        case MAX30003_READ_ECG_FIFO_MEMORY_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_ECG_FIFO_MEMORY_COMMAND");
-            max30003_read_ecg_fifo_memory_register();
-            break;
-
         case MAX30003_SOFT_RESET_COMMAND:
             NRF_LOG_INFO("MAX30003_MODULE: MAX30003_SOFT_RESET_COMMAND");
             max30003_soft_reset();
@@ -1206,36 +1131,6 @@ static void _max30003_handler(uint8_t *serial_command)
             max30003_get_ecg_voltage(max30003_data_array, ARRAY_LENGTH(max30003_data_array)); 
             break;
         }
-
-        case MAX30003_READ_INTERRUPT1_REGISTER_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_INTERRUPT1_REGISTER_COMMAND");
-            max30003_read_interrupt1_register();
-            break;
-
-        case MAX30003_WRITE_INTERRUPT1_REGISTER_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_INTERRUPT1_REGISTER_COMMAND");
-            max30003_write_interrupt1_register();
-            break;
-
-        case MAX30003_READ_INTERRUPT2_REGISTER_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_INTERRUPT2_REGISTER_COMMAND");
-            max30003_read_interrupt2_register();
-            break;
-
-        case MAX30003_WRITE_INTERRUPT2_REGISTER_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_INTERRUPT2_REGISTER_COMMAND");
-            max30003_write_interrupt2_register();
-            break;
-        
-        case MAX30003_READ_INTERRUPT_MANAGER_REGISTER_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_READ_INTERRUPT_MANAGER_REGISTER_COMMAND");
-            max30003_read_interrupt_manager_register();
-            break;
-
-        case MAX30003_WRITE_INTERRUPT_MANAGER_REGISTER_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: MAX30003_WRITE_INTERRUPT_MANAGER_REGISTER_COMMAND");
-            max30003_write_interrupt_manager_register();
-            break;
         
         case MAX30003_INIT_COMMAND:
             NRF_LOG_INFO("MAX30003_MODULE: MAX30003_INIT_COMMAND");
@@ -1243,13 +1138,18 @@ static void _max30003_handler(uint8_t *serial_command)
             break;
 
         case MAX30003_START_RECORDING_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: START_RECORDING");
+            NRF_LOG_INFO("MAX30003_MODULE: START_RECORDING_COMMAND");
             max30003_start_recording();
             break;
 
-        case MAX30003_WRITE_FIFO_RESET_REGISTER_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: WRITE_FIFO_RESET_REGISTER");
-            max30003_write_fifo_reset_register();
+        case MAX30003_FIFO_RESET_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: FIFO_RESET_COMMAND");
+            max30003_fifo_reset();
+            break;
+
+        case MAX30003_READ_ECG_FIFO_MEMORY_COMMAND:
+            NRF_LOG_INFO("MAX30003_MODULE: READ_FIFO_COMMAND");
+            max30003_read_ecg_fifo_memory();
             break;
 
         default:
