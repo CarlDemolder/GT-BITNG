@@ -118,9 +118,9 @@ uint32_t temperature_service_temp_char_add(ble_temperature_service_t *p_cus, con
 
     attr_char_value.p_uuid = &ble_uuid;
     attr_char_value.p_attr_md = &attr_md;
-    attr_char_value.init_len = sizeof(uint8_t)*250;
+    attr_char_value.init_len = sizeof(uint8_t)*TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH;
     attr_char_value.init_offs = 0;
-    attr_char_value.max_len = sizeof(uint8_t)*250;
+    attr_char_value.max_len = sizeof(uint8_t)*TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH;
 
     control.error_code = sd_ble_gatts_characteristic_add(p_cus->service_handle, &char_md, &attr_char_value, &p_cus->temp_char_handles);
     if (control.error_code != NRF_SUCCESS)
@@ -144,7 +144,7 @@ uint32_t temperature_service_temp_char_write(ble_temperature_service_t *p_cus, u
     // Initialize value struct.
     memset(&gatts_value, 0, sizeof(gatts_value));
 
-    gatts_value.len = sizeof(uint8_t)*250;
+    gatts_value.len = sizeof(uint8_t)*TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH;
     gatts_value.offset = 0;
     gatts_value.p_value = new_temp_char_array;
 
@@ -239,9 +239,9 @@ uint32_t temperature_service_instant_temp_char_add(ble_temperature_service_t *p_
 
     attr_char_value.p_uuid = &ble_uuid;
     attr_char_value.p_attr_md = &attr_md;
-    attr_char_value.init_len = sizeof(uint8_t)*2;
+    attr_char_value.init_len = sizeof(uint8_t)*TEMPERATURE_SERVICE_INSTANT_TEMP_CHAR_LENGTH;
     attr_char_value.init_offs = 0;
-    attr_char_value.max_len = sizeof(uint8_t)*2;
+    attr_char_value.max_len = sizeof(uint8_t)*TEMPERATURE_SERVICE_INSTANT_TEMP_CHAR_LENGTH;
 
     control.error_code = sd_ble_gatts_characteristic_add(p_cus->service_handle, &char_md, &attr_char_value, &p_cus->instant_temp_char_handles);
     if (control.error_code != NRF_SUCCESS)
@@ -265,7 +265,7 @@ uint32_t temperature_service_instant_temp_char_write(ble_temperature_service_t *
     // Initialize value struct.
     memset(&gatts_value, 0, sizeof(gatts_value));
 
-    gatts_value.len = sizeof(uint8_t)*2;
+    gatts_value.len = sizeof(uint8_t)*TEMPERATURE_SERVICE_INSTANT_TEMP_CHAR_LENGTH;
     gatts_value.offset = 0;
     gatts_value.p_value = new_instant_temp_char_array;
 

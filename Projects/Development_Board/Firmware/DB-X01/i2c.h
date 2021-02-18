@@ -17,7 +17,7 @@ enum TWIM_CONSTANTS
 };
 
 /**@brief TWIM Configuration Structure. This structure contains all values for the TWIM Configuration.*/
-struct TWIM_Configuration
+struct TWIM_Control_Struct
 {
     uint32_t timeout;
     volatile bool twim_xfer_done;
@@ -29,8 +29,6 @@ struct TWIM_Configuration
     ret_code_t error_code;
     uint8_t initialization;
 };
-
-static struct TWIM_Configuration twim_configuration;
 
 uint8_t get_i2c_timeout();
 void twim_uninit(void);
@@ -45,8 +43,9 @@ void i2c_read_single_register(uint8_t slave_address, uint8_t register_address, u
 
 void i2c_write_write_registers(uint8_t device_address, uint8_t* first_array_data, uint8_t first_array_data_size, uint8_t* second_array_data, uint8_t second_array_data_size);
 void i2c_write_read_registers(uint8_t device_address, uint8_t* first_array_data, uint8_t first_array_data_size, uint8_t* second_array_data, uint8_t second_array_data_size); 
-void i2c_separate_write_read_registers(uint8_t device_command, uint8_t device_address, uint8_t* first_array_data, uint8_t first_array_data_size, uint8_t* second_array_data, uint8_t second_array_data_size); 
-void i2c_no_stop_write_registers(uint8_t device_command, uint8_t* first_array_data, uint8_t first_array_data_size);
+
+void i2c_separate_write_read_register(uint8_t slave_address, uint8_t *write_data, uint8_t write_data_length, uint8_t *read_data, uint8_t read_data_length);
+void i2c_no_stop_write_register(uint8_t slave_address, uint8_t *primary_data, uint8_t primary_data_length);
 
 
 void i2c_read_registers(uint8_t slave_address, uint8_t register_address, uint8_t* array_data, uint8_t array_size);

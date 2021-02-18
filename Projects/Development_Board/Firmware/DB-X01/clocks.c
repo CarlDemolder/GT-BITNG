@@ -40,6 +40,7 @@ void hfclock_start(void)
 }
 
 /**@brief Function to stop the HF clock
+/**@brief Function to stop the HF clock
  */
 void hfclock_stop(void)
 {
@@ -211,7 +212,7 @@ void rtc_sensor_init(void)
 {
     //Initialize a RTC instance for all available sensors
     NRF_LOG_INFO("rtc_sensor_init");
-    rtc_sensor_configuration.rtc_frequency = 1;      // Setting the frequency of the RTC sensor to 1 Hz
+    rtc_sensor_configuration.rtc_frequency = 8;      // Setting the frequency of the RTC sensor to 8 Hz. No value lower than 8 will work.
     rtc_sensor_configuration.rtc_is_running = 0;     // RTC sensor current state
     rtc_sensor_configuration.rtc_restart = 0;        // RTC sensor restart command
 
@@ -220,12 +221,12 @@ void rtc_sensor_init(void)
     
     rtc_sensor_configuration.nrfx_rtc_config = (nrfx_rtc_config_t) NRFX_RTC_DEFAULT_CONFIG;
     rtc_sensor_configuration.nrfx_rtc_config.interrupt_priority = 7;
-    rtc_sensor_configuration.nrfx_rtc_config.prescaler = RTC_TIMER_CLOCK_FREQ/rtc_sensor_configuration.rtc_frequency - 1;
+    rtc_sensor_configuration.nrfx_rtc_config.prescaler = RTC_TIMER_CLOCK_FREQ/rtc_sensor_configuration.rtc_frequency-1;
     NRF_LOG_INFO("prescaler %u", rtc_sensor_configuration.nrfx_rtc_config.prescaler);
 
     nrfx_rtc_sensor_init();
 
-    rtc_sensor_configuration.rtc_counter = 30;  // Setting the counter of the RTC sensor to trigger every 30 seconds
+    rtc_sensor_configuration.rtc_counter = 240;  // Setting the counter of the RTC sensor to trigger every 30 seconds
     rtc_sensor_set_counter(rtc_sensor_configuration.rtc_counter);
 }
 
@@ -285,10 +286,11 @@ void rtc_sensor_handler(nrfx_rtc_int_type_t interrupt_type)
 void rtc_sensor_set_counter(uint32_t new_sampling_counter)
 {
     NRF_LOG_INFO("rtc_sensor_set_counter");
+
     rtc_sensor_configuration.rtc_counter = new_sampling_counter;
+    NRF_LOG_INFO("counter %u", rtc_sensor_configuration.rtc_counter);
     ret_code_t error_code = nrfx_rtc_cc_set(&rtc_sensor_configuration.nrfx_rtc, 2, rtc_sensor_configuration.rtc_counter, true);
     APP_ERROR_CHECK(error_code);
-    NRF_LOG_INFO("counter %u", rtc_sensor_configuration.rtc_counter);
 }
 
 /**@brief Function to set the frequency of the RTC sensor
@@ -303,6 +305,7 @@ void rtc_sensor_set_frequency(uint8_t new_sampling_frequency)
     rtc_sensor_configuration.rtc_frequency = new_sampling_frequency;
     rtc_sensor_configuration.nrfx_rtc_config.prescaler =  RTC_TIMER_CLOCK_FREQ/rtc_sensor_configuration.rtc_frequency - 1;
     NRF_LOG_INFO("frequency %u", rtc_sensor_configuration.rtc_frequency);
+
     nrfx_rtc_sensor_init();
 }
 
@@ -310,7 +313,7 @@ void rtc_sensor_set_frequency(uint8_t new_sampling_frequency)
 uint8_t rtc_sensor_get_sampling_frequency(void)
 {
     NRF_LOG_INFO("rtc_sensor_get_sampling_frequency");
-    uint8_t sampling_frequency = (uint8_t) 60/(((float)(1/rtc_sensor_configuration.rtc_frequency))*rtc_sensor_configuration.rtc_counter);
+    uint8_t sampling_frequency = (uint8_t) (60/(rtc_sensor_configuration.rtc_counter/rtc_sensor_configuration.rtc_frequency));
     NRF_LOG_INFO("RTC Sensor Sampling Frequency: %u", sampling_frequency);
     return sampling_frequency;
 }

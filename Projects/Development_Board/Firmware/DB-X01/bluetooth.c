@@ -51,7 +51,7 @@ BLE_TEMPERATURE_SERVICE_DEF(m_ble_temperature_service);                         
 ble_temperature_service_init_t ble_temperature_service_init = {0};
 #endif
 
-#if ECG
+#if MAX30003
 BLE_ECG_SERVICE_DEF(m_ble_ecg_service);                                         /**< Declaring ECG Service Structure for application */
 ble_ecg_service_init_t ble_ecg_service_init = {0};
 #endif
@@ -67,25 +67,25 @@ static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        
 
 // YOUR_JOB: Use UUIDs for service(s) used in your application.
 
-#if ECG && !TMP117 && !FDC1004
+#if MAX30003 && !TMP117 && !FDC1004
 ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {ECG_SERVICE_UUID}};  /**< Universally unique service identifiers. */
 #endif
 
-#if !ECG && TMP117 && !FDC1004
+#if !MAX30003 && TMP117 && !FDC1004
 ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {TEMPERATURE_SERVICE_UUID}};  /**< Universally unique service identifiers. */
 #endif
 
-#if ECG && TMP117 && !FDC1004
+#if MAX30003 && TMP117 && !FDC1004
 /**< Universally unique service identifiers. */
 ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {TEMPERATURE_SERVICE_UUID}, {ECG_SERVICE_UUID}};  
 #endif
 
-#if ECG && TMP117 && FDC1004
+#if MAX30003 && TMP117 && FDC1004
 /**< Universally unique service identifiers. */
 ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {TEMPERATURE_SERVICE_UUID}, {ECG_SERVICE_UUID}, {PRESSURE_SERVICE_UUID}}; 
 #endif
 
-#if !ECG && !TMP117 && FDC1004
+#if !MAX30003 && !TMP117 && FDC1004
 /**< Universally unique service identifiers. */
 ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {PRESSURE_SERVICE_UUID}}; 
 #endif
@@ -98,14 +98,14 @@ static struct Bluetooth_Control_Struct control;
  *
  * @param[in]   nrf_error   Error code containing information about what went wrong.
  */
-void nrf_qwr_error_handler(uint32_t nrf_error)
+static void _bluetooth_nrf_qwr_error_handler(uint32_t nrf_error)
 {
     APP_ERROR_HANDLER(nrf_error);
 }
 
 /**@brief Function for the Peer Manager initialization.
  */
-void peer_manager_init(void)
+void bluetooth_peer_manager_init(void)
 {
     NRF_LOG_INFO("peer_manager_init");
     ble_gap_sec_params_t sec_param;
@@ -132,7 +132,7 @@ void peer_manager_init(void)
     control.error_code = pm_sec_params_set(&sec_param);
     APP_ERROR_CHECK(control.error_code);
 
-    control.error_code = pm_register(pm_evt_handler);
+    control.error_code = pm_register(_bluetooth_pm_evt_handler);
     APP_ERROR_CHECK(control.error_code);
 }
 
@@ -140,7 +140,7 @@ void peer_manager_init(void)
  *
  * @param[in] p_evt  Peer Manager event.
  */
-void pm_evt_handler(pm_evt_t const * p_evt)
+static void _bluetooth_pm_evt_handler(pm_evt_t const * p_evt)
 {
     NRF_LOG_INFO("pm_evt_handler");
 
@@ -189,7 +189,7 @@ void pm_evt_handler(pm_evt_t const * p_evt)
 
         case PM_EVT_PEERS_DELETE_SUCCEEDED:
             NRF_LOG_INFO("PM_EVT_PEERS_DELETE_SUCCEEDED");
-            advertising_start();
+            bluetooth_advertising_start();
             break;
 
         case PM_EVT_PEER_DATA_UPDATE_FAILED:
@@ -243,7 +243,7 @@ void pm_evt_handler(pm_evt_t const * p_evt)
 
 /** @brief Clear bonding information from persistent storage.
  */
-void delete_bonds(void)
+void bluetooth_delete_bonds(void)
 {
     NRF_LOG_INFO("delete_bonds");
 
@@ -256,7 +256,7 @@ void delete_bonds(void)
  * @details This function sets up all the necessary GAP (Generic Access Profile) parameters of the
  *          device including the device name, appearance, and the preferred connection parameters.
  */
-void gap_params_init(void)
+void bluetooth_gap_params_init(void)
 {
     NRF_LOG_INFO("gap_params_init");
     ble_gap_conn_params_t gap_conn_params;
@@ -290,7 +290,7 @@ void gap_params_init(void)
     }
 }
 
-void gap_params_update(uint16_t m_conn_handle)
+void bluetooth_gap_params_update(uint16_t m_conn_handle)
 {
     NRF_LOG_INFO("gap_params_update");
     ble_gap_conn_params_t gap_conn_params;
@@ -325,7 +325,7 @@ void gap_params_update(uint16_t m_conn_handle)
  *
  * @param[in] p_evt  Event received from the Connection Parameters Module.
  */
-void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
+static void _bluetooth_on_conn_params_evt(ble_conn_params_evt_t * p_evt)
 {
     NRF_LOG_INFO("on_conn_params_evt");
 
@@ -341,14 +341,14 @@ void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
  *
  * @param[in] nrf_error  Error code containing information about what went wrong.
  */
-void conn_params_error_handler(uint32_t nrf_error)
+static void _bluetooth_conn_params_error_handler(uint32_t nrf_error)
 {
     APP_ERROR_HANDLER(nrf_error);
 }
 
 /**@brief Function for initializing the Connection Parameters module.
  */
-void conn_params_init(void)
+void bluetooth_conn_params_init(void)
 {
     NRF_LOG_INFO("conn_params_init");
     ble_conn_params_init_t cp_init;
@@ -361,8 +361,8 @@ void conn_params_init(void)
     cp_init.max_conn_params_update_count = MAX_CONN_PARAMS_UPDATE_COUNT;
     cp_init.start_on_notify_cccd_handle = BLE_GATT_HANDLE_INVALID;
     cp_init.disconnect_on_fail = false;
-    cp_init.evt_handler = on_conn_params_evt;
-    cp_init.error_handler = conn_params_error_handler;
+    cp_init.evt_handler = _bluetooth_on_conn_params_evt;
+    cp_init.error_handler = _bluetooth_conn_params_error_handler;
 
     control.error_code = ble_conn_params_init(&cp_init);
     APP_ERROR_CHECK(control.error_code);
@@ -374,7 +374,7 @@ void conn_params_init(void)
  *
  * @param[in] ble_adv_evt  Advertising event.
  */
-void on_adv_evt(ble_adv_evt_t ble_adv_evt)
+static void _bluetooth_on_adv_evt(ble_adv_evt_t ble_adv_evt)
 {
     NRF_LOG_INFO("on_adv_evt");
 
@@ -395,7 +395,7 @@ void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 
 /**@brief Function for initializing the Advertising functionality.
  */
-void advertising_init(void)
+void bluetooth_advertising_init(void)
 {
     NRF_LOG_INFO("advertising_init");
     ble_advertising_init_t adv_init;
@@ -412,7 +412,7 @@ void advertising_init(void)
     adv_init.config.ble_adv_fast_interval = APP_ADV_INTERVAL;
     adv_init.config.ble_adv_fast_timeout = APP_ADV_DURATION;
 
-    adv_init.evt_handler = on_adv_evt;
+    adv_init.evt_handler = _bluetooth_on_adv_evt;
 
     control.error_code = ble_advertising_init(&m_advertising, &adv_init);
     APP_ERROR_CHECK(control.error_code);
@@ -422,7 +422,7 @@ void advertising_init(void)
 
 /**@brief Function for setting the power level of the advertising
  */
-void set_advertising_power(void)
+void bluetooth_set_advertising_power(void)
 {
     NRF_LOG_INFO("set_advertising_power");
     control.error_code = sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_ADV, m_advertising.adv_handle, 4);
@@ -431,7 +431,7 @@ void set_advertising_power(void)
 
 /**@brief Function for starting advertising.
  */
-void advertising_start(void)
+void bluetooth_advertising_start(void)
 {
     NRF_LOG_INFO("advertising_start");
     control.error_code = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
@@ -440,7 +440,7 @@ void advertising_start(void)
 
 /**@brief Function to stop advertising.
  */
-void advertising_stop(void)
+void bluetooth_advertising_stop(void)
 {
     NRF_LOG_INFO("advertising_stop");
     control.error_code = sd_ble_gap_adv_stop(m_advertising.adv_handle);
@@ -450,7 +450,7 @@ void advertising_stop(void)
 
 /**@brief Function for initializing the GATT module.
  */
-void gatt_init(void)
+void bluetooth_gatt_init(void)
 {
     NRF_LOG_INFO("gatt_init");
     control.error_code = nrf_ble_gatt_init(&m_gatt, NULL);
@@ -461,7 +461,7 @@ void gatt_init(void)
  *
  * @details Initializes the SoftDevice and the BLE event interrupt
  */
-void ble_stack_init(void)
+void bluetooth_ble_stack_init(void)
 {
     NRF_LOG_INFO("ble_stack_init");
     
@@ -488,7 +488,7 @@ void ble_stack_init(void)
     APP_ERROR_CHECK(control.error_code);
 
     // Register a handler for BLE events.
-    NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
+    NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, _bluetooth_ble_evt_handler, NULL);
 }
 
 /**@brief Function for handling BLE events.
@@ -496,7 +496,7 @@ void ble_stack_init(void)
  * @param[in]   p_ble_evt   Bluetooth stack event.
  * @param[in]   p_context   Unused.
  */
-void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
+static void _bluetooth_ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
 {
     NRF_LOG_INFO("ble_evt_handler");
     control.error_code = NRF_SUCCESS;
@@ -513,7 +513,7 @@ void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             control.error_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
             APP_ERROR_CHECK(control.error_code);
-            gap_params_update(m_conn_handle); // Once all Services have been discovered, change the GAP Connection Parameters
+            bluetooth_gap_params_update(m_conn_handle); // Once all Services have been discovered, change the GAP Connection Parameters
             break;
 
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
@@ -530,12 +530,12 @@ void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
             APP_ERROR_CHECK(control.error_code);
             break;
 
-        case BLE_GATTS_EVT_TIMEOUT:
-            // Disconnect on GATT Server timeout event.
-            NRF_LOG_INFO("BLE_GATTS_EVT_TIMEOUT");
-            control.error_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-            APP_ERROR_CHECK(control.error_code);
-            break;
+//        case BLE_GATTS_EVT_TIMEOUT:
+//            // Disconnect on GATT Server timeout event.
+//            NRF_LOG_INFO("BLE_GATTS_EVT_TIMEOUT");
+//            control.error_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+//            APP_ERROR_CHECK(control.error_code);
+//            break;
 
         case BLE_GATTS_EVT_WRITE:
             NRF_LOG_INFO("BLE_GATTS_EVT_WRITE");
@@ -557,7 +557,7 @@ void ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context)
  * @param[in]   p_evt          Event received from the Configuration Service
  *
  */
-static void on_configuration_service_evt(ble_configuration_service_t *p_cus_service, configuration_service_evt_t *p_evt)
+static void _bluetooth_on_configuration_service_evt(ble_configuration_service_t *p_cus_service, configuration_service_evt_t *p_evt)
 {
     NRF_LOG_INFO("on_configuration_service_evt");
     switch(p_evt->evt_type)
@@ -599,7 +599,7 @@ static void on_configuration_service_evt(ble_configuration_service_t *p_cus_serv
  *
  */
  #if TMP117
-static void on_temperature_service_evt(ble_temperature_service_t *p_cus_service, temperature_service_evt_t *p_evt)
+static void _bluetooth_on_temperature_service_evt(ble_temperature_service_t *p_cus_service, temperature_service_evt_t *p_evt)
 {
     NRF_LOG_INFO("on_temperature_service_evt");
     switch(p_evt->evt_type)
@@ -610,6 +610,14 @@ static void on_temperature_service_evt(ble_temperature_service_t *p_cus_service,
 
         case TEMPERATURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_DISABLED:
             NRF_LOG_INFO("TEMPERATURE_SERVICE_EVT_TEMP_CHAR_NOTIFICATION_DISABLED");
+            break;
+
+        case TEMPERATURE_SERVICE_EVT_INSTANT_TEMP_CHAR_NOTIFICATION_ENABLED:
+            NRF_LOG_INFO("TEMPERATURE_SERVICE_EVT_INSTANT_TEMP_CHAR_NOTIFICATION_ENABLED");
+            break;
+
+        case TEMPERATURE_SERVICE_EVT_INSTANT_TEMP_CHAR_NOTIFICATION_DISABLED:
+            NRF_LOG_INFO("TEMPERATURE_SERVICE_EVT_INSTANT_TEMP_CHAR_NOTIFICATION_DISABLED");
             break;
 
         case TEMPERATURE_SERVICE_EVT_CONNECTED:
@@ -639,8 +647,8 @@ static void on_temperature_service_evt(ble_temperature_service_t *p_cus_service,
  * @param[in]   p_evt          Event received from the ECG Service
  *
  */
-#if ECG
-static void on_ecg_service_evt(ble_ecg_service_t *p_cus_service, ecg_service_evt_t *p_evt)
+#if MAX30003
+static void _bluetooth_on_ecg_service_evt(ble_ecg_service_t *p_cus_service, ecg_service_evt_t *p_evt)
 {
     NRF_LOG_INFO("on_ecg_service_evt");
     switch(p_evt->evt_type)
@@ -651,6 +659,14 @@ static void on_ecg_service_evt(ble_ecg_service_t *p_cus_service, ecg_service_evt
 
         case ECG_SERVICE_EVT_ECG_CHAR_NOTIFICATION_DISABLED:
             NRF_LOG_INFO("ECG_SERVICE_EVT_ECG_CHAR_NOTIFICATION_DISABLED");
+            break;
+
+        case ECG_SERVICE_EVT_INSTANT_ECG_CHAR_NOTIFICATION_ENABLED:
+            NRF_LOG_INFO("ECG_SERVICE_EVT_ECG_CHAR_NOTIFICATION_ENABLED");
+            break;
+
+        case ECG_SERVICE_EVT_INSTANT_ECG_CHAR_NOTIFICATION_DISABLED:
+            NRF_LOG_INFO("ECG_SERVICE_EVT_INSTANT_ECG_CHAR_NOTIFICATION_DISABLED");
             break;
 
         case ECG_SERVICE_EVT_CONNECTED:
@@ -681,7 +697,7 @@ static void on_ecg_service_evt(ble_ecg_service_t *p_cus_service, ecg_service_evt
  *
  */
  #if FDC1004
-static void on_pressure_service_evt(ble_pressure_service_t *p_cus_service, pressure_service_evt_t *p_evt)
+static void _bluetooth_on_pressure_service_evt(ble_pressure_service_t *p_cus_service, pressure_service_evt_t *p_evt)
 {
     NRF_LOG_INFO("on_pressure_service_evt");
     switch(p_evt->evt_type)
@@ -716,14 +732,14 @@ static void on_pressure_service_evt(ble_pressure_service_t *p_cus_service, press
 
 /**@brief Function for initializing services that will be used by the application.
  */
-void services_init(void)
+void bluetooth_services_init(void)
 {
     NRF_LOG_INFO("services_init");
     nrf_ble_qwr_init_t qwr_init = {0};
     ble_dfu_buttonless_init_t dfus_init = {0};
     
     // Initialize Queued Write Module.
-    qwr_init.error_handler = nrf_qwr_error_handler;
+    qwr_init.error_handler = _bluetooth_nrf_qwr_error_handler;
 
     control.error_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
     APP_ERROR_CHECK(control.error_code);
@@ -734,7 +750,7 @@ void services_init(void)
 //    control.error_code = ble_dfu_buttonless_init(&dfus_init);
 //    APP_ERROR_CHECK(control.error_code);
 
-    ble_configuration_service_init.evt_handler = on_configuration_service_evt;    // Initialize Configuration Service
+    ble_configuration_service_init.evt_handler = _bluetooth_on_configuration_service_evt;    // Initialize Configuration Service
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.settings_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_configuration_service_init.settings_char_attr_md.read_perm);
@@ -754,7 +770,7 @@ void services_init(void)
     control.request_received = 0;     // Flag to determine if the bluetooth device has sent a request or command
 
     #if TMP117
-    ble_temperature_service_init.evt_handler = on_temperature_service_evt;        // Initialize Temperature Service
+    ble_temperature_service_init.evt_handler = _bluetooth_on_temperature_service_evt;        // Initialize Temperature Service
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.temp_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_temperature_service_init.temp_char_attr_md.read_perm);
@@ -768,19 +784,23 @@ void services_init(void)
     APP_ERROR_CHECK(control.error_code);
     #endif
 
-    #if ECG
-    ble_ecg_service_init.evt_handler = on_ecg_service_evt;                        // Initialize ECG Service
+    #if MAX30003
+    ble_ecg_service_init.evt_handler = _bluetooth_on_ecg_service_evt;                        // Initialize ECG Service
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.ecg_char_attr_md.write_perm);
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.instant_ecg_char_attr_md.cccd_write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.instant_ecg_char_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_ecg_service_init.instant_ecg_char_attr_md.write_perm);
 
     control.error_code = ble_ecg_service_initialize(&m_ble_ecg_service, &ble_ecg_service_init);
     APP_ERROR_CHECK(control.error_code);
     #endif
 
     #if FDC1004
-    ble_pressure_service_init.evt_handler = on_pressure_service_evt;        // Initialize Pressure Service
+    ble_pressure_service_init.evt_handler = _bluetooth_on_pressure_service_evt;        // Initialize Pressure Service
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_pressure_service_init.instant_pressure_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&ble_pressure_service_init.instant_pressure_char_attr_md.read_perm);
@@ -791,86 +811,81 @@ void services_init(void)
     #endif
 }
 
-void bluetooth_configuration_service_settings_char_read(uint8_t *settings_char_data_array)
+void bluetooth_configuration_service_settings_char_read(uint8_t *settings_char_data)
 {
     NRF_LOG_INFO("bluetooth_configuration_service_settings_char_read");
     control.request_received = 1;
-    bluetooth_handler(settings_char_data_array);
+    bluetooth_handler(settings_char_data);
 }
 
-void bluetooth_configuration_service_response_char_write(uint8_t *response_char_data_array)
+void bluetooth_override_request_received(void)
+{
+    NRF_LOG_INFO("bluetooth_request_received_override");
+    control.request_received = 1;
+}
+
+void bluetooth_configuration_service_response_char_write(uint8_t *response_char_data)
 {
     NRF_LOG_INFO("bluetooth_configuration_service_response_char_write");
     if(control.request_received == 1)
     {
-        memcpy(ble_configuration_service_init.response_char, response_char_data_array, CONFIGURATION_SERVICE_RESPONSE_CHAR_LENGTH);
-        control.error_code = configuration_service_response_char_write(&m_ble_configuration_service, response_char_data_array);   // Update the Response Characteristic
+        memcpy(ble_configuration_service_init.response_char, response_char_data, CONFIGURATION_SERVICE_RESPONSE_CHAR_LENGTH);
+        control.error_code = configuration_service_response_char_write(&m_ble_configuration_service, response_char_data);   // Update the Response Characteristic
         APP_ERROR_CHECK(control.error_code);
         control.request_received = 0;
     }
 }
 
-void bluetooth_configuration_service_crc_char_write(uint8_t *crc_char_data_array)
+void bluetooth_configuration_service_crc_char_write(uint8_t *crc_char_data)
 {
     NRF_LOG_INFO("bluetooth_configuration_service_crc_char_write");
-    memcpy(ble_configuration_service_init.crc_char, crc_char_data_array, CONFIGURATION_SERVICE_CRC_CHAR_LENGTH);
-    control.error_code = configuration_service_crc_char_write(&m_ble_configuration_service, crc_char_data_array);   // Update the CRC Characteristic
+    memcpy(ble_configuration_service_init.crc_char, crc_char_data, CONFIGURATION_SERVICE_CRC_CHAR_LENGTH);
+    control.error_code = configuration_service_crc_char_write(&m_ble_configuration_service, crc_char_data);   // Update the CRC Characteristic
     APP_ERROR_CHECK(control.error_code);
 }
 
 #if TMP117
-void bluetooth_temperature_service_temp_char_write(uint8_t *temp_char_data_array)
+void bluetooth_temperature_service_temp_char_write(uint8_t *temp_char_data)
 {
     NRF_LOG_INFO("bluetooth_temperature_service_temp_char_write");
-    memcpy(ble_temperature_service_init.temp_char, temp_char_data_array, TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH);
-    control.error_code = temperature_service_temp_char_write(&m_ble_temperature_service, temp_char_data_array);   // Update the Temp Characteristic
+    memcpy(ble_temperature_service_init.temp_char, temp_char_data, TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH);
+    control.error_code = temperature_service_temp_char_write(&m_ble_temperature_service, temp_char_data);   // Update the Temp Characteristic
     APP_ERROR_CHECK(control.error_code);
 }
 
-void bluetooth_temperature_service_instant_temp_char_write(uint8_t *instant_temp_char_data_array)
+void bluetooth_temperature_service_instant_temp_char_write(uint8_t *instant_temp_char_data)
 {
     NRF_LOG_INFO("bluetooth_temperature_service_instant_temp_char_write");
-    memcpy(ble_temperature_service_init.instant_temp_char, instant_temp_char_data_array, TEMPERATURE_SERVICE_INSTANT_TEMP_CHAR_LENGTH);
-    control.error_code = temperature_service_instant_temp_char_write(&m_ble_temperature_service, instant_temp_char_data_array);   // Update the Temp Characteristic
+    memcpy(ble_temperature_service_init.instant_temp_char, instant_temp_char_data, TEMPERATURE_SERVICE_INSTANT_TEMP_CHAR_LENGTH);
+    control.error_code = temperature_service_instant_temp_char_write(&m_ble_temperature_service, instant_temp_char_data);   // Update the Temp Characteristic
     APP_ERROR_CHECK(control.error_code);
 }
-
-void bluetooth_transmit_temperature_recording_session(void)
-{
-//    NRF_LOG_INFO("bluetooth_transmit_recording_session");
-//    uint8_t temp_data_array[64];
-//    ecg_get_data_packet(temp_data_array, 64);
-//
-//    ecg_stop_recording_session();
-}
-
 #endif
 
-#if ECG
-void bluetooth_ecg_service_ecg_char_write(uint8_t *ecg_char_data_array)
+#if MAX30003
+void bluetooth_ecg_service_ecg_char_write(uint8_t *ecg_char_data)
 {
     NRF_LOG_INFO("bluetooth_ecg_service_ecg_char_write");
-    memcpy(ble_ecg_service_init.ecg_char, ecg_char_data_array, ECG_SERVICE_ECG_CHAR_LENGTH);
-    control.error_code = ecg_service_ecg_char_write(&m_ble_ecg_service, ecg_char_data_array);   // Update the ECG Characteristic
+    memcpy(ble_ecg_service_init.ecg_char, ecg_char_data, ECG_SERVICE_ECG_CHAR_LENGTH);
+    control.error_code = ecg_service_ecg_char_write(&m_ble_ecg_service, ecg_char_data);   // Update the ECG Characteristic
     APP_ERROR_CHECK(control.error_code);
 }
 
-void bluetooth_transmit_ecg_recording_session(void)
+void bluetooth_ecg_service_instant_ecg_char_write(uint8_t *instant_ecg_char_data)
 {
-    NRF_LOG_INFO("bluetooth_transmit_recording_session");
-    uint8_t temp_data_array[64];
-    ecg_get_data_packet(temp_data_array, 64);
-
-    ecg_stop_recording_session();
+    NRF_LOG_INFO("bluetooth_ecg_service_ecg_char_write");
+    memcpy(ble_ecg_service_init.instant_ecg_char, instant_ecg_char_data, ECG_SERVICE_INSTANT_ECG_CHAR_LENGTH);
+    control.error_code = ecg_service_ecg_char_write(&m_ble_ecg_service, instant_ecg_char_data);   // Update the INSTANT ECG Characteristic
+    APP_ERROR_CHECK(control.error_code);
 }
 #endif
 
 #if FDC1004
-void bluetooth_pressure_service_instant_pressure_char_write(uint8_t *instant_pressure_char_data_array)
+void bluetooth_pressure_service_instant_pressure_char_write(uint8_t *instant_pressure_char_data)
 {
     NRF_LOG_INFO("bluetooth_pressure_service_instant_pressure_char_write");
-    memcpy(ble_pressure_service_init.instant_pressure_char, instant_pressure_char_data_array, PRESSURE_SERVICE_INSTANT_PRESSURE_CHAR_LENGTH);
-    control.error_code = pressure_service_instant_pressure_char_write(&m_ble_pressure_service, instant_pressure_char_data_array);   // Update the Temp Characteristic
+    memcpy(ble_pressure_service_init.instant_pressure_char, instant_pressure_char_data, PRESSURE_SERVICE_INSTANT_PRESSURE_CHAR_LENGTH);
+    control.error_code = pressure_service_instant_pressure_char_write(&m_ble_pressure_service, instant_pressure_char_data);   // Update the Temp Characteristic
     APP_ERROR_CHECK(control.error_code);
 }
 #endif
@@ -885,15 +900,15 @@ uint8_t bluetooth_get_bytes_per_transmission(void)
 void bluetooth_transmit_firmware_version(void)
 {
     NRF_LOG_INFO("bluetooth_transmit_firmware_version");
-    uint8_t response_char_data_array[2] = {0x00, FIRMWARE_VERSION};
-    bluetooth_configuration_service_response_char_write(response_char_data_array);
+    uint8_t response_char_command[4] = {0x00, 0x00, 0x00, FIRMWARE_VERSION};
+    bluetooth_configuration_service_response_char_write(response_char_command);
 }
 
 void bluetooth_transmit_hardware_board_version(void)
 {
     NRF_LOG_INFO("bluetooth_transmit_hardware_board_version");
-    uint8_t response_char_data_array[2] = {0x00, BOARD_VERSION};
-    bluetooth_configuration_service_response_char_write(response_char_data_array);
+    uint8_t response_char_command[4] = {0x00,0x00, 0x00, BOARD_VERSION};
+    bluetooth_configuration_service_response_char_write(response_char_command);
 }
 
 void bluetooth_disconnect(void)

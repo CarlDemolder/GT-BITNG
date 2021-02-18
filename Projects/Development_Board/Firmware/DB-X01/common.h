@@ -30,7 +30,7 @@
 #define SG_PRESSURE_X01 0X06
 #define SG_STRAIN_X01 0X07
 
-#define BOARD_VERSION LP_ECG_X01
+#define BOARD_VERSION DB_X02
 
 enum COMMON_CONSTANTS
 {
@@ -40,14 +40,14 @@ enum COMMON_CONSTANTS
 
 #if BOARD_VERSION == DB_X02
     #define MAX30003 1
-    #define MAX30102 1
+    #define MAX30102 0
     #define CY15B108QI 1
     #define TMP117 1
-    #define WB 1
-    #define FT201X 1
-    #define BMI160 1
-    #define FDC1004 1
-    #define STRAIN_GAUGE 1
+    #define WB 0
+    #define FT201X 0
+    #define BMI160 0
+    #define FDC1004 0
+    #define STRAIN_GAUGE 0
     enum PIN_CONSTANTS
     {
         BLE_LED_PIN = 11,                                   /** Pinout for BLE LED for DB-X02 */
@@ -141,10 +141,6 @@ enum COMMON_CONSTANTS
 
         NRESET_PIN = 21,                                    /** Pinout for nRESET pin for SG-X01 */ 
     };
-#endif
-
-#if MAX30003
-    #define ECG 1
 #endif
 
 #if MAX30003 || CY15B108QI

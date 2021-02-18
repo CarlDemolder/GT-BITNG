@@ -29,6 +29,31 @@ void max30003_init(void)
 
     control.register_byte_count = 3;    // Number of bytes per register
     control.long_term_storage = 0;      // Initially set the long term data storage off
+    control.samples_per_second = 128;
+    control.bytes_per_sample = 2;       // Bytes per sample
+    control.counter = 0;                                                  // Counter to iterate through measurements taken
+
+    control.current_sample_count = 0;    
+    control.interrupt = 0;    // Disabling the interrupt flag for ECG Data
+    control.data_ready_for_transmit = 0;                    // Data ready for transmit
+    control.bytes_left_to_transmit = 0;
+
+    control.samples_per_interrupt = max30003_get_samples_per_interrupt();
+    NRF_LOG_INFO("MAX30003: samples_per_interrupt: %u", control.samples_per_interrupt);
+
+    NRF_LOG_INFO("MAX30003: samples_per_second: %u", control.samples_per_second);
+    control.samples_per_recording_session = 3600 * control.samples_per_second;         // Each recording session is 1 hour
+    NRF_LOG_INFO("MAX30003: samples_per_recording_session: %u", control.samples_per_recording_session);
+
+    NRF_LOG_INFO("MAX30003: bytes_per_sample: %u", control.bytes_per_sample);
+    control.bytes_per_recording_session = control.samples_per_recording_session * control.bytes_per_sample;
+    NRF_LOG_INFO("MAX30003: bytes_per_recording_session: %u", control.bytes_per_recording_session);
+
+    control.bytes_per_bluetooth_transmission = bluetooth_get_bytes_per_transmission();
+    control.samples_per_bluetooth_transmission = control.bytes_per_bluetooth_transmission/control.bytes_per_sample;
+    NRF_LOG_INFO("control.samples_per_bluetooth_transmission: %u", control.samples_per_bluetooth_transmission);
+
+
 
     control.external_memory_start_address = MAX30003_EXTERNAL_MEMORY_START_ADDRESS;     // Start address of the external memory to store ECG data
     control.external_memory_end_address = MAX30003_EXTERNAL_MEMORY_END_ADDRESS;         // End address of the external memory to store ECG data
@@ -154,12 +179,9 @@ void max30003_init(void)
     _max30003_write_rtor2_configuration_register();
     _max30003_read_rtor2_configuration_register();
 
-    control.counter = 0;                                                  // Counter to iterate through measurements taken
     control.samples_per_interrupt = interrupt_manager_register.efit + 1;  // Setting the default Samples recored per interrupt
+    control.bytes_per_interrupt = control.samples_per_interrupt * control.bytes_per_sample;
     NRF_LOG_INFO("control.samples_per_interrupt: %u", control.samples_per_interrupt);
-    control.samples_per_second = 128;
-
-    control.bytes_per_sample = 2;   // Bytes per sample
 }
 
 void max30003_read_device_info(void) 
@@ -192,6 +214,7 @@ void max30003_set_samples_per_interrupt(uint8_t temp_samples_per_interrupt)
     {
         control.samples_per_interrupt = temp_samples_per_interrupt;
     }
+    control.bytes_per_interrupt = control.samples_per_interrupt * control.bytes_per_sample;
     interrupt_manager_register.efit = control.samples_per_interrupt - 1;
     _max30003_write_interrupt_manager_register();
     _max30003_read_interrupt_manager_register();
@@ -253,6 +276,12 @@ uint8_t max30003_get_bytes_per_sample(void)
     return control.bytes_per_sample;
 }
 
+uint8_t max30003_get_bytes_per_interrupt(void)
+{
+    NRF_LOG_INFO("max30003_get_bytes_per_interrupt");
+    return control.bytes_per_interrupt;
+}
+
 void max30003_interrupt1_enable(void)
 {
     NRF_LOG_INFO("max30003_interrupt1_enable");
@@ -303,21 +332,21 @@ void max30003_read_ecg_fifo_memory(void)
 {
     NRF_LOG_INFO("max30003_read_ecg_fifo_memory_register");
     NRF_LOG_INFO("control.samples_per_interrupt: %u", control.samples_per_interrupt);
-    _max30003_spim_read_registers(ecg_fifo_memory_register.register_pointer, ecg_fifo_memory_register.data_array, control.samples_per_interrupt*3);
+    _max30003_spim_read_registers(ecg_fifo_memory_register.register_pointer, ecg_fifo_memory_register.data, control.samples_per_interrupt*3);
     uint32_t temp_ecg_voltage = 0;
     control.counter = 0;
     for(uint8_t i = 0; i < control.samples_per_interrupt*3; i=i+3)
     {
         temp_ecg_voltage = 0;
-        temp_ecg_voltage = (ecg_fifo_memory_register.data_array[i+2] & 0b11000000) >> 6;
-        temp_ecg_voltage = temp_ecg_voltage | (((uint32_t) ecg_fifo_memory_register.data_array[i+1]) << 2);
-        temp_ecg_voltage = temp_ecg_voltage | (((uint32_t) ecg_fifo_memory_register.data_array[i]) << 10); 
+        temp_ecg_voltage = (ecg_fifo_memory_register.data[i+2] & 0b11000000) >> 6;
+        temp_ecg_voltage = temp_ecg_voltage | (((uint32_t) ecg_fifo_memory_register.data[i+1]) << 2);
+        temp_ecg_voltage = temp_ecg_voltage | (((uint32_t) ecg_fifo_memory_register.data[i]) << 10); 
 //        NRF_LOG_INFO("temp_ecg_voltage: %X", temp_ecg_voltage);
         ecg_fifo_memory_register.ecg_voltage[control.counter] = (uint16_t)((temp_ecg_voltage & 0b00000000000000111111111111111100)>>2);
-        ecg_fifo_memory_register.etag[control.counter] = (ecg_fifo_memory_register.data_array[i+2] & 0b00111000) >> 3;
-        ecg_fifo_memory_register.ptag[control.counter] = ecg_fifo_memory_register.data_array[i+2] & 0b00000111;
-        NRF_LOG_INFO("W: %u, R:%X %X %X, V: %X", (control.counter+1), ecg_fifo_memory_register.data_array[i], 
-        ecg_fifo_memory_register.data_array[i+1], ecg_fifo_memory_register.data_array[i+2], ecg_fifo_memory_register.ecg_voltage[control.counter]);
+        ecg_fifo_memory_register.etag[control.counter] = (ecg_fifo_memory_register.data[i+2] & 0b00111000) >> 3;
+        ecg_fifo_memory_register.ptag[control.counter] = ecg_fifo_memory_register.data[i+2] & 0b00000111;
+        NRF_LOG_INFO("W: %u, R:%X %X %X, V: %X", (control.counter+1), ecg_fifo_memory_register.data[i], ecg_fifo_memory_register.data[i+1], 
+        ecg_fifo_memory_register.data[i+2], ecg_fifo_memory_register.ecg_voltage[control.counter]);
         NRF_LOG_INFO("ETAG: %X, PTAG: %X", ecg_fifo_memory_register.etag[control.counter], ecg_fifo_memory_register.ptag[control.counter]);
         NRF_LOG_INFO("");
         control.counter++;
@@ -325,12 +354,12 @@ void max30003_read_ecg_fifo_memory(void)
     NRF_LOG_INFO("Counter: %u", control.counter);
 }
 
-void max30003_get_ecg_voltage(uint16_t* data_array, uint8_t data_array_size)
+void max30003_get_ecg_voltage(uint8_t* temp_data, uint8_t temp_data_length)
 {
     NRF_LOG_INFO("max30003_get_ecg_voltage");
-    for(int i = 0; i < data_array_size; i++)
+    for(int i = 0; i < temp_data_length; i++)
     {
-        data_array[i] = ecg_fifo_memory_register.ecg_voltage[i];
+        temp_data[i] = ecg_fifo_memory_register.ecg_voltage[i];
     }
 }
 
@@ -384,7 +413,7 @@ void max30003_pin_interrupt_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t
     UNUSED_PARAMETER(pin);
     UNUSED_PARAMETER(action);
 
-    ecg_interrupt_handler();    // Call to Overall ECG Manager to manage ECG workflow
+    max30003_interrupt_handler();    // Call to Overall ECG Manager to manage ECG workflow
 }
 
 void max30003_fifo_reset(void)
@@ -393,7 +422,473 @@ void max30003_fifo_reset(void)
     _max30003_write_fifo_reset_register();
 }
 
+void max30003_interrupt_handler(void)
+{
+    NRF_LOG_INFO("ecg_interrupt_handler");
+    
+    if(control.interrupt == 1)
+    {
+        uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+        state_handler(spim_enable_command); // Enable SPIM Module
+
+        uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
+        state_handler(spim_init_command); // Initialize SPIM Module
+
+        uint8_t spim_select_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, MAX30003_CS_PIN};
+        state_handler(spim_select_cs_pin_command); // Set Chip Select Pin to MAX30003 for the SPIM Module
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        if(max30003_get_status_register_eovf())   // Check to see if one needs to issue a fifo reset to clear the cache
+        {
+            max30003_fifo_reset();
+        }
+        else
+        {
+            max30003_read_ecg_fifo_memory();    // Read data from FIFO memory stored on MAX30003
+            
+            if(control.long_term_storage == 1)    
+            {
+                #if CY15B108QI
+                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+                // Data is stored as a uint16_t data type. In order to save it to external memory, it is converted to a uinnt8_t data type.
+                uint8_t cy15b108qi_voltage_data[control.bytes_per_interrupt]; // uint8_t array has twice the number of elements as uint16_t 
+                for(uint8_t i = 0; i < control.samples_per_interrupt; i++)
+                {
+                    cy15b108qi_voltage_data[2*i] = (uint8_t) ((0xFF00 & ecg_fifo_memory_register.ecg_voltage[i]) >> 8);
+                    NRF_LOG_INFO("Sample: %u, cy15b108qi_voltage_array: %u", 2*i, cy15b108qi_voltage_data[2*i]);
+                    cy15b108qi_voltage_data[2*i+1] = (uint8_t) (0x00FF & ecg_fifo_memory_register.ecg_voltage[i]);
+                    NRF_LOG_INFO("Sample: %u, cy15b108qi_voltage_array: %u", 2*i+1, cy15b108qi_voltage_data[2*i+1]);
+                }
+        
+                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+                uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+                state_handler(spim_enable_command); // Enable SPIM Module
+
+                uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
+                state_handler(spim_init_command); // Initialize SPIM Module
+
+                spim_select_cs_pin_command[4] = CY15B108QI_CS_PIN;
+                state_handler(spim_select_cs_pin_command); // Set Chip Select Pin to CY15B108QI for the SPIM Module
+
+                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+                uint8_t cy15b108qi_exit_deep_power_down_mode_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_EXIT_DEEP_POWER_DOWN_MODE_COMMAND};
+                state_handler(cy15b108qi_exit_deep_power_down_mode_command); // Exit the Deep power down mode
+
+                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+            
+                if(control.external_memory_write_current_address > (control.external_memory_end_address - control.bytes_per_interrupt))
+                {
+                    control.external_memory_write_current_address = control.external_memory_start_address;
+                }
+
+                cy15b108qi_write_registers(cy15b108qi_voltage_data, control.bytes_per_interrupt, control.external_memory_write_current_address);
+                control.external_memory_write_current_address += control.bytes_per_interrupt;
+
+                control.current_sample_count += control.samples_per_interrupt;
+                NRF_LOG_INFO("control.current_sample_count: %u", control.current_sample_count);
+
+                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */     
+
+                uint8_t cy15b108qi_enter_deep_power_down_mode_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_ENTER_DEEP_POWER_DOWN_MODE_COMMAND};
+                state_handler(cy15b108qi_enter_deep_power_down_mode_command); // Enter the Deep power down mode
+
+                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+                uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
+                state_handler(spim_uninit_command); // Uninitialize SPIM Module
+
+                uint8_t spim_disable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
+                state_handler(spim_disable_command); // Disable SPIM Module
+
+                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+                if(control.current_sample_count >= control.samples_per_recording_session)
+                {
+                    // The transmitting start address is set the write start address      
+                    control.external_memory_transmit_start_address = control.external_memory_write_start_address;           
+                    
+                    // The transmitting current address is set the external memory transmit start address
+                    control.external_memory_transmit_current_address = control.external_memory_transmit_start_address;
+                    
+                    // The transmitting end address is set to the last write address
+                    control.external_memory_transmit_end_address = control.external_memory_write_current_address - control.bytes_per_interrupt;           
+      
+                    // The external memory write start address is set to the external memory write_current address
+                    control.external_memory_write_start_address = control.external_memory_write_current_address;
+
+                    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+                    // Reset sampling count
+                    control.current_sample_count = 0;
+
+                    // Flag to state that the data is ready to be transmitted via BLE
+                    control.data_ready_for_transmit = 1;  
+                    
+                    // Setting the number of bytes left to transmit to the number of bytes per recording session  
+                    control.bytes_left_to_transmit = control.bytes_per_recording_session;
+
+                    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+                    uint8_t bluetooth_start_advertising_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_START_ADVERTISING_COMMAND};
+                    state_handler(bluetooth_start_advertising_command); // Start to transmit the Recording Session of the ECG Data
+                }
+                #endif
+            }
+            else
+            {
+                uint8_t ble_max30003_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_INSTANT_ECG_CHAR_COMMAND};
+                state_handler(ble_max30003_data); // Write the instant ECG data to GATT database
+            }
+        }
+    }
+}
+
+void bluetooth_transmit_ecg_recording_session(void)
+{
+    NRF_LOG_INFO("bluetooth_transmit_recording_session");
+
+}
+
+void max30003_transmit_ecg_recording_session(void)
+{
+    NRF_LOG_INFO("max30003_transmit_recording_session"); 
+
+    if(control.data_ready_for_transmit == 1)
+    {
+        uint8_t empty_values = 0;
+
+        uint8_t bluetooth_ecg_data[control.bytes_per_bluetooth_transmission];
+
+        while(control.bytes_left_to_transmit > 0)
+        {
+            #if CY15B108QI
+            uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+            state_handler(spim_enable_command); // Enable SPIM Module
+
+            uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
+            state_handler(spim_init_command); // Initialize SPIM Module
+
+            uint8_t spim_set_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, CY15B108QI_CS_PIN};
+            state_handler(spim_set_cs_pin_command); // Set Chip Select Pin to CY15B108QI for the SPIM Module
+
+            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+    
+            uint8_t cy15b108qi_exit_deep_power_down_mode_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_EXIT_DEEP_POWER_DOWN_MODE_COMMAND};
+            state_handler(cy15b108qi_exit_deep_power_down_mode_command); // Exit the Deep power down mode
+
+            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+            if((control.external_memory_transmit_current_address > (control.external_memory_end_address - control.bytes_per_bluetooth_transmission))
+            && (control.bytes_left_to_transmit > control.bytes_per_bluetooth_transmission))
+            {
+                NRF_LOG_INFO("max30003_transmit_recording_session: case 1");
+                // Get difference between end register and current transmit register
+                uint8_t external_memory_end_address_difference = control.external_memory_end_address - control.external_memory_transmit_current_address; 
+            
+                // Creating an array to store the data until the end address
+                uint8_t external_memory_end_address_data[external_memory_end_address_difference];
+
+                // Read data from the registers until the last address
+                cy15b108qi_fast_read_registers(external_memory_end_address_data, external_memory_end_address_difference, control.external_memory_transmit_current_address);
+            
+                // Reset the current read address
+                control.external_memory_transmit_current_address = control.external_memory_start_address;
+
+                // Calculate the rest of the data that is required to read
+                uint8_t external_memory_start_address_difference = control.bytes_per_bluetooth_transmission - external_memory_end_address_difference;
+            
+                // Creating an array to store the data to fill the rest of the bluetooth buffer
+                uint8_t external_memory_start_address_data[external_memory_start_address_difference];
+
+                // Read data from the register until the number of bytes is read
+                cy15b108qi_fast_read_registers(external_memory_start_address_data, external_memory_start_address_difference, control.external_memory_transmit_current_address);
+            
+                // Transfer the data from these registers to the Bluetooth data packet for transfer
+            
+                for(uint8_t i = 0; i < external_memory_end_address_difference; i++)
+                {
+                    bluetooth_ecg_data[i] = external_memory_end_address_data[i];
+                }
+
+                for(uint8_t i = 0; i < external_memory_start_address_difference; i++)
+                {
+                    bluetooth_ecg_data[i+external_memory_end_address_difference] = external_memory_start_address_data[i];
+                }
+
+                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+                control.external_memory_transmit_current_address += external_memory_start_address_difference;
+                NRF_LOG_INFO("control.external_memory_transmit_current_address: %X", control.external_memory_transmit_current_address);
+                control.bytes_left_to_transmit -= control.bytes_per_bluetooth_transmission;
+                NRF_LOG_INFO("control.bytes_left_to_transmit: %u", control.bytes_left_to_transmit);
+            }
+        
+            else if((control.external_memory_transmit_current_address > (control.external_memory_end_address - control.bytes_left_to_transmit))
+            && (control.bytes_left_to_transmit < control.bytes_per_bluetooth_transmission))
+            {
+                NRF_LOG_INFO("max30003_transmit_recording_session: case 2");
+                // Get difference between end register and current transmit register
+                uint8_t external_memory_end_address_difference = control.external_memory_end_address - control.external_memory_transmit_current_address; 
+            
+                // Creating an array to store the data until the end address
+                uint8_t external_memory_end_address_data[external_memory_end_address_difference];
+
+                // Read data from the registers until the last address
+                cy15b108qi_fast_read_registers(external_memory_end_address_data, external_memory_end_address_difference, control.external_memory_transmit_current_address);
+            
+                // Reset the current read address
+                control.external_memory_transmit_current_address = control.external_memory_start_address;
+
+                // Calculate the rest of the data that is required to read
+                uint8_t external_memory_start_address_difference = control.bytes_left_to_transmit - external_memory_end_address_difference;
+            
+                // Creating an array to store the data to fill the rest of the bluetooth buffer
+                uint8_t external_memory_start_address_data[external_memory_start_address_difference];
+
+                // Read data from the register until the number of bytes is read
+                cy15b108qi_fast_read_registers(external_memory_start_address_data, external_memory_start_address_difference, control.external_memory_transmit_current_address);
+            
+                // Transfer the data from these registers to the Bluetooth data packet for transfer
+            
+                for(uint8_t i = 0; i < external_memory_end_address_difference; i++)
+                {
+                    bluetooth_ecg_data[i] = external_memory_end_address_data[i];
+                }
+
+                for(uint8_t i = 0; i < external_memory_start_address_difference; i++)
+                {
+                    bluetooth_ecg_data[i+external_memory_end_address_difference] = external_memory_start_address_data[i];
+                }
+
+                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+                control.external_memory_transmit_current_address += external_memory_start_address_difference;
+                NRF_LOG_INFO("control.external_memory_transmit_current_address: %X", control.external_memory_transmit_current_address);
+                control.bytes_left_to_transmit -= control.bytes_left_to_transmit;
+                NRF_LOG_INFO("control.bytes_left_to_transmit: %u", control.bytes_left_to_transmit);
+            }
+
+            else if((control.bytes_left_to_transmit < control.bytes_per_bluetooth_transmission) && 
+            ((control.external_memory_transmit_current_address < (control.external_memory_end_address - control.bytes_left_to_transmit))))
+            {
+                NRF_LOG_INFO("max30003_transmit_recording_session: case 3");
+
+                NRF_LOG_INFO("control.bytes_left_to_transmit: %u", control.bytes_left_to_transmit);
+                NRF_LOG_INFO("control.bytes_per_bluetooth_transmission: %u", control.bytes_per_bluetooth_transmission);
+                empty_values = (control.bytes_per_bluetooth_transmission - control.bytes_left_to_transmit);
+                NRF_LOG_INFO("empty_value: %u", empty_values);
+
+                // Read remaining data from external memory
+                cy15b108qi_fast_read_registers(bluetooth_ecg_data, control.bytes_left_to_transmit, control.external_memory_transmit_current_address);
+            
+                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+                control.external_memory_transmit_current_address += control.bytes_left_to_transmit;
+                NRF_LOG_INFO("control.external_memory_transmit_current_address: %X", control.external_memory_transmit_current_address);
+                control.bytes_left_to_transmit -= control.bytes_left_to_transmit;
+                NRF_LOG_INFO("control.bytes_left_to_transmit: %u", control.bytes_left_to_transmit);
+            }
+            else
+            {
+                // Read data from external memory
+                cy15b108qi_fast_read_registers(bluetooth_ecg_data, control.bytes_per_bluetooth_transmission, control.external_memory_transmit_current_address);
+            
+                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+                control.external_memory_transmit_current_address += control.bytes_per_bluetooth_transmission;
+                NRF_LOG_INFO("control.external_memory_transmit_current_address: %X", control.external_memory_transmit_current_address);
+                control.bytes_left_to_transmit -= control.bytes_per_bluetooth_transmission;
+                NRF_LOG_INFO("control.bytes_left_to_transmit: %u", control.bytes_left_to_transmit);
+            }
+        
+            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+            bluetooth_ecg_service_ecg_char_write(bluetooth_ecg_data);
+
+            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+            if(control.bytes_left_to_transmit == 0)
+            {
+                NRF_LOG_INFO("There are no more bytes left to transmit.");
+
+                uint8_t bluetooth_override_request_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_OVERRIDE_REQUEST_RECEIVED_COMMAND};
+                state_handler(bluetooth_override_request_command); // Override the Request Received Flag to send message to BLE Client
+
+                uint8_t bluetooth_transmit_ecg_recording_session_finished_command[7] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND,
+                0x00, 0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_TRANSMIT_ECG_DATA_FINISHED};
+                state_handler(bluetooth_transmit_ecg_recording_session_finished_command); // Recording session finished
+                
+                control.data_ready_for_transmit = 0;
+            }
+    
+            if(empty_values != 0)
+            {
+                NRF_LOG_INFO("There are empty values: %u", empty_values);
+                
+                uint8_t bluetooth_override_request_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_OVERRIDE_REQUEST_RECEIVED_COMMAND};
+                state_handler(bluetooth_override_request_command); // Override the Request Received Flag to send message to BLE Client
+
+                uint8_t bluetooth_transmit_ecg_data_empty_values_command[7] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND,
+                0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_TRANSMIT_ECG_DATA_EMPTY_VALUES, empty_values};
+                state_handler(bluetooth_transmit_ecg_data_empty_values_command); // Send the number of empty values
+            }
+        }
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        control.data_ready_for_transmit = 0;    // Resetting the flag stating that data is not ready for transmit
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        uint8_t cy15b108qi_enter_deep_power_down_mode_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_ENTER_DEEP_POWER_DOWN_MODE_COMMAND};
+        state_handler(cy15b108qi_enter_deep_power_down_mode_command); // Enter the Deep power down mode
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+    
+        uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
+        state_handler(spim_uninit_command); // Uninitialize SPIM Module
+
+        uint8_t spim_disable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
+        state_handler(spim_disable_command); // Disable SPIM Module  
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+        #endif
+    }
+}
+
+uint32_t max30003_get_bytes_left_to_transmit(void)
+{
+    NRF_LOG_INFO("max30003_get_bytes_left_to_transmit");
+    return control.bytes_left_to_transmit;
+}
+
+void max30003_enable_long_term_storage(void)
+{
+    control.long_term_storage = 1;
+}
+
+void max30003_disable_long_term_storage(void)
+{
+    control.long_term_storage = 0;
+}
+
+void max30003_start_data_collection(void)
+{
+    NRF_LOG_INFO("max30003_start_data_collection");
+    control.interrupt = 1;    // Enabling the interrupt
+
+    uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+    state_handler(spim_enable_command); // Enable SPIM Module
+
+    uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
+    state_handler(spim_init_command); // Initialize SPIM Module
+
+    uint8_t spim_select_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, CY15B108QI_CS_PIN};
+    state_handler(spim_select_cs_pin_command); // Select Chip Select Pin to CY15B108QI for the SPIM Module
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    if(control.long_term_storage == 1)
+    {
+        #if CY15B108QI
+        uint8_t cy15b108qi_exit_hibernation_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_EXIT_HIBERNATION_MODE_COMMAND};
+        state_handler(cy15b108qi_exit_hibernation_command); // Exit the Hibernation power state
+
+        uint8_t cy15b108qi_enter_deep_power_down_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_ENTER_DEEP_POWER_DOWN_MODE_COMMAND};
+        state_handler(cy15b108qi_enter_deep_power_down_command); // Enter the deep-power-down power state
+        #endif
+    }
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    spim_select_cs_pin_command[4] = MAX30003_CS_PIN;
+    state_handler(spim_select_cs_pin_command); // Set Chip Select Pin to MAX30003 for the SPIM Module
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    max30003_start_recording(); // Set the MAX30003 to start recording ECG data
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
+    state_handler(spim_uninit_command); // Uninitialize SPIM Module
+
+    uint8_t spim_disable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
+    state_handler(spim_disable_command); // Disable SPIM Module
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t bluetooth_override_request_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_OVERRIDE_REQUEST_RECEIVED_COMMAND};
+    state_handler(bluetooth_override_request_command); // Override the Request Received Flag to send message to BLE Client
+
+    uint8_t response_char_ecg_data_collection_started_command[7] = {0X00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, 0x00, 
+    0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_ECG_DATA_COLLECTION_STARTED};
+    state_handler(response_char_ecg_data_collection_started_command); // Sending message to phone that the recording session has started
+}
+
+void max30003_stop_data_collection(void)
+{
+    NRF_LOG_INFO("ecg_stop_data_recording");
+
+    control.interrupt = 0;    // Disabling the interrupt
+    control.long_term_storage = 0; // Disable the long term storage command
+
+    uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+    state_handler(spim_enable_command); // Enable SPIM Module
+
+    uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
+    state_handler(spim_init_command); // Initialize SPIM Module
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t max30003_disable_pin_interrupt_command[3] = {0x00, MAX30003_MODULE, MAX30003_DISABLE_PIN_INTERRUPT_COMMAND}; 
+    state_handler(max30003_disable_pin_interrupt_command); // MAX30003: Disable Pin Interrupt Command
+
+    uint8_t spim_select_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, MAX30003_CS_PIN};
+    state_handler(spim_select_cs_pin_command); // Set Chip Select Pin to MAX30003 for the SPIM Module
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    max30003_disable_pin_interrupt(); // MAX30003: Disable Interrupt Command
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+    
+    if(control.long_term_storage == 1)
+    {
+        #if CY15B108QI
+        spim_select_cs_pin_command[4] = CY15B108QI_CS_PIN;
+        state_handler(spim_select_cs_pin_command); // Set Chip Select Pin to CY15B108QI for the SPIM Module
+
+        uint8_t cy15b108qi_enter_hibernation_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_ENTER_HIBERNATION_MODE_COMMAND};
+        state_handler(cy15b108qi_enter_hibernation_command);
+        #endif
+    }
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
+    state_handler(spim_uninit_command); // Uninitialize SPIM Module
+
+    uint8_t spim_disable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
+    state_handler(spim_disable_command); // Disable SPIM Module
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t bluetooth_override_request_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_OVERRIDE_REQUEST_RECEIVED_COMMAND};
+    state_handler(bluetooth_override_request_command); // Override the Request Received Flag to send message to BLE Client
+
+    uint8_t response_char_ecg_data_collection_finished_command[7] = {0X00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, 0x00, 
+    0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_ECG_DATA_COLLECTION_FINISHED};
+    state_handler(response_char_ecg_data_collection_finished_command); // Sending message to phone that the recording session has started
+}
+
+
 /* Static Functions */
+
 
 /* 
 * Read Status Register to read the following values:
@@ -990,36 +1485,36 @@ static void _max30003_write_rtor2_configuration_register(void)
     _max30003_spim_write_registers(rtor2_configuration_register.register_pointer, control.spi_data, control.register_byte_count);
 }
 
-static void _max30003_spim_read_registers(uint8_t register_address, uint8_t *data_array, uint8_t data_array_size)
+static void _max30003_spim_read_registers(uint8_t register_address, uint8_t *data, uint8_t data_length)
 {
     NRF_LOG_INFO("_max30003_spim_read_registers");
    
-    uint8_t temp_data_array_length = data_array_size + 1;
-    uint8_t temp_data_array[temp_data_array_length];
-    NRF_LOG_INFO("temp_data_array_length: %u", temp_data_array_length);
-    spim_read_registers(register_address, temp_data_array, temp_data_array_length);
+    uint8_t temp_data_length = data_length + 1;
+    uint8_t temp_data[temp_data_length];
+    NRF_LOG_INFO("temp_data_length: %u", temp_data_length);
+    spim_read_registers(register_address, temp_data, temp_data_length);
     
-    temp_data_array[0] = register_address;
-    for(uint8_t i = 1; i < temp_data_array_length; i++)
+    temp_data[0] = register_address;
+    for(uint8_t i = 1; i < temp_data_length; i++)
     {
-        data_array[i-1] = temp_data_array[i];
+        data[i-1] = temp_data[i];
     }
-    if(temp_data_array_length == 0x04)
+    if(temp_data_length == 0x04)
     {
-        NRF_LOG_INFO("Register Address: %X; Array Value: %X %X %X", temp_data_array[0], temp_data_array[1], temp_data_array[2], temp_data_array[3]); // Debugging purposes only
+        NRF_LOG_INFO("Register Address: %X; Array Value: %X %X %X", temp_data[0], temp_data[1], temp_data[2], temp_data[3]); // Debugging purposes only
     }
 }
 
-static void _max30003_spim_write_registers(uint8_t start_register_address, uint8_t *data_array, uint8_t data_array_size)
+static void _max30003_spim_write_registers(uint8_t start_register_address, uint8_t *data, uint8_t data_length)
 {
     NRF_LOG_INFO("_max30003_spim_write_registers");
-    uint8_t temp_data_array[data_array_size+1];     // Debugging purposes only
-    temp_data_array[0] = start_register_address;    // Debugging purposes only
-    for(uint8_t i = 1; i <= data_array_size; i++)
+    uint8_t temp_data[data_length + 1];     // Debugging purposes only
+    temp_data[0] = start_register_address;    // Debugging purposes only
+    for(uint8_t i = 1; i <= data_length; i++)
     {
-        temp_data_array[i] = data_array[i-1];       // Debugging purposes only
+        temp_data[i] = data[i-1];       // Debugging purposes only
     }
-    NRF_LOG_HEXDUMP_INFO(temp_data_array, ARRAY_LENGTH(temp_data_array));   // Debugging purposes only
-    spim_write_registers(start_register_address, data_array, data_array_size);
+    NRF_LOG_HEXDUMP_INFO(temp_data, ARRAY_LENGTH(temp_data));   // Debugging purposes only
+    spim_write_registers(start_register_address, data, data_length);
 }
 #endif

@@ -29,7 +29,15 @@ enum TMP117_REGISTER_CONSTANTS
 enum TMP117_OPERATION_CONSTANTS
 {
     TMP117_SHUTDOWN_MODE = 0X01,
-    TMP117_CONTINUOUS_CONVERSION_MODE = 0X00
+    TMP117_CONTINUOUS_CONVERSION_MODE = 0X00,
+    TMP117_ONE_SHOT_CONVERSION = 0X02,
+};
+
+enum TMP117_CONVERSION_CYCLE_TIME_CONSTANTS
+{
+    TMP117_SHORTEST_TIME_MODE = 0X00,
+    TMP117_LONGEST_TIME_MODE = 0X07,
+
 };
 
 enum TMP117_AVERAGING_CONSTANTS
@@ -53,6 +61,7 @@ struct TMP117_control_struct
     uint8_t slave_address;                                  /**< Variable to record the I2C slave address */
     uint8_t status;                                         /**< Variable to record if the TMP117 is enabled or disabled */
     uint8_t interrupt;                                      /**< Variable to record when the data interrupt flag */
+    uint8_t data_ready_for_transmit;                        /**< Variable to record when the data is ready for transmit */
          
     uint8_t i2c_data[2];                                    /**< Variable to record the data communicated through I2C */
     uint8_t register_byte_count;                            /**< Variable to record the number of bytes communicated through I2C */
@@ -188,7 +197,9 @@ void tmp117_uninit(void);
 
 uint8_t tmp117_is_enabled(void);
 
-void tmp117_set_long_term_storage(void);
+void tmp117_enable_long_term_storage(void);
+
+void tmp117_disable_long_term_storage(void);
 
 void tmp117_get_device_id(uint8_t *temp_device_id);
 
@@ -202,9 +213,11 @@ void tmp117_set_conversion_mode(uint8_t conversion_mode);
 
 void tmp117_interrupt_handler(void);
 
-void tmp117_stop_recording_session(void);
+void tmp117_start_data_collection(void);
 
-void tmp117_transmit_recording_session(void);
+void tmp117_stop_data_collection(void);
+
+void tmp117_transmit_temperature_recording_session(void);
 
 void tmp117_set_external_memory_start_address(uint32_t external_memory_start_address);
 

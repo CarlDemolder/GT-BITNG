@@ -4,7 +4,7 @@
  */
 void power_manager_init(void)
 {
-    NRF_LOG_INFO("Power Management Initialized");
+    NRF_LOG_INFO("power_manager_init");
     ret_code_t err_code;
     err_code = nrf_pwr_mgmt_init();
     APP_ERROR_CHECK(err_code);
@@ -15,7 +15,7 @@ void power_manager_init(void)
 
 void sleep_mode_enter(void)
 {
-    NRF_LOG_INFO("Entering Sleep Mode via System On");
+    NRF_LOG_INFO("sleep_mode_enter");
 
     // Without SoftDevice and With SoftDevice method to enter System On Sleep Mode
     nrf_pwr_mgmt_run();
@@ -51,7 +51,7 @@ void power_manager_handler(void)
 {
     if (NRF_LOG_PROCESS() == false)
     {
-        sleep_mode_enter();
+        nrf_pwr_mgmt_run();
     }
 }
   

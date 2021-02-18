@@ -1,9 +1,8 @@
 #ifndef MAX30003_H_
 #define MAX30003_H_
 
+#include "serial_slave.h"
 #include "spi.h"
-#include "common.h"
-#include "ecg.h"
 
 //Register Addresses:
 enum MAX30003_Registers
@@ -54,6 +53,7 @@ struct MAX30003_Control_Struct
 {
     ret_code_t error_code;                                  /**< Variable to track errors */
 
+    uint8_t interrupt;                                      /**< Variable to record when the data interrupt flag */
     uint8_t counter;                                        /**< counter to iterate through values */
     uint8_t samples_per_interrupt;                          /**< Counter value to record the number of samples per interrupt */
     uint8_t samples_per_bluetooth_transmission;             /**< Variable to record the number of samples per bluetooth transmission */
@@ -64,6 +64,8 @@ struct MAX30003_Control_Struct
     uint32_t samples_per_second;                            /**< Variable to record the number of samples per minute */
     uint32_t bytes_left_to_transmit;                        /**< Variable to record the number of bytes left to transmit over BLE/USB */
     uint8_t bytes_per_sample;                               /**< Variable to record the number of bytes per samples */
+    uint8_t bytes_per_interrupt;                            /**< Variable to record the number of bytes per interrupt */
+    uint8_t data_ready_for_transmit;                        /**< Variable to record when the data is ready for transmit */
 
     uint8_t spi_data[3];                                    /**< Array to store SPI Data */
     uint8_t register_byte_count;                            /**< Number of bytes per register */
@@ -216,7 +218,7 @@ struct MAX30003_RTOR2_Configuration_Register_Struct
 struct MAX30003_ECG_FIFO_Memory_Register_Struct
 {
     uint8_t register_pointer;                                       /**< Register Value */    
-    uint8_t data_array[(MAX30003_MAX_FIFO_WORDS+1)*3];              /**< Register Value, Number of words to read from the FIFO, 3 bytes per word */
+    uint8_t data[(MAX30003_MAX_FIFO_WORDS+1)*3];                    /**< Register Value, Number of words to read from the FIFO, 3 bytes per word */
     uint16_t ecg_voltage[(MAX30003_MAX_FIFO_WORDS+1)];              /**< Register Value */
     uint8_t etag[(MAX30003_MAX_FIFO_WORDS+1)];                      /**< Register Value */  
     uint8_t ptag[(MAX30003_MAX_FIFO_WORDS+1)];                      /**< Register Value */ 
@@ -258,6 +260,8 @@ uint8_t max30003_get_samples_per_second(void);
 
 uint8_t max30003_get_bytes_per_sample(void);
 
+uint8_t max30003_get_bytes_per_interrupt(void);
+
 void max30003_interrupt1_enable(void);
 
 void max30003_interrupt1_disable(void);
@@ -266,7 +270,7 @@ void max30003_interrupt2_enable(void);
 
 void max30003_interrupt2_disable(void);
 
-void max30003_get_ecg_voltage(uint16_t* data_array, uint8_t data_array_size);
+void max30003_get_ecg_voltage(uint8_t* data, uint8_t data_length);
 
 void max30003_soft_reset(void);
 
@@ -283,6 +287,20 @@ void max30003_pin_interrupt_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t
 void max30003_fifo_reset(void);
 
 void max30003_read_ecg_fifo_memory(void);
+
+void max30003_interrupt_handler(void);
+
+void max30003_transmit_ecg_recording_session();
+
+uint32_t max30003_get_bytes_left_to_transmit(void);
+
+void max30003_enable_long_term_storage(void);
+
+void max30003_disable_long_term_storage(void);
+
+void max30003_start_data_collection(void);
+
+void max30003_stop_data_collection(void);
 
 /* Static Functions */
 
@@ -338,10 +356,10 @@ static void _max30003_write_rtor2_configuration_register(void);
 
 static void _max30003_read_ecg_fifo_memory_register(void);
 
-static void _max30003_spim_read_register(uint8_t register_address, uint8_t *data_array, uint8_t data_array_size);
+static void _max30003_spim_read_register(uint8_t register_address, uint8_t *data, uint8_t data_length);
 
-static void _max30003_spim_read_registers(uint8_t start_register_address, uint8_t *data_array, uint8_t data_array_size);
+static void _max30003_spim_read_registers(uint8_t start_register_address, uint8_t *data, uint8_t data_length);
 
-static void _max30003_spim_write_registers(uint8_t start_register_address, uint8_t *data_array, uint8_t data_array_size);
+static void _max30003_spim_write_registers(uint8_t start_register_address, uint8_t *data, uint8_t data_length);
 
 #endif //MAX30003_H_

@@ -257,7 +257,7 @@ uint32_t configuration_service_crc_char_add(ble_configuration_service_t *p_cus, 
     return NRF_SUCCESS;
 }
 
-uint32_t configuration_service_settings_char_read(ble_configuration_service_t *p_cus, uint8_t *new_settings_char_array)
+uint32_t configuration_service_settings_char_read(ble_configuration_service_t *p_cus, uint8_t *new_settings_char)
 {
     NRF_LOG_INFO("configuration_service_settings_char_read"); 
     if (p_cus == NULL)
@@ -273,7 +273,7 @@ uint32_t configuration_service_settings_char_read(ble_configuration_service_t *p
 
     gatts_value.len = sizeof(uint8_t)*CONFIGURATION_SERVICE_SETTINGS_CHAR_LENGTH;
     gatts_value.offset = 0;
-    gatts_value.p_value = new_settings_char_array;
+    gatts_value.p_value = new_settings_char;
 
     // Get Characteristic from Database
     err_code = sd_ble_gatts_value_get(p_cus->conn_handle, p_cus->settings_char_handles.value_handle, &gatts_value);
@@ -284,7 +284,7 @@ uint32_t configuration_service_settings_char_read(ble_configuration_service_t *p
     }
 }
 
-uint32_t configuration_service_response_char_write(ble_configuration_service_t *p_cus, uint8_t *new_response_char_array)
+uint32_t configuration_service_response_char_write(ble_configuration_service_t *p_cus, uint8_t *new_response_char)
 {
     NRF_LOG_INFO("configuration_service_response_char_write"); 
     if (p_cus == NULL)
@@ -300,7 +300,7 @@ uint32_t configuration_service_response_char_write(ble_configuration_service_t *
 
     gatts_value.len = sizeof(uint8_t)*CONFIGURATION_SERVICE_RESPONSE_CHAR_LENGTH;
     gatts_value.offset = 0;
-    gatts_value.p_value = new_response_char_array;
+    gatts_value.p_value = new_response_char;
 
     // Update GATT Database
     err_code = sd_ble_gatts_value_set(p_cus->conn_handle, p_cus->response_char_handles.value_handle, &gatts_value);
@@ -325,7 +325,7 @@ uint32_t configuration_service_response_char_write(ble_configuration_service_t *
 
         err_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
         NRF_LOG_INFO("sd_ble_gatts_hvx result: %x", err_code);
-        NRF_LOG_INFO("Response Char Written: %X %X", new_response_char_array[0], new_response_char_array[1]);
+        NRF_LOG_INFO("Response Char Written: %X %X %X %X", new_response_char[0], new_response_char[1], new_response_char[2], new_response_char[3]);
     }
     else
     {
@@ -335,7 +335,7 @@ uint32_t configuration_service_response_char_write(ble_configuration_service_t *
     return err_code;
 }
 
-uint32_t configuration_service_crc_char_write(ble_configuration_service_t *p_cus, uint8_t *new_crc_char_array)
+uint32_t configuration_service_crc_char_write(ble_configuration_service_t *p_cus, uint8_t *new_crc_char)
 {
     NRF_LOG_INFO("configuration_service_crc_char_write"); 
     if (p_cus == NULL)
@@ -351,7 +351,7 @@ uint32_t configuration_service_crc_char_write(ble_configuration_service_t *p_cus
 
     gatts_value.len = sizeof(uint8_t)*CONFIGURATION_SERVICE_CRC_CHAR_LENGTH;
     gatts_value.offset = 0;
-    gatts_value.p_value = new_crc_char_array;
+    gatts_value.p_value = new_crc_char;
 
     // Update GATT Database
     err_code = sd_ble_gatts_value_set(p_cus->conn_handle, p_cus->crc_char_handles.value_handle, &gatts_value);
@@ -376,7 +376,7 @@ uint32_t configuration_service_crc_char_write(ble_configuration_service_t *p_cus
 
         err_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
         NRF_LOG_INFO("sd_ble_gatts_hvx result: %x", err_code);
-        NRF_LOG_INFO("CRC Char Written: %X %X", new_crc_char_array[0], new_crc_char_array[1]);
+        NRF_LOG_INFO("CRC Char Written: %X %X", new_crc_char[0], new_crc_char[1]);
     }
     else
     {

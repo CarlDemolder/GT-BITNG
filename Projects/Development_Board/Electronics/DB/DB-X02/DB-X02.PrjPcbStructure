@@ -1,1 +1,6 @@
-Record=TopLevelDocument|FileName=DB_Capacitance-X02.SchDoc
+Record=TopLevelDocument|FileName=DB_Capacitance-X02.SchDoc|SheetNumber=6
+Record=NoMainPathDocument|SourceDocument=DB_Capacitance-X02.SchDoc|FileName=DB_ECG-X02.SchDoc|SheetNumber=4
+Record=NoMainPathDocument|SourceDocument=DB_Capacitance-X02.SchDoc|FileName=DB_Main-X02.SchDoc|SheetNumber=1
+Record=NoMainPathDocument|SourceDocument=DB_Capacitance-X02.SchDoc|FileName=DB_Pheripherals-X02.SchDoc|SheetNumber=2
+Record=NoMainPathDocument|SourceDocument=DB_Capacitance-X02.SchDoc|FileName=DB_Power-X02.SchDoc|SheetNumber=3
+Record=NoMainPathDocument|SourceDocument=DB_Capacitance-X02.SchDoc|FileName=DB_Sensors-X02.SchDoc|SheetNumber=5

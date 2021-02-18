@@ -83,9 +83,9 @@ uint32_t configuration_service_settings_char_add(ble_configuration_service_t *p_
 uint32_t configuration_service_response_char_add(ble_configuration_service_t *p_cus, const ble_configuration_service_init_t *p_cus_init);
 uint32_t configuration_service_crc_char_add(ble_configuration_service_t *p_cus, const ble_configuration_service_init_t *p_cus_init);
 
-uint32_t configuration_service_settings_char_read(ble_configuration_service_t *p_cus, uint8_t *new_setting_char_array);
-uint32_t configuration_service_response_char_write(ble_configuration_service_t *p_cus, uint8_t *new_response_char_array);
-uint32_t configuration_service_crc_char_write(ble_configuration_service_t *p_cus, uint8_t *new_crc_char_array);
+uint32_t configuration_service_settings_char_read(ble_configuration_service_t *p_cus, uint8_t *new_setting_char);
+uint32_t configuration_service_response_char_write(ble_configuration_service_t *p_cus, uint8_t *new_response_char);
+uint32_t configuration_service_crc_char_write(ble_configuration_service_t *p_cus, uint8_t *new_crc_char);
 
 void ble_configuration_service_on_ble_evt(ble_evt_t const *p_ble_evt, void *p_context);
 
