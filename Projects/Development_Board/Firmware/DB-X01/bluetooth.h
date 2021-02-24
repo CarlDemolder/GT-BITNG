@@ -29,8 +29,6 @@
 struct Bluetooth_Control_Struct
 {
     ret_code_t error_code;          /**< Variable to track errors */
-    uint8_t request_received;       /**< Variable to track if the bluetooth device sent a request */
-
 };
 
 static void _bluetooth_nrf_qwr_error_handler(uint32_t nrf_error);
@@ -51,8 +49,7 @@ void bluetooth_advertising_init(void);
 void bluetooth_set_advertising_power(void);
 void bluetooth_advertising_start(void);
 void bluetooth_advertising_stop(void);
-
-void bluetooth_override_request_received(void);
+void bluetooth_advertising_restart(void);
 
 void bluetooth_configuration_service_settings_char_read(uint8_t *settings_char_data);
 void bluetooth_configuration_service_response_char_write(uint8_t *response_char_data);

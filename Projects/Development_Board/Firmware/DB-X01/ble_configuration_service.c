@@ -324,6 +324,10 @@ uint32_t configuration_service_response_char_write(ble_configuration_service_t *
         hvx_params.p_data = gatts_value.p_value;
 
         err_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+        while(err_code != 0x00)
+        {
+            err_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+        }
         NRF_LOG_INFO("sd_ble_gatts_hvx result: %x", err_code);
         NRF_LOG_INFO("Response Char Written: %X %X %X %X", new_response_char[0], new_response_char[1], new_response_char[2], new_response_char[3]);
     }

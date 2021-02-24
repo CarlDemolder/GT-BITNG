@@ -20,10 +20,10 @@ void startup_initialization(void)
     state_handler(max30003_initialization_command); // Initialize MAX30003 Module
     #endif
 
-//    #if CY15B108QI
-//    uint8_t cy15b108qi_initialization_command[3] = {0x00, SERIAL_SLAVE_MODULE, CY15B108QI_INITIALIZATION_COMMAND};       
-//    state_handler(cy15b108qi_initialization_command); // Initialize CY15B108QI Module
-//    #endif
+    #if CY15B108QI
+    uint8_t cy15b108qi_initialization_command[3] = {0x00, SERIAL_SLAVE_MODULE, CY15B108QI_INITIALIZATION_COMMAND};       
+    state_handler(cy15b108qi_initialization_command); // Initialize CY15B108QI Module
+    #endif
 
     #if FDC1004
     uint8_t fdc1004_initialization_command[3] = {0x00, SERIAL_SLAVE_MODULE, FDC1004_INITIALIZATION_COMMAND};       
@@ -127,6 +127,8 @@ static void _max30003_initialization(void)
 {
     NRF_LOG_INFO("_max30003_initialization");
 
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
     uint8_t max30003_power_ldo_enable_command[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_MAX30003_POWER_LDO_EN};
     state_handler(max30003_power_ldo_enable_command); // Enable 1.8V Supply for MAX30003
 
@@ -170,6 +172,8 @@ static void _cy15b108qi_initialization(void)
 {
     NRF_LOG_INFO("_cy15b108qi_initialization");
 
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
     uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
     state_handler(spim_enable_command); // Enable SPIM Module
 
@@ -177,7 +181,7 @@ static void _cy15b108qi_initialization(void)
     state_handler(spim_init_cs_pin_command); // Initialize the Chip Select Pin for the CY15B108QI
 
     uint8_t spim_select_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, CY15B108QI_CS_PIN};
-    state_handler(spim_select_cs_pin_command); // Select the Chip Select Pin for the MAX30003 for the SPIM Module
+    state_handler(spim_select_cs_pin_command); // Select the Chip Select Pin for the CY15B108QI for the SPIM Module
 
     uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
     state_handler(spim_init_command); // Initialize SPIM Module
@@ -1202,7 +1206,7 @@ static void _max30003_handler(uint8_t *serial_command)
             break;
 
         case MAX30003_STOP_DATA_COLLECTION_COMMAND:
-            NRF_LOG_INFO("MAX30003_MODULE: START_DATA_COLLECTION_COMMAND");
+            NRF_LOG_INFO("MAX30003_MODULE: STOP_DATA_COLLECTION_COMMAND");
             max30003_stop_data_collection();
             break;
 
@@ -1245,43 +1249,43 @@ static void _fdc1004_handler(uint8_t *serial_command)
     switch(serial_command[2])
     {
         case FDC1004_INIT_COMMAND:
-            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_INIT_COMMAND");
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_INIT");
             fdc1004_init();
             break;
 
         case FDC1004_UNINIT_COMMAND:
-            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_UNINIT_COMMAND");
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_UNINIT");
             fdc1004_uninit();
             break;
 
         case FDC1004_SOFT_RESET_COMMAND:
-            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SOFT_RESET_COMMAND");
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SOFT_RESET");
             fdc1004_soft_reset();
             break;
 
         case FDC1004_SET_OFFSET_CALIBRATION_COMMAND:
-            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_OFFSET_CALIBRATION_COMMAND");
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_OFFSET_CALIBRATION");
             fdc1004_set_offset_calibration(serial_command[3], serial_command[4], serial_command[5], serial_command[6]);
             break;
 
         case FDC1004_SET_GAIN_CALIBRATION_COMMAND:
-            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_GAIN_CALIBRATION_COMMAND");
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_GAIN_CALIBRATION");
             fdc1004_set_gain_calibration(serial_command[3], serial_command[4], serial_command[5], serial_command[6]);
             break;
 
         case FDC1004_SET_MEASUREMENT_RATE_COMMAND:
-            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_MEASUREMENT_RATE_COMMAND");
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_MEASUREMENT_RATE");
             fdc1004_set_measurement_rate(serial_command[3]);
             break;
 
         case FDC1004_SET_REPEAT_MEASUREMENT_COMMAND:
-            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_REPEAT_MEASUREMENT_COMMAND");
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_REPEAT_MEASUREMENT");
             fdc1004_set_repeat_measurement(serial_command[3]);
             break;
 
         case FDC1004_GET_MANUFACTURER_ID_COMMAND:
         {
-            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_GET_MANUFACTURER_ID_COMMAND");
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_GET_MANUFACTURER_ID");
             uint8_t manufacturer_id[2] = {0};
             fdc1004_get_manufacturer_id(manufacturer_id);
             state_machine.ble_response_char[5] = manufacturer_id[0];
@@ -1293,7 +1297,7 @@ static void _fdc1004_handler(uint8_t *serial_command)
 
         case FDC1004_GET_DEVICE_ID_COMMAND:
         {
-            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_GET_DEVICE_ID_COMMAND");
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_GET_DEVICE_ID");
             uint8_t temp_device_id[2] = {0};
             fdc1004_get_device_id(temp_device_id);
             state_machine.ble_response_char[5] = temp_device_id[0];
@@ -1304,18 +1308,13 @@ static void _fdc1004_handler(uint8_t *serial_command)
         }
 
         case FDC1004_SET_CAPDAC_COMMAND:
-            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_CAPDAC_COMMAND");
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_SET_CAPDAC");
             fdc1004_set_capdac(serial_command[3], serial_command[4]);
-            break;
-
-        case FDC1004_TRIGGER_SINGLE_MEASUREMENT_COMMAND:
-            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_TRIGGER_SINGLE_MEASUREMENT_COMMAND");
-            fdc1004_trigger_single_measurement(serial_command[3]);
             break;
 
         case FDC1004_GET_MEASUREMENT_COMMAND:
         {
-            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_GET_MEASUREMENT_COMMAND");
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_GET_MEASUREMENT");
             uint8_t measurement[3] = {0};
             fdc1004_get_measurement(serial_command[3], measurement);
             state_machine.ble_response_char[4] = measurement[0];
@@ -1327,13 +1326,23 @@ static void _fdc1004_handler(uint8_t *serial_command)
         }
 
         case FDC1004_ENABLE_CHANNEL_COMMAND:
-            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_ENABLE_CHANNEL_COMMAND");
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_ENABLE_CHANNEL");
             fdc1004_enable_channel(serial_command[3]);
             break;
 
         case FDC1004_DISABLE_CHANNEL_COMMAND:
-            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_DISABLE_CHANNEL_COMMAND");
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_DISABLE_CHANNEL");
             fdc1004_disable_channel(serial_command[3]);
+            break;
+
+        case FDC1004_START_DATA_COLLECTION_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_START_DATA_COLLECTION");
+            fdc1004_start_data_collection();
+            break;
+
+        case FDC1004_STOP_DATA_COLLECTION_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: FDC1004_STOP_DATA_COLLECTION");
+            fdc1004_stop_data_collection();
             break;
 
         default:
@@ -1393,6 +1402,11 @@ static void _bluetooth_handler(uint8_t *serial_command)
             bluetooth_advertising_start();
             break;
 
+        case BLUETOOTH_RESTART_ADVERTISING_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: RESTART_ADVERTIZING");
+            bluetooth_advertising_restart();
+            break;
+
         case BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND:
         {
             NRF_LOG_INFO("BLUETOOTH_MODULE: WRITE_RESPONSE_CHAR");
@@ -1441,8 +1455,9 @@ static void _bluetooth_handler(uint8_t *serial_command)
         case BLUETOOTH_WRITE_INSTANT_PRESSURE_CHAR_COMMAND:
         {
             NRF_LOG_INFO("BLUETOOTH_MODULE: WRITE_INSTANT_PRESSURE_CHAR");
-            uint8_t pressure_char[8] = {serial_command[3], serial_command[4], serial_command[5], serial_command[6], 
-            serial_command[7], serial_command[8], serial_command[9], serial_command[10]};
+            uint8_t pressure_char[12] = {serial_command[3], serial_command[4], serial_command[5], serial_command[6], serial_command[7],
+            serial_command[8], serial_command[9], serial_command[10], serial_command[11], serial_command[12], serial_command[13],
+            serial_command[14]};
             bluetooth_pressure_service_instant_pressure_char_write(pressure_char);
             break;
         }
@@ -1468,11 +1483,6 @@ static void _bluetooth_handler(uint8_t *serial_command)
         case BLUETOOTH_DISCONNECT_COMMAND:
             NRF_LOG_INFO("BLUETOOTH_MODULE: DISCONNECT");
             bluetooth_disconnect();
-            break;
-
-        case BLUETOOTH_OVERRIDE_REQUEST_RECEIVED_COMMAND:
-            NRF_LOG_INFO("BLUETOOTH_MODULE: OVERRIDE_REQUEST_RECEIVED_COMMAND");
-            bluetooth_override_request_received();
             break;
 
         default:

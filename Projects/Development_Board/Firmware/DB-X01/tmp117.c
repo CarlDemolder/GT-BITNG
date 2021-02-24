@@ -77,7 +77,7 @@ void tmp117_init()
  
     control.status = 1;                 // By calling the init function, you are enabling the TMP117
     control.long_term_storage = 0;      // Setting the default to instant temperature data transmission
-    control.interrupt = 1;              // Enabling the sampling interrupt
+    control.interrupt = 0;              // Disabling the sampling interrupt to begin
 }
 
 void tmp117_uninit(void)
@@ -228,13 +228,15 @@ void tmp117_interrupt_handler(void)
             {   
                 // The transmitting start address is set the write start address      
                 control.external_memory_transmit_start_address = control.external_memory_write_start_address;           
-                
+                NRF_LOG_INFO("control.external_memory_transmit_start_address: %X", control.external_memory_transmit_start_address);  
+
                 // The transmitting end address is set to the last write address
                 control.external_memory_transmit_end_address = control.external_memory_write_current_address - control.bytes_per_sample;           
-      
+                NRF_LOG_INFO("control.external_memory_transmit_end_address: %X", control.external_memory_transmit_end_address); 
+
                 // The external memory write start address is set to the external memory write_current address
                 control.external_memory_write_start_address = control.external_memory_write_current_address;
-
+                NRF_LOG_INFO("control.external_memory_write_start_address: %X", control.external_memory_write_start_address); 
                 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
                 // Reset sampling count
@@ -245,13 +247,14 @@ void tmp117_interrupt_handler(void)
                 
                 // Setting the number of bytes left to transmit to the number of bytes per recording session  
                 control.bytes_left_to_transmit = control.bytes_per_recording_session;
-                
+                NRF_LOG_INFO("control.bytes_left_to_transmit: %u", control.bytes_left_to_transmit); 
                 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
                 
                 #if !MAX30003
-                uint8_t bluetooth_start_advertising_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_START_ADVERTISING_COMMAND};
-                state_handler(bluetooth_start_advertising_command); // Start to transmit the Recording Session of the ECG Data
+                uint8_t bluetooth_restart_advertising_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_RESTART_ADVERTISING_COMMAND};
+                state_handler(bluetooth_restart_advertising_command); // Start to transmit the Recording Session of the ECG Data
                 #endif
+                control.interrupt = 0;
             }
             #endif
         }
@@ -268,12 +271,9 @@ void tmp117_start_data_collection(void)
     NRF_LOG_INFO("tmp117_start_data_collection");
     control.interrupt = 1;    // Enabling the interrupt
 
-    uint8_t start_rtc_sensor_command[4] = {0x00, NRF52_MODULE, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_SENSOR_START};
-    state_handler(start_rtc_sensor_command); // Start the RTC for the available sensors
-
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    #if !MAX30003
+    #if !MAX30003 && CY15B108QI
     uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
     state_handler(spim_enable_command); // Enable SPIM Module
 
@@ -307,9 +307,6 @@ void tmp117_start_data_collection(void)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    uint8_t bluetooth_override_request_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_OVERRIDE_REQUEST_RECEIVED_COMMAND};
-    state_handler(bluetooth_override_request_command); // Override the Request Received Flag to send message to BLE Client
-
     uint8_t response_char_temp_data_collection_started_command[7] = {0X00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, 0x00, 
     0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_TEMP_DATA_COLLECTION_STARTED};
     state_handler(response_char_temp_data_collection_started_command); // Sending message to phone that the recording session has started
@@ -320,13 +317,7 @@ void tmp117_stop_data_collection(void)
     NRF_LOG_INFO("tmp117_stop_data_collection");
 
     control.interrupt = 0;            // Disabling the interrupt flag
-
     control.long_term_storage = 0;    // Setting the long term storage flag to 0
-
-    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
-    uint8_t stop_rtc_sensor_command[4] = {0x00, NRF52_MODULE, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_SENSOR_STOP};
-    state_handler(stop_rtc_sensor_command); // Stop the RTC for the available sensors
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -359,7 +350,7 @@ void tmp117_stop_data_collection(void)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    #if !MAX30003
+    #if !MAX30003 && CY15B108QI
 
     uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
     state_handler(spim_enable_command); // Enable SPIM Module
@@ -394,9 +385,6 @@ void tmp117_stop_data_collection(void)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    uint8_t bluetooth_override_request_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_OVERRIDE_REQUEST_RECEIVED_COMMAND};
-    state_handler(bluetooth_override_request_command); // Override the Request Received Flag to send message to BLE Client
-
     uint8_t response_char_temp_data_collection_finished_command[7] = {0X00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, 0x00, 
     0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_TEMP_DATA_COLLECTION_FINISHED};
     state_handler(response_char_temp_data_collection_finished_command); // Sending message to phone that the recording session has started
@@ -423,22 +411,29 @@ void tmp117_transmit_temperature_recording_session(void)
 
         uint8_t bluetooth_temp_data[control.bytes_per_bluetooth_transmission];
 
+        #if CY15B108QI
+        uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+        state_handler(spim_enable_command); // Enable SPIM Module
+
+        uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
+        state_handler(spim_init_command); // Initialize SPIM Module
+
+        uint8_t spim_set_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, CY15B108QI_CS_PIN};
+        state_handler(spim_set_cs_pin_command); // Set Chip Select Pin to CY15B108QI for the SPIM Module
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        uint8_t cy15b108qi_exit_deep_power_down_mode_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_EXIT_DEEP_POWER_DOWN_MODE_COMMAND};
+        state_handler(cy15b108qi_exit_deep_power_down_mode_command); // Exit the Deep power down mode
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
         while(control.bytes_left_to_transmit > 0)
         {
-            #if CY15B108QI
-            uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
-            state_handler(spim_enable_command); // Enable SPIM Module
-
-            uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
-            state_handler(spim_init_command); // Initialize SPIM Module
-
-            uint8_t spim_set_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, CY15B108QI_CS_PIN};
-            state_handler(spim_set_cs_pin_command); // Set Chip Select Pin to CY15B108QI for the SPIM Module
-
-            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-    
-            uint8_t cy15b108qi_exit_deep_power_down_mode_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_EXIT_DEEP_POWER_DOWN_MODE_COMMAND};
-            state_handler(cy15b108qi_exit_deep_power_down_mode_command); // Exit the Deep power down mode
+            for(uint8_t i = 0; i < control.bytes_per_bluetooth_transmission; i++)
+            {
+                bluetooth_temp_data[i] = 0;
+            }
 
             /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -542,6 +537,8 @@ void tmp117_transmit_temperature_recording_session(void)
                 empty_values = (control.bytes_per_bluetooth_transmission - control.bytes_left_to_transmit);
                 NRF_LOG_INFO("empty_value: %u", empty_values);
 
+                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
                 // Read remaining data from external memory
                 cy15b108qi_fast_read_registers(bluetooth_temp_data, control.bytes_left_to_transmit, control.external_memory_transmit_current_address);
             
@@ -552,8 +549,10 @@ void tmp117_transmit_temperature_recording_session(void)
                 control.bytes_left_to_transmit -= control.bytes_left_to_transmit;
                 NRF_LOG_INFO("control.bytes_left_to_transmit: %u", control.bytes_left_to_transmit);
             }
+
             else
             {
+                NRF_LOG_INFO("tmp117_transmit_recording_session: default");
                 // Read data from external memory
                 cy15b108qi_fast_read_registers(bluetooth_temp_data, control.bytes_per_bluetooth_transmission, control.external_memory_transmit_current_address);
             
@@ -575,9 +574,6 @@ void tmp117_transmit_temperature_recording_session(void)
             {
                 NRF_LOG_INFO("There are no more bytes left to transmit.");
 
-                uint8_t bluetooth_override_request_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_OVERRIDE_REQUEST_RECEIVED_COMMAND};
-                state_handler(bluetooth_override_request_command); // Override the Request Received Flag to send message to BLE Client
-
                 uint8_t bluetooth_transmit_temp_recording_session_finished_command[7] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND,
                 0x00, 0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_TRANSMIT_TEMP_DATA_FINISHED};
                 state_handler(bluetooth_transmit_temp_recording_session_finished_command); // Recording session finished
@@ -588,9 +584,6 @@ void tmp117_transmit_temperature_recording_session(void)
             if(empty_values != 0)
             {
                 NRF_LOG_INFO("There are empty values: %u", empty_values);
-
-                uint8_t bluetooth_override_request_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_OVERRIDE_REQUEST_RECEIVED_COMMAND};
-                state_handler(bluetooth_override_request_command); // Override the Request Received Flag to send message to BLE Client
 
                 uint8_t bluetooth_transmit_temp_data_empty_values_command[7] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND,
                 0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_TRANSMIT_TEMP_DATA_EMPTY_VALUES, empty_values};

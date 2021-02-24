@@ -14,6 +14,10 @@ void cy15b108qi_init(void)
     NRF_LOG_INFO("cy15b108qi_init");
 
     control.opcode_command[0] = 0;
+    
+    cy15b108qi_exit_hibernation_mode();
+
+    _cy15b108qi_read_status_register();
 
     _cy15b108qi_read_device_id_register();
     _cy15b108qi_read_unique_id_register();
@@ -94,9 +98,9 @@ void cy15b108qi_write_registers(uint8_t *write_data, uint8_t write_data_length, 
     control.opcode_command[0] = CY15B108QI_WRITE_OPCODE_COMMAND;
     uint32_t temp_data_length = write_data_length + ARRAY_LENGTH(control.opcode_command) + ARRAY_LENGTH(control.address);
     uint8_t temp_data[temp_data_length];
-    NRF_LOG_INFO("start_write_address: %X", start_write_address);
-    NRF_LOG_INFO("write_data_length: %u", write_data_length);    
-    NRF_LOG_INFO("temp_data_length: %u", temp_data_length);
+//    NRF_LOG_INFO("start_write_address: %X", start_write_address);
+//    NRF_LOG_INFO("write_data_length: %u", write_data_length);    
+//    NRF_LOG_INFO("temp_data_length: %u", temp_data_length);
     _set_address_array(start_write_address);
     
     temp_data[0] = control.opcode_command[0]; 
@@ -140,16 +144,16 @@ uint8_t cy15b108qi_read_single_register(uint32_t read_address)
     uint8_t temp_read_data[temp_read_data_length];
 
     spim_read_data_array(write_data, write_data_length, temp_read_data, temp_read_data_length);    // One can only read 1 byte of data at a time
-    NRF_LOG_INFO("Register Address: %X; Array Value: %X", read_address, temp_read_data[temp_read_data_length]); // Debugging purposes only
-    return temp_read_data[temp_read_data_length];
+    NRF_LOG_INFO("Register Address: %X; Array Value: %X", read_address, temp_read_data[temp_read_data_length-1]); // Debugging purposes only
+    return temp_read_data[temp_read_data_length-1];
 }
 
 /*
-* The CY15X108QI supports a FAST READ opcode (0Bh) that isprovided for opcode compatibility with serial flash devices. The FAST  READ  opcode
-* is  followed  by  a  three-byte  address containing the 20-bit address (A19–A0) of the first byte of theread operation and then a dummy byte.
-* The dummy byte insertsa  read  latency  of  8-clock  cycle.  The  fast  read  operation  is otherwise the same as an ordinary read operation
+* The CY15X108QI supports a FAST READ opcode (0Bh) that is provided for opcode compatibility with serial flash devices. The FAST  READ  opcode
+* is  followed  by  a  three-byte  address containing the 20-bit address (A19–A0) of the first byte of the read operation and then a dummy byte.
+* The dummy byte inserts a  read  latency  of  8-clock  cycle.  The  fast  read  operation  is otherwise the same as an ordinary read operation
 * except that it requires an additional dummy byte. After receiving the opcode, address, and a dummy byte, the CY15X108QI starts driving its
-* SO line with data bytes, with MSb first, and continues trans-mitting  as  long  as  the  device  is  selected  and  the  clock  is available.
+* SO line with data bytes, with MSB first, and continues transmitting  as  long  as  the  device  is  selected  and  the  clock  is available.
 */
 void cy15b108qi_fast_read_registers(uint8_t *read_data, uint8_t read_data_length, uint32_t start_address)
 {
@@ -159,7 +163,7 @@ void cy15b108qi_fast_read_registers(uint8_t *read_data, uint8_t read_data_length
 
     uint32_t write_data_length = ARRAY_LENGTH(control.opcode_command) + ARRAY_LENGTH(control.address) + 1;    // Extra Dummy Byte
     uint8_t write_data[write_data_length];
-    NRF_LOG_INFO("write_data_length: %u", write_data_length);
+//    NRF_LOG_INFO("write_data_length: %u", write_data_length);
 
     _set_address_array(start_address);
     
@@ -177,7 +181,7 @@ void cy15b108qi_fast_read_registers(uint8_t *read_data, uint8_t read_data_length
     for(uint8_t i = 0; i < read_data_length; i++)
     {
         read_data[i] = temp_read_data[write_data_length + i];
-        NRF_LOG_INFO("read_data[%u]: %u", i, read_data[i]);
+//        NRF_LOG_INFO("read_data[%u]: %u", i, read_data[i]);
     }
 }
 

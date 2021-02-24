@@ -251,7 +251,7 @@ uint32_t ecg_service_instant_ecg_char_write(ble_ecg_service_t *p_cus, uint8_t *n
     // Initialize value struct
     memset(&gatts_value, 0, sizeof(gatts_value));
 
-    gatts_value.len = sizeof(uint8_t)*ECG_SERVICE_ECG_CHAR_LENGTH;
+    gatts_value.len = sizeof(uint8_t)*ECG_SERVICE_INSTANT_ECG_CHAR_LENGTH;
     gatts_value.offset = 0;
     gatts_value.p_value = new_instant_ecg_char_data;
 

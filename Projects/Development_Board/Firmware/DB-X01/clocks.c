@@ -287,8 +287,11 @@ void rtc_sensor_set_counter(uint32_t new_sampling_counter)
 {
     NRF_LOG_INFO("rtc_sensor_set_counter");
 
+    nrfx_rtc_counter_clear(&rtc_sensor_configuration.nrfx_rtc);
+
     rtc_sensor_configuration.rtc_counter = new_sampling_counter;
     NRF_LOG_INFO("counter %u", rtc_sensor_configuration.rtc_counter);
+
     ret_code_t error_code = nrfx_rtc_cc_set(&rtc_sensor_configuration.nrfx_rtc, 2, rtc_sensor_configuration.rtc_counter, true);
     APP_ERROR_CHECK(error_code);
 }
@@ -326,6 +329,9 @@ void rtc_sensor_stop(void)
     if(rtc_sensor_configuration.rtc_is_running)
     {
         nrfx_rtc_disable(&rtc_sensor_configuration.nrfx_rtc);        // Disable the RTC Sensor Instance
+        nrfx_rtc_cc_disable(&rtc_sensor_configuration.nrfx_rtc, 2);
+        nrfx_rtc_tick_disable(&rtc_sensor_configuration.nrfx_rtc);
+
         rtc_sensor_configuration.rtc_is_running = 0;
         rtc_sensor_configuration.rtc_restart = 1;
         NRF_LOG_INFO("RTC sensor is stopped and disabled");
@@ -342,6 +348,7 @@ void rtc_sensor_start(void)
         nrfx_rtc_enable(&rtc_sensor_configuration.nrfx_rtc);        // Enable the RTC sensor Instance
         nrfx_rtc_int_enable(&rtc_sensor_configuration.nrfx_rtc, NRF_RTC_INT_COMPARE2_MASK);
         nrfx_rtc_tick_enable(&rtc_sensor_configuration.nrfx_rtc, true);
+   
         rtc_sensor_configuration.rtc_is_running = 1;
         NRF_LOG_INFO("RTC sensor is enabled and has started");
     }
@@ -357,6 +364,7 @@ void rtc_sensor_restart(void)
         nrfx_rtc_enable(&rtc_sensor_configuration.nrfx_rtc);        // Enable an RTC sensor instance
         nrfx_rtc_int_enable(&rtc_sensor_configuration.nrfx_rtc, NRF_RTC_INT_COMPARE2_MASK);
         nrfx_rtc_tick_enable(&rtc_sensor_configuration.nrfx_rtc, true);
+
         rtc_sensor_configuration.rtc_is_running = 1;
         rtc_sensor_configuration.rtc_restart = 0;
         NRF_LOG_INFO("RTC sensor has been restarted");

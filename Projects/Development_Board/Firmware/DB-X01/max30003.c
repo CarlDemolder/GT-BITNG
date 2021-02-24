@@ -38,9 +38,6 @@ void max30003_init(void)
     control.data_ready_for_transmit = 0;                    // Data ready for transmit
     control.bytes_left_to_transmit = 0;
 
-    control.samples_per_interrupt = max30003_get_samples_per_interrupt();
-    NRF_LOG_INFO("MAX30003: samples_per_interrupt: %u", control.samples_per_interrupt);
-
     NRF_LOG_INFO("MAX30003: samples_per_second: %u", control.samples_per_second);
     control.samples_per_recording_session = 3600 * control.samples_per_second;         // Each recording session is 1 hour
     NRF_LOG_INFO("MAX30003: samples_per_recording_session: %u", control.samples_per_recording_session);
@@ -52,7 +49,6 @@ void max30003_init(void)
     control.bytes_per_bluetooth_transmission = bluetooth_get_bytes_per_transmission();
     control.samples_per_bluetooth_transmission = control.bytes_per_bluetooth_transmission/control.bytes_per_sample;
     NRF_LOG_INFO("control.samples_per_bluetooth_transmission: %u", control.samples_per_bluetooth_transmission);
-
 
 
     control.external_memory_start_address = MAX30003_EXTERNAL_MEMORY_START_ADDRESS;     // Start address of the external memory to store ECG data
@@ -68,7 +64,7 @@ void max30003_init(void)
     info_register.register_pointer = MAX30003_INFO;
     status_register.register_pointer = MAX30003_STATUS;
     interrupt1_register.register_pointer = MAX30003_EN_INT1;
-    interrupt1_register.register_pointer = MAX30003_EN_INT2;
+    interrupt2_register.register_pointer = MAX30003_EN_INT2;
     interrupt_manager_register.register_pointer = MAX30003_MNGR_INT;
     dynamic_mode_manager_register.register_pointer = MAX30003_MNGR_DYN;
 
@@ -180,8 +176,9 @@ void max30003_init(void)
     _max30003_read_rtor2_configuration_register();
 
     control.samples_per_interrupt = interrupt_manager_register.efit + 1;  // Setting the default Samples recored per interrupt
-    control.bytes_per_interrupt = control.samples_per_interrupt * control.bytes_per_sample;
     NRF_LOG_INFO("control.samples_per_interrupt: %u", control.samples_per_interrupt);
+    control.bytes_per_interrupt = control.samples_per_interrupt * control.bytes_per_sample;
+    NRF_LOG_INFO("control.bytes_per_interrupt: %u", control.bytes_per_interrupt);
 }
 
 void max30003_read_device_info(void) 
@@ -330,8 +327,8 @@ void max30003_interrupt2_disable(void)
 */
 void max30003_read_ecg_fifo_memory(void)
 {
-    NRF_LOG_INFO("max30003_read_ecg_fifo_memory_register");
-    NRF_LOG_INFO("control.samples_per_interrupt: %u", control.samples_per_interrupt);
+//    NRF_LOG_INFO("max30003_read_ecg_fifo_memory_register");
+//    NRF_LOG_INFO("control.samples_per_interrupt: %u", control.samples_per_interrupt);
     _max30003_spim_read_registers(ecg_fifo_memory_register.register_pointer, ecg_fifo_memory_register.data, control.samples_per_interrupt*3);
     uint32_t temp_ecg_voltage = 0;
     control.counter = 0;
@@ -345,13 +342,13 @@ void max30003_read_ecg_fifo_memory(void)
         ecg_fifo_memory_register.ecg_voltage[control.counter] = (uint16_t)((temp_ecg_voltage & 0b00000000000000111111111111111100)>>2);
         ecg_fifo_memory_register.etag[control.counter] = (ecg_fifo_memory_register.data[i+2] & 0b00111000) >> 3;
         ecg_fifo_memory_register.ptag[control.counter] = ecg_fifo_memory_register.data[i+2] & 0b00000111;
-        NRF_LOG_INFO("W: %u, R:%X %X %X, V: %X", (control.counter+1), ecg_fifo_memory_register.data[i], ecg_fifo_memory_register.data[i+1], 
-        ecg_fifo_memory_register.data[i+2], ecg_fifo_memory_register.ecg_voltage[control.counter]);
-        NRF_LOG_INFO("ETAG: %X, PTAG: %X", ecg_fifo_memory_register.etag[control.counter], ecg_fifo_memory_register.ptag[control.counter]);
-        NRF_LOG_INFO("");
+//        NRF_LOG_INFO("W: %u, R:%X %X %X, V: %X", (control.counter+1), ecg_fifo_memory_register.data[i], ecg_fifo_memory_register.data[i+1], 
+//        ecg_fifo_memory_register.data[i+2], ecg_fifo_memory_register.ecg_voltage[control.counter]);
+//        NRF_LOG_INFO("ETAG: %X, PTAG: %X", ecg_fifo_memory_register.etag[control.counter], ecg_fifo_memory_register.ptag[control.counter]);
+//        NRF_LOG_INFO("");
         control.counter++;
     }
-    NRF_LOG_INFO("Counter: %u", control.counter);
+//    NRF_LOG_INFO("Counter: %u", control.counter);
 }
 
 void max30003_get_ecg_voltage(uint8_t* temp_data, uint8_t temp_data_length)
@@ -378,6 +375,7 @@ void max30003_sync(void)
 
 uint8_t max30003_get_status_register_eovf(void)
 {
+    NRF_LOG_INFO("max30003_get_status_register_eovf");
     _max30003_read_status_register();
     return status_register.eovf;
 }
@@ -396,20 +394,20 @@ void max30003_init_pin_interrupt(void)
 
 void max30003_enable_pin_interrupt(void)
 {
-    NRF_LOG_INFO("max30003_enable_interrupt");
+    NRF_LOG_INFO("max30003_enable_pin_interrupt");
     nrfx_gpiote_in_event_enable(MAX30003_INT1_PIN, true);
     nrf_delay_ms(MAX30003_DELAY);
 }
 
 void max30003_disable_pin_interrupt(void)
 {
-    NRF_LOG_INFO("max30003_disable_interrupt");
+    NRF_LOG_INFO("max30003_disable_pin_interrupt");
     nrfx_gpiote_in_event_enable(MAX30003_INT1_PIN, false);
 }
 
 void max30003_pin_interrupt_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
-    NRF_LOG_INFO("max30003_interrupt_handler");
+    NRF_LOG_INFO("max30003_pin_interrupt_handler");
     UNUSED_PARAMETER(pin);
     UNUSED_PARAMETER(action);
 
@@ -424,7 +422,7 @@ void max30003_fifo_reset(void)
 
 void max30003_interrupt_handler(void)
 {
-    NRF_LOG_INFO("ecg_interrupt_handler");
+    NRF_LOG_INFO("max30003_interrupt_handler");
     
     if(control.interrupt == 1)
     {
@@ -442,28 +440,37 @@ void max30003_interrupt_handler(void)
         if(max30003_get_status_register_eovf())   // Check to see if one needs to issue a fifo reset to clear the cache
         {
             max30003_fifo_reset();
+            max30003_sync();
+
+            if(control.long_term_storage == 0)
+            {
+                uint8_t bluetooth_ecg_invalid_ecg_data_command[7] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND,
+                0x00, 0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_ECG_DATA_INVALID};
+                state_handler(bluetooth_ecg_invalid_ecg_data_command); // Send the number of empty values
+                NRF_LOG_INFO("MAX30003: invalid FIFO data. FIFO reset and sync command issued");
+            }
         }
         else
         {
             max30003_read_ecg_fifo_memory();    // Read data from FIFO memory stored on MAX30003
             
+            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+            // Data is stored as a uint16_t data type. In order to save it to external memory, it is converted to a uinnt8_t data type.
+            uint8_t cy15b108qi_voltage_data[control.bytes_per_interrupt]; // uint8_t array has twice the number of elements as uint16_t 
+            for(uint8_t i = 0; i < control.samples_per_interrupt; i++)
+            {
+                cy15b108qi_voltage_data[2*i] = (uint8_t) ((0xFF00 & ecg_fifo_memory_register.ecg_voltage[i]) >> 8);
+//                NRF_LOG_INFO("Sample: %u, cy15b108qi_voltage_array: %u", 2*i, cy15b108qi_voltage_data[2*i]);
+                cy15b108qi_voltage_data[2*i+1] = (uint8_t) (0x00FF & ecg_fifo_memory_register.ecg_voltage[i]);
+//                NRF_LOG_INFO("Sample: %u, cy15b108qi_voltage_array: %u", 2*i+1, cy15b108qi_voltage_data[2*i+1]);
+            }
+    
+            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
             if(control.long_term_storage == 1)    
             {
                 #if CY15B108QI
-                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
-                // Data is stored as a uint16_t data type. In order to save it to external memory, it is converted to a uinnt8_t data type.
-                uint8_t cy15b108qi_voltage_data[control.bytes_per_interrupt]; // uint8_t array has twice the number of elements as uint16_t 
-                for(uint8_t i = 0; i < control.samples_per_interrupt; i++)
-                {
-                    cy15b108qi_voltage_data[2*i] = (uint8_t) ((0xFF00 & ecg_fifo_memory_register.ecg_voltage[i]) >> 8);
-                    NRF_LOG_INFO("Sample: %u, cy15b108qi_voltage_array: %u", 2*i, cy15b108qi_voltage_data[2*i]);
-                    cy15b108qi_voltage_data[2*i+1] = (uint8_t) (0x00FF & ecg_fifo_memory_register.ecg_voltage[i]);
-                    NRF_LOG_INFO("Sample: %u, cy15b108qi_voltage_array: %u", 2*i+1, cy15b108qi_voltage_data[2*i+1]);
-                }
-        
-                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
                 uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
                 state_handler(spim_enable_command); // Enable SPIM Module
 
@@ -533,15 +540,15 @@ void max30003_interrupt_handler(void)
 
                     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-                    uint8_t bluetooth_start_advertising_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_START_ADVERTISING_COMMAND};
-                    state_handler(bluetooth_start_advertising_command); // Start to transmit the Recording Session of the ECG Data
+                    uint8_t bluetooth_restart_advertising_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_RESTART_ADVERTISING_COMMAND};
+                    state_handler(bluetooth_restart_advertising_command); // Start to transmit the Recording Session of the ECG Data
                 }
                 #endif
             }
             else
             {
-                uint8_t ble_max30003_data[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_INSTANT_ECG_CHAR_COMMAND};
-                state_handler(ble_max30003_data); // Write the instant ECG data to GATT database
+//                NRF_LOG_INFO("voltage_data_length: %u", ARRAY_LENGTH(cy15b108qi_voltage_data));
+                bluetooth_ecg_service_instant_ecg_char_write(cy15b108qi_voltage_data);
             }
         }
     }
@@ -563,22 +570,29 @@ void max30003_transmit_ecg_recording_session(void)
 
         uint8_t bluetooth_ecg_data[control.bytes_per_bluetooth_transmission];
 
+        #if CY15B108QI
+        uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+        state_handler(spim_enable_command); // Enable SPIM Module
+
+        uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
+        state_handler(spim_init_command); // Initialize SPIM Module
+
+        uint8_t spim_set_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, CY15B108QI_CS_PIN};
+        state_handler(spim_set_cs_pin_command); // Set Chip Select Pin to CY15B108QI for the SPIM Module
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        uint8_t cy15b108qi_exit_deep_power_down_mode_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_EXIT_DEEP_POWER_DOWN_MODE_COMMAND};
+        state_handler(cy15b108qi_exit_deep_power_down_mode_command); // Exit the Deep power down mode
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
         while(control.bytes_left_to_transmit > 0)
         {
-            #if CY15B108QI
-            uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
-            state_handler(spim_enable_command); // Enable SPIM Module
-
-            uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
-            state_handler(spim_init_command); // Initialize SPIM Module
-
-            uint8_t spim_set_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, CY15B108QI_CS_PIN};
-            state_handler(spim_set_cs_pin_command); // Set Chip Select Pin to CY15B108QI for the SPIM Module
-
-            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-    
-            uint8_t cy15b108qi_exit_deep_power_down_mode_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_EXIT_DEEP_POWER_DOWN_MODE_COMMAND};
-            state_handler(cy15b108qi_exit_deep_power_down_mode_command); // Exit the Deep power down mode
+            for(uint8_t i = 0; i < control.bytes_per_bluetooth_transmission; i++)
+            {
+                bluetooth_ecg_data[i] = 0;
+            }
 
             /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -692,6 +706,7 @@ void max30003_transmit_ecg_recording_session(void)
                 control.bytes_left_to_transmit -= control.bytes_left_to_transmit;
                 NRF_LOG_INFO("control.bytes_left_to_transmit: %u", control.bytes_left_to_transmit);
             }
+
             else
             {
                 // Read data from external memory
@@ -715,9 +730,6 @@ void max30003_transmit_ecg_recording_session(void)
             {
                 NRF_LOG_INFO("There are no more bytes left to transmit.");
 
-                uint8_t bluetooth_override_request_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_OVERRIDE_REQUEST_RECEIVED_COMMAND};
-                state_handler(bluetooth_override_request_command); // Override the Request Received Flag to send message to BLE Client
-
                 uint8_t bluetooth_transmit_ecg_recording_session_finished_command[7] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND,
                 0x00, 0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_TRANSMIT_ECG_DATA_FINISHED};
                 state_handler(bluetooth_transmit_ecg_recording_session_finished_command); // Recording session finished
@@ -728,9 +740,6 @@ void max30003_transmit_ecg_recording_session(void)
             if(empty_values != 0)
             {
                 NRF_LOG_INFO("There are empty values: %u", empty_values);
-                
-                uint8_t bluetooth_override_request_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_OVERRIDE_REQUEST_RECEIVED_COMMAND};
-                state_handler(bluetooth_override_request_command); // Override the Request Received Flag to send message to BLE Client
 
                 uint8_t bluetooth_transmit_ecg_data_empty_values_command[7] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND,
                 0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_TRANSMIT_ECG_DATA_EMPTY_VALUES, empty_values};
@@ -768,11 +777,13 @@ uint32_t max30003_get_bytes_left_to_transmit(void)
 
 void max30003_enable_long_term_storage(void)
 {
+    NRF_LOG_INFO("max30003_enable_long_term_storage");
     control.long_term_storage = 1;
 }
 
 void max30003_disable_long_term_storage(void)
 {
+    NRF_LOG_INFO("max30003_disable_long_term_storage");
     control.long_term_storage = 0;
 }
 
@@ -787,14 +798,14 @@ void max30003_start_data_collection(void)
     uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
     state_handler(spim_init_command); // Initialize SPIM Module
 
-    uint8_t spim_select_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, CY15B108QI_CS_PIN};
-    state_handler(spim_select_cs_pin_command); // Select Chip Select Pin to CY15B108QI for the SPIM Module
-
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
     if(control.long_term_storage == 1)
     {
         #if CY15B108QI
+        uint8_t spim_select_cs_pin_cy15b108qi_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, CY15B108QI_CS_PIN};
+        state_handler(spim_select_cs_pin_cy15b108qi_command); // Select Chip Select Pin to CY15B108QI for the SPIM Module
+
         uint8_t cy15b108qi_exit_hibernation_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_EXIT_HIBERNATION_MODE_COMMAND};
         state_handler(cy15b108qi_exit_hibernation_command); // Exit the Hibernation power state
 
@@ -805,8 +816,8 @@ void max30003_start_data_collection(void)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    spim_select_cs_pin_command[4] = MAX30003_CS_PIN;
-    state_handler(spim_select_cs_pin_command); // Set Chip Select Pin to MAX30003 for the SPIM Module
+    uint8_t spim_select_cs_pin_max30003_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, MAX30003_CS_PIN};
+    state_handler(spim_select_cs_pin_max30003_command); // Set Chip Select Pin to MAX30003 for the SPIM Module
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -821,9 +832,6 @@ void max30003_start_data_collection(void)
     state_handler(spim_disable_command); // Disable SPIM Module
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
-    uint8_t bluetooth_override_request_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_OVERRIDE_REQUEST_RECEIVED_COMMAND};
-    state_handler(bluetooth_override_request_command); // Override the Request Received Flag to send message to BLE Client
 
     uint8_t response_char_ecg_data_collection_started_command[7] = {0X00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, 0x00, 
     0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_ECG_DATA_COLLECTION_STARTED};
@@ -878,9 +886,6 @@ void max30003_stop_data_collection(void)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    uint8_t bluetooth_override_request_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_OVERRIDE_REQUEST_RECEIVED_COMMAND};
-    state_handler(bluetooth_override_request_command); // Override the Request Received Flag to send message to BLE Client
-
     uint8_t response_char_ecg_data_collection_finished_command[7] = {0X00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, 0x00, 
     0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_ECG_DATA_COLLECTION_FINISHED};
     state_handler(response_char_ecg_data_collection_finished_command); // Sending message to phone that the recording session has started
@@ -909,6 +914,7 @@ void max30003_stop_data_collection(void)
 */
 static void _max30003_read_status_register(void)
 {
+    NRF_LOG_INFO("_max30003_read_status_register");
     _max30003_spim_read_registers(status_register.register_pointer, control.spi_data, control.register_byte_count);
 
     status_register.eint = (control.spi_data[0] & 0b10000000) && 0b10000000;
@@ -926,20 +932,20 @@ static void _max30003_read_status_register(void)
     status_register.ldoff_nh = (control.spi_data[2] & 0b00000010) && 0b00000100;
     status_register.ldoff_nl = (control.spi_data[2] & 0b00000001) && 0b00000100;
 
-    NRF_LOG_INFO("status_register.eint: %u", status_register.eint);
-    NRF_LOG_INFO("status_register.eovf: %u", status_register.eovf);
-    NRF_LOG_INFO("status_register.fstint: %u", status_register.fstint);
-    NRF_LOG_INFO("status_register.dcloffint: %u", status_register.dcloffint);
-
-    NRF_LOG_INFO("status_register.lonint: %u", status_register.lonint);
-    NRF_LOG_INFO("status_register.rrint: %u", status_register.rrint);
-    NRF_LOG_INFO("status_register.samp: %u", status_register.samp);
-    NRF_LOG_INFO("status_register.pllint: %u", status_register.pllint);
-
-    NRF_LOG_INFO("status_register.ldoff_ph: %u", status_register.ldoff_ph);
-    NRF_LOG_INFO("status_register.ldoff_pl: %u", status_register.ldoff_pl);
-    NRF_LOG_INFO("status_register.ldoff_nh: %u", status_register.ldoff_nh);
-    NRF_LOG_INFO("status_register.ldoff_nl: %u", status_register.ldoff_nl);
+//    NRF_LOG_INFO("status_register.eint: %X", status_register.eint);
+    NRF_LOG_INFO("status_register.eovf: %X", status_register.eovf);
+//    NRF_LOG_INFO("status_register.fstint: %X", status_register.fstint);
+//    NRF_LOG_INFO("status_register.dcloffint: %X", status_register.dcloffint);
+//
+//    NRF_LOG_INFO("status_register.lonint: %X", status_register.lonint);
+//    NRF_LOG_INFO("status_register.rrint: %X", status_register.rrint);
+//    NRF_LOG_INFO("status_register.samp: %X", status_register.samp);
+//    NRF_LOG_INFO("status_register.pllint: %X", status_register.pllint);
+//
+//    NRF_LOG_INFO("status_register.ldoff_ph: %X", status_register.ldoff_ph);
+//    NRF_LOG_INFO("status_register.ldoff_pl: %X", status_register.ldoff_pl);
+//    NRF_LOG_INFO("status_register.ldoff_nh: %X", status_register.ldoff_nh);
+//    NRF_LOG_INFO("status_register.ldoff_nl: %X", status_register.ldoff_nl);
 }
 
 
@@ -959,6 +965,7 @@ static void _max30003_read_status_register(void)
 */
 static void _max30003_read_interrupt1_register(void)
 {
+    NRF_LOG_INFO("_max30003_read_interrupt1_register");
     _max30003_spim_read_registers(interrupt1_register.register_pointer, control.spi_data, control.register_byte_count);
 
     interrupt1_register.en_eint = (control.spi_data[0] & 0b10000000) && 0b10000000;
@@ -973,17 +980,17 @@ static void _max30003_read_interrupt1_register(void)
 
     interrupt1_register.int1b_port = control.spi_data[2] & 0b00000011;
 
-    NRF_LOG_INFO("interrupt1_register.en_eint: %u", interrupt1_register.en_eint);
-    NRF_LOG_INFO("interrupt1_register.en_eovf: %u", interrupt1_register.en_eovf);
-    NRF_LOG_INFO("interrupt1_register.en_fstint: %u", interrupt1_register.en_fstint);
-    NRF_LOG_INFO("interrupt1_register.en_dcloffint: %u", interrupt1_register.en_dcloffint);
+    NRF_LOG_INFO("interrupt1_register.en_eint: %X", interrupt1_register.en_eint);
+    NRF_LOG_INFO("interrupt1_register.en_eovf: %X", interrupt1_register.en_eovf);
+    NRF_LOG_INFO("interrupt1_register.en_fstint: %X", interrupt1_register.en_fstint);
+    NRF_LOG_INFO("interrupt1_register.en_dcloffint: %X", interrupt1_register.en_dcloffint);
 
-    NRF_LOG_INFO("interrupt1_register.en_lonint: %u", interrupt1_register.en_lonint);
-    NRF_LOG_INFO("interrupt1_register.en_rrint: %u", interrupt1_register.en_rrint);
-    NRF_LOG_INFO("interrupt1_register.en_samp: %u", interrupt1_register.en_samp);
-    NRF_LOG_INFO("interrupt1_register.en_pllint: %u", interrupt1_register.en_pllint);
+    NRF_LOG_INFO("interrupt1_register.en_lonint: %X", interrupt1_register.en_lonint);
+    NRF_LOG_INFO("interrupt1_register.en_rrint: %X", interrupt1_register.en_rrint);
+    NRF_LOG_INFO("interrupt1_register.en_samp: %X", interrupt1_register.en_samp);
+    NRF_LOG_INFO("interrupt1_register.en_pllint: %X", interrupt1_register.en_pllint);
 
-    NRF_LOG_INFO("interrupt1_register.int1b_port: %u", interrupt1_register.int1b_port);
+    NRF_LOG_INFO("interrupt1_register.int1b_port: %X", interrupt1_register.int1b_port);
 }
 
 static void _max30003_write_interrupt1_register(void)
@@ -1035,17 +1042,17 @@ static void _max30003_read_interrupt2_register(void)
 
     interrupt2_register.int1b_port = control.spi_data[2] & 0b00000011;
 
-    NRF_LOG_INFO("interrupt2_register.en_eint: %u", interrupt2_register.en_eint);
-    NRF_LOG_INFO("interrupt2_register.en_eovf: %u", interrupt2_register.en_eovf);
-    NRF_LOG_INFO("interrupt2_register.en_fstint: %u", interrupt2_register.en_fstint);
-    NRF_LOG_INFO("interrupt2_register.en_dcloffint: %u", interrupt2_register.en_dcloffint);
+    NRF_LOG_INFO("interrupt2_register.en_eint: %X", interrupt2_register.en_eint);
+    NRF_LOG_INFO("interrupt2_register.en_eovf: %X", interrupt2_register.en_eovf);
+    NRF_LOG_INFO("interrupt2_register.en_fstint: %X", interrupt2_register.en_fstint);
+    NRF_LOG_INFO("interrupt2_register.en_dcloffint: %X", interrupt2_register.en_dcloffint);
 
-    NRF_LOG_INFO("interrupt2_register.en_lonint: %u", interrupt2_register.en_lonint);
-    NRF_LOG_INFO("interrupt2_register.en_rrint: %u", interrupt2_register.en_rrint);
-    NRF_LOG_INFO("interrupt2_register.en_samp: %u", interrupt2_register.en_samp);
-    NRF_LOG_INFO("interrupt2_register.en_pllint: %u", interrupt2_register.en_pllint);
+    NRF_LOG_INFO("interrupt2_register.en_lonint: %X", interrupt2_register.en_lonint);
+    NRF_LOG_INFO("interrupt2_register.en_rrint: %X", interrupt2_register.en_rrint);
+    NRF_LOG_INFO("interrupt2_register.en_samp: %X", interrupt2_register.en_samp);
+    NRF_LOG_INFO("interrupt2_register.en_pllint: %X", interrupt2_register.en_pllint);
 
-    NRF_LOG_INFO("interrupt2_register.int1b_port: %u", interrupt2_register.int1b_port);
+    NRF_LOG_INFO("interrupt2_register.int1b_port: %X", interrupt2_register.int1b_port);
 }
 
 static void _max30003_write_interrupt2_register(void)
@@ -1088,12 +1095,12 @@ static void _max30003_read_interrupt_manager_register(void)
     interrupt_manager_register.clr_samp = (control.spi_data[2] & 0b00000100) && 0b00000100;
     interrupt_manager_register.samp_it = control.spi_data[2] & 0b00000011; 
 
-    NRF_LOG_INFO("interrupt_manager_register.efit: %u", interrupt_manager_register.efit);
+    NRF_LOG_INFO("interrupt_manager_register.efit: %X", interrupt_manager_register.efit);
 
-    NRF_LOG_INFO("interrupt_manager_register.clr_fast: %u", interrupt_manager_register.clr_fast);
-    NRF_LOG_INFO("interrupt_manager_register.clr_rrint: %u", interrupt_manager_register.clr_rrint);
-    NRF_LOG_INFO("interrupt_manager_register.clr_samp: %u", interrupt_manager_register.clr_samp);
-    NRF_LOG_INFO("interrupt_manager_register.samp_it: %u", interrupt_manager_register.samp_it);
+    NRF_LOG_INFO("interrupt_manager_register.clr_fast: %X", interrupt_manager_register.clr_fast);
+    NRF_LOG_INFO("interrupt_manager_register.clr_rrint: %X", interrupt_manager_register.clr_rrint);
+    NRF_LOG_INFO("interrupt_manager_register.clr_samp: %X", interrupt_manager_register.clr_samp);
+    NRF_LOG_INFO("interrupt_manager_register.samp_it: %X", interrupt_manager_register.samp_it);
 }
 
 static void _max30003_write_interrupt_manager_register(void)
@@ -1125,8 +1132,8 @@ static void _max30003_read_dynamic_mode_manager_register(void)
     dynamic_mode_manager_register.fast = (control.spi_data[0] & 0b11000000) >> 6;
     dynamic_mode_manager_register.fast_th = control.spi_data[0] & 0b00111111; 
 
-    NRF_LOG_INFO("dynamic_mode_manager_register.fast: %u", dynamic_mode_manager_register.fast);
-    NRF_LOG_INFO("dynamic_mode_manager_register.fast_th: %u", dynamic_mode_manager_register.fast_th);
+    NRF_LOG_INFO("dynamic_mode_manager_register.fast: %X", dynamic_mode_manager_register.fast);
+    NRF_LOG_INFO("dynamic_mode_manager_register.fast_th: %X", dynamic_mode_manager_register.fast_th);
 }
 
 static void _max30003_write_dynamic_mode_manager_register(void)
@@ -1206,8 +1213,8 @@ static void _max30003_read_info_register(void)
     info_register.info_id = ((control.spi_data[0] & 0b11110000) >> 2) | ((control.spi_data[1] & 0b00110000) >> 4);
     info_register.rev_id = control.spi_data[0] & 0b00001111;
      
-    NRF_LOG_INFO("info_register.info_id: %u", info_register.info_id);
-    NRF_LOG_INFO("info_register.rev_id: %u", info_register.rev_id);
+    NRF_LOG_INFO("info_register.info_id: %X", info_register.info_id);
+    NRF_LOG_INFO("info_register.rev_id: %X", info_register.rev_id);
 }
 
 /* 
@@ -1242,17 +1249,17 @@ static void _max30003_read_general_configuration_register(void)
     general_configuration_register.rbiasp = (control.spi_data[2] & 0b00000010) >> 1;
     general_configuration_register.rbiasn = control.spi_data[2] & 0b00000001;
 
-    NRF_LOG_INFO("general_configuration_register.en_ulp_lon: %u", general_configuration_register.en_ulp_lon);
-    NRF_LOG_INFO("general_configuration_register.fmstr: %u", general_configuration_register.fmstr);
-    NRF_LOG_INFO("general_configuration_register.en_ecg: %u", general_configuration_register.en_ecg);
-    NRF_LOG_INFO("general_configuration_register.en_dcloff: %u", general_configuration_register.en_dcloff);
-    NRF_LOG_INFO("general_configuration_register.dcloff_ipol: %u", general_configuration_register.dcloff_ipol);
-    NRF_LOG_INFO("general_configuration_register.dcloff_imag: %u", general_configuration_register.dcloff_imag);
-    NRF_LOG_INFO("general_configuration_register.dcloff_vth: %u", general_configuration_register.dcloff_vth);
-    NRF_LOG_INFO("general_configuration_register.en_rbias: %u", general_configuration_register.en_rbias);
-    NRF_LOG_INFO("general_configuration_register.rbiasv: %u", general_configuration_register.rbiasv);
-    NRF_LOG_INFO("general_configuration_register.rbiasp: %u", general_configuration_register.rbiasp);
-    NRF_LOG_INFO("general_configuration_register.rbiasn: %u", general_configuration_register.rbiasn);
+    NRF_LOG_INFO("general_configuration_register.en_ulp_lon: %X", general_configuration_register.en_ulp_lon);
+    NRF_LOG_INFO("general_configuration_register.fmstr: %X", general_configuration_register.fmstr);
+    NRF_LOG_INFO("general_configuration_register.en_ecg: %X", general_configuration_register.en_ecg);
+    NRF_LOG_INFO("general_configuration_register.en_dcloff: %X", general_configuration_register.en_dcloff);
+    NRF_LOG_INFO("general_configuration_register.dcloff_ipol: %X", general_configuration_register.dcloff_ipol);
+    NRF_LOG_INFO("general_configuration_register.dcloff_imag: %X", general_configuration_register.dcloff_imag);
+    NRF_LOG_INFO("general_configuration_register.dcloff_vth: %X", general_configuration_register.dcloff_vth);
+    NRF_LOG_INFO("general_configuration_register.en_rbias: %X", general_configuration_register.en_rbias);
+    NRF_LOG_INFO("general_configuration_register.rbiasv: %X", general_configuration_register.rbiasv);
+    NRF_LOG_INFO("general_configuration_register.rbiasp: %X", general_configuration_register.rbiasp);
+    NRF_LOG_INFO("general_configuration_register.rbiasn: %X", general_configuration_register.rbiasn);
 }
 
 static void _max30003_write_general_configuration_register(void)
@@ -1298,12 +1305,12 @@ static void _max30003_read_calibration_configuration_register(void)
     calibration_configuration_register.fifty = (control.spi_data[1] & 0b00001000) && 0b00001000;
     calibration_configuration_register.thigh = ((control.spi_data[1] & 0b00000111) << 8) | (control.spi_data[2] & 0b11111111);
 
-    NRF_LOG_INFO("calibration_configuration_register.en_vcal: %u", calibration_configuration_register.en_vcal);
-    NRF_LOG_INFO("calibration_configuration_register.vmode: %u", calibration_configuration_register.vmode);
-    NRF_LOG_INFO("calibration_configuration_register.vmag: %u", calibration_configuration_register.vmag);
-    NRF_LOG_INFO("calibration_configuration_register.fcal: %u", calibration_configuration_register.fcal);
-    NRF_LOG_INFO("calibration_configuration_register.fifty: %u", calibration_configuration_register.fifty);
-    NRF_LOG_INFO("calibration_configuration_register.thigh: %u", calibration_configuration_register.thigh);
+    NRF_LOG_INFO("calibration_configuration_register.en_vcal: %X", calibration_configuration_register.en_vcal);
+    NRF_LOG_INFO("calibration_configuration_register.vmode: %X", calibration_configuration_register.vmode);
+    NRF_LOG_INFO("calibration_configuration_register.vmag: %X", calibration_configuration_register.vmag);
+    NRF_LOG_INFO("calibration_configuration_register.fcal: %X", calibration_configuration_register.fcal);
+    NRF_LOG_INFO("calibration_configuration_register.fifty: %X", calibration_configuration_register.fifty);
+    NRF_LOG_INFO("calibration_configuration_register.thigh: %X", calibration_configuration_register.thigh);
 }
 
 static void _max30003_write_calibration_configuration_register(void)
@@ -1343,11 +1350,11 @@ static void _max30003_read_input_multiplexer_configuration_register(void)
     input_multiplexer_configuration_register.calp_sel = (control.spi_data[0] & 0b00001100) >> 2;
     input_multiplexer_configuration_register.caln_sel = control.spi_data[0] & 0b00000011;
 
-    NRF_LOG_INFO("input_multiplexer_configuration_register.pol: %u", input_multiplexer_configuration_register.pol);
-    NRF_LOG_INFO("input_multiplexer_configuration_register.openp: %u", input_multiplexer_configuration_register.openp);
-    NRF_LOG_INFO("input_multiplexer_configuration_register.openn: %u", input_multiplexer_configuration_register.openn);
-    NRF_LOG_INFO("input_multiplexer_configuration_register.calp_sel: %u", input_multiplexer_configuration_register.calp_sel);
-    NRF_LOG_INFO("input_multiplexer_configuration_register.caln_sel: %u", input_multiplexer_configuration_register.caln_sel);
+    NRF_LOG_INFO("input_multiplexer_configuration_register.pol: %X", input_multiplexer_configuration_register.pol);
+    NRF_LOG_INFO("input_multiplexer_configuration_register.openp: %X", input_multiplexer_configuration_register.openp);
+    NRF_LOG_INFO("input_multiplexer_configuration_register.openn: %X", input_multiplexer_configuration_register.openn);
+    NRF_LOG_INFO("input_multiplexer_configuration_register.calp_sel: %X", input_multiplexer_configuration_register.calp_sel);
+    NRF_LOG_INFO("input_multiplexer_configuration_register.caln_sel: %X", input_multiplexer_configuration_register.caln_sel);
 }
 
 static void _max30003_write_input_multiplexer_configuration_register(void)
@@ -1386,10 +1393,10 @@ static void _max30003_read_ecg_configuration_register(void)
     ecg_configuration_register.dhpf = (control.spi_data[1] & 0b01000000) && 0b01000000;
     ecg_configuration_register.dlpf = (control.spi_data[1] & 0b00110000) >> 4;
 
-    NRF_LOG_INFO("ecg_configuration_register.rate: %u", ecg_configuration_register.rate);
-    NRF_LOG_INFO("ecg_configuration_register.gain: %u", ecg_configuration_register.gain);
-    NRF_LOG_INFO("ecg_configuration_register.dhpf: %u", ecg_configuration_register.dhpf);
-    NRF_LOG_INFO("ecg_configuration_register.dlpf: %u", ecg_configuration_register.dlpf);
+    NRF_LOG_INFO("ecg_configuration_register.rate: %X", ecg_configuration_register.rate);
+    NRF_LOG_INFO("ecg_configuration_register.gain: %X", ecg_configuration_register.gain);
+    NRF_LOG_INFO("ecg_configuration_register.dhpf: %X", ecg_configuration_register.dhpf);
+    NRF_LOG_INFO("ecg_configuration_register.dlpf: %X", ecg_configuration_register.dlpf);
 }
 
 static void _max30003_write_ecg_configuration_register(void)
@@ -1427,11 +1434,11 @@ static void _max30003_read_rtor1_configuration_register(void)
     rtor1_configuration_register.pavg = (control.spi_data[1] & 0b00110000) >> 4;
     rtor1_configuration_register.ptsf = control.spi_data[1] & 0b00001111;
 
-    NRF_LOG_INFO("rtor1_configuration_register.wndw: %u", rtor1_configuration_register.wndw);
-    NRF_LOG_INFO("rtor1_configuration_register.gain: %u", rtor1_configuration_register.gain);
-    NRF_LOG_INFO("rtor1_configuration_register.en_rtor: %u", rtor1_configuration_register.en_rtor);
-    NRF_LOG_INFO("rtor1_configuration_register.pavg: %u", rtor1_configuration_register.pavg);
-    NRF_LOG_INFO("rtor1_configuration_register.ptsf: %u", rtor1_configuration_register.ptsf);
+    NRF_LOG_INFO("rtor1_configuration_register.wndw: %X", rtor1_configuration_register.wndw);
+    NRF_LOG_INFO("rtor1_configuration_register.gain: %X", rtor1_configuration_register.gain);
+    NRF_LOG_INFO("rtor1_configuration_register.en_rtor: %X", rtor1_configuration_register.en_rtor);
+    NRF_LOG_INFO("rtor1_configuration_register.pavg: %X", rtor1_configuration_register.pavg);
+    NRF_LOG_INFO("rtor1_configuration_register.ptsf: %X", rtor1_configuration_register.ptsf);
 }
 
 static void _max30003_write_rtor1_configuration_register(void)
@@ -1468,9 +1475,9 @@ static void _max30003_read_rtor2_configuration_register(void)
     rtor2_configuration_register.ravg = (control.spi_data[1] & 0b00110000) >> 4;
     rtor2_configuration_register.rhsf = control.spi_data[1] & 0b00000111;
 
-    NRF_LOG_INFO("rtor2_configuration_register.hoff: %u", rtor2_configuration_register.hoff);
-    NRF_LOG_INFO("rtor2_configuration_register.ravg: %u", rtor2_configuration_register.ravg);
-    NRF_LOG_INFO("rtor2_configuration_register.rhsf: %u", rtor2_configuration_register.rhsf);
+    NRF_LOG_INFO("rtor2_configuration_register.hoff: %X", rtor2_configuration_register.hoff);
+    NRF_LOG_INFO("rtor2_configuration_register.ravg: %X", rtor2_configuration_register.ravg);
+    NRF_LOG_INFO("rtor2_configuration_register.rhsf: %X", rtor2_configuration_register.rhsf);
 }
 
 static void _max30003_write_rtor2_configuration_register(void)

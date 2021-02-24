@@ -37,6 +37,10 @@
 #define DEVICE_NAME                     "SG-X01"                                /**< Name of device. Will be included in the advertising data. */
 #endif
 
+#if BOARD_VERSION == SG_PRESSURE_X01
+#define DEVICE_NAME                     "SG-P-X01"                                /**< Name of device. Will be included in the advertising data. */
+#endif
+
 #define MANUFACTURER_NAME               "GT-BITNG"                              /**< Manufacturer. Will be passed to Device Information Service. */
 
 
@@ -376,7 +380,7 @@ void bluetooth_conn_params_init(void)
  */
 static void _bluetooth_on_adv_evt(ble_adv_evt_t ble_adv_evt)
 {
-    NRF_LOG_INFO("on_adv_evt");
+    NRF_LOG_INFO("_bluetooth_on_adv_evt");
 
     switch (ble_adv_evt)
     {
@@ -411,6 +415,7 @@ void bluetooth_advertising_init(void)
     adv_init.config.ble_adv_fast_enabled = true;
     adv_init.config.ble_adv_fast_interval = APP_ADV_INTERVAL;
     adv_init.config.ble_adv_fast_timeout = APP_ADV_DURATION;
+    adv_init.config.ble_adv_on_disconnect_disabled = true;      //ADD THIS LINE TO PREVENT ADVERTISING ON THE DISCONNECTED EVENT
 
     adv_init.evt_handler = _bluetooth_on_adv_evt;
 
@@ -447,6 +452,12 @@ void bluetooth_advertising_stop(void)
     APP_ERROR_CHECK(control.error_code);
 }
 
+void bluetooth_advertising_restart(void)
+{
+    NRF_LOG_INFO("advertising_restart");
+    control.error_code = sd_ble_gap_adv_start(m_advertising.adv_handle, APP_BLE_CONN_CFG_TAG);
+    APP_ERROR_CHECK(control.error_code);
+}
 
 /**@brief Function for initializing the GATT module.
  */
@@ -530,12 +541,12 @@ static void _bluetooth_ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_conte
             APP_ERROR_CHECK(control.error_code);
             break;
 
-//        case BLE_GATTS_EVT_TIMEOUT:
-//            // Disconnect on GATT Server timeout event.
-//            NRF_LOG_INFO("BLE_GATTS_EVT_TIMEOUT");
-//            control.error_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-//            APP_ERROR_CHECK(control.error_code);
-//            break;
+        case BLE_GATTS_EVT_TIMEOUT:
+            // Disconnect on GATT Server timeout event.
+            NRF_LOG_INFO("BLE_GATTS_EVT_TIMEOUT");
+            control.error_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+            APP_ERROR_CHECK(control.error_code);
+            break;
 
         case BLE_GATTS_EVT_WRITE:
             NRF_LOG_INFO("BLE_GATTS_EVT_WRITE");
@@ -767,8 +778,6 @@ void bluetooth_services_init(void)
     control.error_code = ble_configuration_service_initialize(&m_ble_configuration_service, &ble_configuration_service_init);
     APP_ERROR_CHECK(control.error_code);
 
-    control.request_received = 0;     // Flag to determine if the bluetooth device has sent a request or command
-
     #if TMP117
     ble_temperature_service_init.evt_handler = _bluetooth_on_temperature_service_evt;        // Initialize Temperature Service
 
@@ -814,26 +823,16 @@ void bluetooth_services_init(void)
 void bluetooth_configuration_service_settings_char_read(uint8_t *settings_char_data)
 {
     NRF_LOG_INFO("bluetooth_configuration_service_settings_char_read");
-    control.request_received = 1;
     bluetooth_handler(settings_char_data);
-}
-
-void bluetooth_override_request_received(void)
-{
-    NRF_LOG_INFO("bluetooth_request_received_override");
-    control.request_received = 1;
 }
 
 void bluetooth_configuration_service_response_char_write(uint8_t *response_char_data)
 {
     NRF_LOG_INFO("bluetooth_configuration_service_response_char_write");
-    if(control.request_received == 1)
-    {
-        memcpy(ble_configuration_service_init.response_char, response_char_data, CONFIGURATION_SERVICE_RESPONSE_CHAR_LENGTH);
-        control.error_code = configuration_service_response_char_write(&m_ble_configuration_service, response_char_data);   // Update the Response Characteristic
-        APP_ERROR_CHECK(control.error_code);
-        control.request_received = 0;
-    }
+
+    memcpy(ble_configuration_service_init.response_char, response_char_data, CONFIGURATION_SERVICE_RESPONSE_CHAR_LENGTH);
+    control.error_code = configuration_service_response_char_write(&m_ble_configuration_service, response_char_data);   // Update the Response Characteristic
+    APP_ERROR_CHECK(control.error_code);
 }
 
 void bluetooth_configuration_service_crc_char_write(uint8_t *crc_char_data)
@@ -873,9 +872,9 @@ void bluetooth_ecg_service_ecg_char_write(uint8_t *ecg_char_data)
 
 void bluetooth_ecg_service_instant_ecg_char_write(uint8_t *instant_ecg_char_data)
 {
-    NRF_LOG_INFO("bluetooth_ecg_service_ecg_char_write");
+    NRF_LOG_INFO("bluetooth_ecg_service_instant_ecg_char_write");
     memcpy(ble_ecg_service_init.instant_ecg_char, instant_ecg_char_data, ECG_SERVICE_INSTANT_ECG_CHAR_LENGTH);
-    control.error_code = ecg_service_ecg_char_write(&m_ble_ecg_service, instant_ecg_char_data);   // Update the INSTANT ECG Characteristic
+    control.error_code = ecg_service_instant_ecg_char_write(&m_ble_ecg_service, instant_ecg_char_data);   // Update the INSTANT ECG Characteristic
     APP_ERROR_CHECK(control.error_code);
 }
 #endif

@@ -22,10 +22,10 @@ enum FDC1004_CONSTANTS
     FDC1004_CONF_MEAS3 = 0X0A,
     FDC1004_CONF_MEAS4 = 0X0B,
     FDC1004_FDC_CONF = 0X0C, 
-    FDC1004_OFFESET_CAL_CIN1 = 0X0D,
-    FDC1004_OFFESET_CAL_CIN2 = 0X0E,
-    FDC1004_OFFESET_CAL_CIN3 = 0X0F,
-    FDC1004_OFFESET_CAL_CIN4 = 0X10,
+    FDC1004_OFFSET_CAL_CIN1 = 0X0D,
+    FDC1004_OFFSET_CAL_CIN2 = 0X0E,
+    FDC1004_OFFSET_CAL_CIN3 = 0X0F,
+    FDC1004_OFFSET_CAL_CIN4 = 0X10,
     FDC1004_GAIN_CAL_CIN1 = 0X11,
     FDC1004_GAIN_CAL_CIN2 = 0X12,
     FDC1004_GAIN_CAL_CIN3 = 0X13,
@@ -57,7 +57,7 @@ struct FDC1004_MSB_Measurement_Register_Struct
 struct FDC1004_LSB_Measurement_Register_Struct
 {
     uint8_t register_pointer[4];                    /**< Array to store register pointers */
-    uint8_t lsb_measurement[4][1];                  /**< Temporary variable to record the LSB of measurement for Channel #1-4 */
+    uint8_t lsb_measurement[4];                  /**< Temporary variable to record the LSB of measurement for Channel #1-4 */
 };
 
 
@@ -101,7 +101,7 @@ struct FDC1004_FDC_Configuration_Register_Struct
 struct FDC1004_Offset_Calibration_Register_Struct
 {
     uint8_t register_pointer[4];                    /**< Array to store register pointers */
-    uint8_t integer[4][2];                          /**< Integer portion: Offset Calibration for Channel #1-4 */
+    uint8_t integer[4];                          /**< Integer portion: Offset Calibration for Channel #1-4 */
     uint8_t decimal[4][2];                          /**< Decimal portion: Offset Calibration for Channel #1-4 */
 };
 
@@ -117,7 +117,7 @@ struct FDC1004_Offset_Calibration_Register_Struct
 struct FDC1004_Gain_Calibration_Register_Struct
 {
     uint8_t register_pointer[4];                    /**< Array to store register pointers */
-    uint8_t integer[4][2];                          /**< Integer portion: Gain Calibration for Channel #1-4 */
+    uint8_t integer[4];                          /**< Integer portion: Gain Calibration for Channel #1-4 */
     uint8_t decimal[4][2];                          /**< Decimal portion: Gain Calibration for Channel #1-4 */
 };
 
@@ -172,11 +172,13 @@ void fdc1004_enable_channel(uint8_t channel);
 
 void fdc1004_disable_channel(uint8_t channel);
 
-void fdc1004_trigger_single_measurement(uint8_t channel);
-
 void fdc1004_get_measurement(uint8_t channel, uint8_t *measurement);
 
 void fdc1004_interrupt_handler(void);
+
+void fdc1004_start_data_collection(void);
+
+void fdc1004_stop_data_collection(void);
 
 /* Static Functions */
 
@@ -205,6 +207,8 @@ static void _fdc1004_read_manufacturer_id_register(void);
 static void _fdc1004_read_device_id_register(void);
 
 static void _fdc1004_read_measurement(uint8_t channel);
+
+static void _fdc1004_trigger_single_measurement(uint8_t channel);
 
 #endif
 

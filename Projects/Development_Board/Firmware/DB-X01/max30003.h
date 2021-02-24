@@ -4,6 +4,8 @@
 #include "serial_slave.h"
 #include "spi.h"
 
+#if MAX30003
+
 //Register Addresses:
 enum MAX30003_Registers
 {
@@ -34,7 +36,7 @@ enum MAX30003_ECG_Constants
     MAX30003_SPS_128 = 128,
     MAX30003_SPS_256 = 256,
     MAX30003_SPS_512 = 512, 
-    MAX30003_EXTERNAL_MEMORY_START_ADDRESS = 0x0001F5,
+    MAX30003_EXTERNAL_MEMORY_START_ADDRESS = 0x000119,
     MAX30003_EXTERNAL_MEMORY_END_ADDRESS = 0x0FFFFF,
 };
 
@@ -290,7 +292,7 @@ void max30003_read_ecg_fifo_memory(void);
 
 void max30003_interrupt_handler(void);
 
-void max30003_transmit_ecg_recording_session();
+void max30003_transmit_ecg_recording_session(void);
 
 uint32_t max30003_get_bytes_left_to_transmit(void);
 
@@ -361,5 +363,7 @@ static void _max30003_spim_read_register(uint8_t register_address, uint8_t *data
 static void _max30003_spim_read_registers(uint8_t start_register_address, uint8_t *data, uint8_t data_length);
 
 static void _max30003_spim_write_registers(uint8_t start_register_address, uint8_t *data, uint8_t data_length);
+
+#endif
 
 #endif //MAX30003_H_

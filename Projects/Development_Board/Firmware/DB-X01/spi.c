@@ -25,15 +25,18 @@ uint8_t get_spi_timeout()
 
 void spim_event_handler(nrfx_spim_evt_t const *p_event, void *p_context) 
 {
-    NRF_LOG_INFO("SPI_HANDLER Event Occured");
+//    NRF_LOG_INFO("SPI_HANDLER Event Occured");
     spim_configuration.timeout = SPIM_TIMEOUT;
     switch (p_event->type)
     {
         case NRFX_SPIM_EVENT_DONE:
-            NRF_LOG_INFO("NRFX SPIM EVENT DONE");
+        {
+//            NRF_LOG_INFO("NRFX SPIM EVENT DONE");
             nrf_gpio_pin_write(spim_configuration.cs_pin, 1);   // Setting the Chip Select Pin high to deactivate
             spim_configuration.spim_xfer_done = true;
             break;
+        }
+
         default:
             break;
     }
@@ -42,7 +45,7 @@ void spim_event_handler(nrfx_spim_evt_t const *p_event, void *p_context)
 void spim_init_cs_pin(uint8_t spim_cs_pin)
 {
     NRF_LOG_INFO("spim_init_cs_pin");
-//    nrf_gpio_pin_write(spim_cs_pin, 1);
+
     nrf_gpio_cfg_output(spim_cs_pin);                  
     nrf_gpio_pin_write(spim_cs_pin, 1);
 }
@@ -50,8 +53,9 @@ void spim_init_cs_pin(uint8_t spim_cs_pin)
 void spim_select_cs_pin(uint8_t cs_pin)
 {
     NRF_LOG_INFO("spim_select_cs_pin");
+
     spim_configuration.cs_pin = cs_pin;
-    NRF_LOG_INFO("Chip_Select Pin: %u", spim_configuration.cs_pin);
+    NRF_LOG_INFO("SPIM Select Chip Select: %u", spim_configuration.cs_pin);
 }
 
 void spim_setup(void)

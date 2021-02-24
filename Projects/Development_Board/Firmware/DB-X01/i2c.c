@@ -91,7 +91,7 @@ void twim_setup(void)
     control.twim_config.scl = I2C_SCL_PIN;
     control.twim_config.sda = I2C_SDA_PIN;
     control.twim_config.frequency = NRFX_TWIM_DEFAULT_CONFIG_FREQUENCY;
-    control.twim_config.interrupt_priority = APP_IRQ_PRIORITY_HIGH;
+    control.twim_config.interrupt_priority = APP_IRQ_PRIORITY_HIGHEST;
     control.twim_config.hold_bus_uninit = NRFX_TWIM_DEFAULT_CONFIG_HOLD_BUS_UNINIT;
 
     const nrfx_twim_t m_twim_0 = NRFX_TWIM_INSTANCE(TWIM_INSTANCE_ID);

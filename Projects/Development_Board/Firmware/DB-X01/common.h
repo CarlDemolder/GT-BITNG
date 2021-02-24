@@ -39,14 +39,14 @@ enum COMMON_CONSTANTS
 };
 
 #if BOARD_VERSION == DB_X02
-    #define MAX30003 1
+    #define MAX30003 0
     #define MAX30102 0
-    #define CY15B108QI 1
+    #define CY15B108QI 0
     #define TMP117 1
     #define WB 0
     #define FT201X 0
     #define BMI160 0
-    #define FDC1004 0
+    #define FDC1004 1
     #define STRAIN_GAUGE 0
     enum PIN_CONSTANTS
     {
@@ -126,6 +126,31 @@ enum COMMON_CONSTANTS
     #define DAC5571 1
     #define ADS1100 1
     #define STRAIN_GAUGE 1
+
+    enum PIN_CONSTANTS
+    {
+        BLE_LED_PIN = 11,                                   /** Pinout for BLE LED for SG-X01 */
+        IND_LED_PIN = 12,                                   /** Pinout for IND LED for SG-X01 */
+
+        I2C_SDA_PIN = 30,                                   /** Pinout for I2C SDA for SG-X01 */
+        I2C_SCL_PIN = 28,                                   /** Pinout for I2C SCL for SG-X01 */
+
+        EN_VCC_LDO_PIN = 10,                                 /** Pinout for LDO Enable for SG-X01 */
+
+        TMP117_ALERT_PIN = 26,                              /** Pinout for TMP117 ALERT pin for SG-X01 */
+
+        NRESET_PIN = 21,                                    /** Pinout for nRESET pin for SG-X01 */ 
+    };
+#endif
+
+#if BOARD_VERSION == SG_PRESSURE_X01
+    #define TMP117 1
+    #define FT201X 0
+    #define FDC1004 1
+    #define ADG728 0
+    #define DAC5571 0
+    #define ADS1100 0
+    #define STRAIN_GAUGE 0
 
     enum PIN_CONSTANTS
     {
