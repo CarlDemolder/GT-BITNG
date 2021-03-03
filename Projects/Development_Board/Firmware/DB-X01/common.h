@@ -39,14 +39,14 @@ enum COMMON_CONSTANTS
 };
 
 #if BOARD_VERSION == DB_X02
-    #define MAX30003 0
+    #define MAX30003 1
     #define MAX30102 0
-    #define CY15B108QI 0
+    #define CY15B108QI 1
     #define TMP117 1
     #define WB 0
     #define FT201X 0
     #define BMI160 0
-    #define FDC1004 1
+    #define FDC1004 0
     #define STRAIN_GAUGE 0
     enum PIN_CONSTANTS
     {
