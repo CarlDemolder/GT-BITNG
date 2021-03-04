@@ -41,6 +41,11 @@ static void _nrf52_initialization(void)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
+    uint8_t bluetooth_dfu_async_svci_init_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_INIT_DFU_ASYNC_SVCI_COMMAND};
+    state_handler(bluetooth_dfu_async_svci_init_command); // Initialize the async SVCI interface to bootloader before interrupts are enabled.
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
     uint8_t nrfx_clock_init_command[4] = {0x00, NRF52_MODULE, NRF52_CLOCK_COMMAND, NRF52_NRFX_CLOCK_DRIVER_INIT};   
     state_handler(nrfx_clock_init_command); // Init and Enable NRFX Clock 
 
@@ -82,6 +87,7 @@ static void _nrf52_initialization(void)
     state_handler(led_command); // Enable LED Driver
 
     uint8_t medium_blink_led_command[5] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_LED_IND_BLINK, NRF52_LED_IND_MEDIUM_BLINK};  
+    state_handler(medium_blink_led_command); // IND LED Medium Blink 
     state_handler(medium_blink_led_command); // IND LED Medium Blink
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
@@ -1483,6 +1489,11 @@ static void _bluetooth_handler(uint8_t *serial_command)
         case BLUETOOTH_DISCONNECT_COMMAND:
             NRF_LOG_INFO("BLUETOOTH_MODULE: DISCONNECT");
             bluetooth_disconnect();
+            break;
+
+        case BLUETOOTH_INIT_DFU_ASYNC_SVCI_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_INIT_DFU_ASYNC_SVCI_COMMAND");
+            bluetooth_dfu_async_svci_init();
             break;
 
         default:

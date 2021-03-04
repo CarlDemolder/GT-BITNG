@@ -47,7 +47,8 @@
  */
 
 #include <stdint.h>
-#include "boards.h"
+#include "nrf_gpio.h"
+#include "nordic_common.h"
 #include "nrf_mbr.h"
 #include "nrf_bootloader.h"
 #include "nrf_bootloader_app_start.h"
@@ -60,6 +61,44 @@
 #include "app_error_weak.h"
 #include "nrf_bootloader_info.h"
 #include "nrf_delay.h"
+
+
+uint32_t ble_led_pin = 11;                                   
+uint32_t ind_led_pin = 12;
+
+static void _ind_led_off(void)
+{
+    NRF_LOG_INFO("_ind_led_off");
+    nrf_gpio_pin_write(ind_led_pin, 1);
+}
+
+static void _ind_led_on(void)
+{
+    NRF_LOG_INFO("_ind_led_on");
+    nrf_gpio_pin_write(ind_led_pin, 0);
+}
+
+static void _ble_led_off(void)
+{
+    NRF_LOG_INFO("_ble_led_off");
+    nrf_gpio_pin_write(ble_led_pin, 1);
+}
+
+static void _ble_led_on(void)
+{
+    NRF_LOG_INFO("_ble_led_on");
+    nrf_gpio_pin_write(ble_led_pin, 0);
+}
+
+static void _init_leds(void)
+{
+    NRF_LOG_INFO("_init_leds");
+    nrf_gpio_cfg_output(ind_led_pin);   //set IND LED pin to output
+    nrf_gpio_cfg_output(ble_led_pin);   //set BLE LED pin to output
+
+    _ind_led_off();    // Turn off Indicator LED
+    _ble_led_off();    // Turn off BLE LED
+}
 
 static void on_error(void)
 {
@@ -104,19 +143,26 @@ static void dfu_observer(nrf_dfu_evt_type_t evt_type)
     switch (evt_type)
     {
         case NRF_DFU_EVT_DFU_FAILED:
+            break;
+
         case NRF_DFU_EVT_DFU_ABORTED:
+            break;
+
         case NRF_DFU_EVT_DFU_INITIALIZED:
-            bsp_board_init(BSP_INIT_LEDS);
-            bsp_board_led_on(BSP_BOARD_LED_0);
-            bsp_board_led_on(BSP_BOARD_LED_1);
-            bsp_board_led_off(BSP_BOARD_LED_2);
+            _ind_led_on();
             break;
+
         case NRF_DFU_EVT_TRANSPORT_ACTIVATED:
-            bsp_board_led_off(BSP_BOARD_LED_1);
-            bsp_board_led_on(BSP_BOARD_LED_2);
             break;
+
         case NRF_DFU_EVT_DFU_STARTED:
+            _ble_led_on();
             break;
+
+        case NRF_DFU_EVT_DFU_COMPLETED:
+            _ble_led_off();
+            break;
+
         default:
             break;
     }
@@ -134,6 +180,7 @@ int main(void)
     // Protect MBR and bootloader code from being overwritten.
     ret_val = nrf_bootloader_flash_protect(0, MBR_SIZE);
     APP_ERROR_CHECK(ret_val);
+
     ret_val = nrf_bootloader_flash_protect(BOOTLOADER_START_ADDR, BOOTLOADER_SIZE);
     APP_ERROR_CHECK(ret_val);
 
@@ -141,6 +188,8 @@ int main(void)
     NRF_LOG_DEFAULT_BACKENDS_INIT();
 
     NRF_LOG_INFO("Inside main");
+
+    _init_leds();
 
     ret_val = nrf_bootloader_init(dfu_observer);
     APP_ERROR_CHECK(ret_val);
@@ -152,7 +201,3 @@ int main(void)
 
     APP_ERROR_CHECK_BOOL(false);
 }
-
-/**
- * @}
- */

@@ -16,6 +16,7 @@
   <ProjectSessionItem path="secure_bootloader_ble_s132_pca10040"/>
   <ProjectSessionItem path="secure_bootloader_ble_s132_pca10040;secure_bootloader_ble_s132_pca10040"/>
   <ProjectSessionItem path="secure_bootloader_ble_s132_pca10040;secure_bootloader_ble_s132_pca10040;Application"/>
+  <ProjectSessionItem path="secure_bootloader_ble_s132_pca10040;secure_bootloader_ble_s132_pca10040;Board Definition"/>
   <ProjectSessionItem path="secure_bootloader_ble_s132_pca10040;secure_bootloader_ble_s132_pca10040;nRF_Bootloader"/>
   <ProjectSessionItem path="secure_bootloader_ble_s132_pca10040;secure_bootloader_ble_s132_pca10040;nRF_Crypto"/>
  </Project>
@@ -42,7 +43,7 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="84" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../main.c" selected="1" top="78" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="169" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../main.c" selected="1" top="147" codecName="Default"/>
  </Files>
  <ARMCrossStudioWindow activeProject="secure_bootloader_ble_s132_pca10040" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Release" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="C:/Users/carld/Documents/GitHub/GT-BITNG/Projects/Development_Board/Firmware/Bootloader/dfu/secure_bootloader" debugSearchPath="" autoConnectCapabilities="3199"/>
 </session>

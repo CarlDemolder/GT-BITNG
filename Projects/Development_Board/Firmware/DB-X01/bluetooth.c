@@ -1,6 +1,5 @@
 #include "bluetooth.h"
 
-
 #define APP_ADV_INTERVAL                320                                     /**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
 
 #define APP_ADV_DURATION                36000                                   /**< The advertising duration (180 seconds) in units of 10 milliseconds. */
@@ -94,6 +93,7 @@ ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {TEMPERATURE_SERVICE_UU
 ble_uuid_t m_adv_uuids[] ={{CONFIGURATION_SERVICE_UUID}, {PRESSURE_SERVICE_UUID}}; 
 #endif
 
+// Bluetooth control struct used to control common variables for the class
 static struct Bluetooth_Control_Struct control;
 
 /**@brief Function for handling Queued Write Module errors.
@@ -247,13 +247,14 @@ static void _bluetooth_pm_evt_handler(pm_evt_t const * p_evt)
 
 /** @brief Clear bonding information from persistent storage.
  */
-void bluetooth_delete_bonds(void)
+static void _bluetooth_delete_bonds(void)
 {
-    NRF_LOG_INFO("delete_bonds");
+    NRF_LOG_INFO("_bluetooth_delete_bonds");
 
     control.error_code = pm_peers_delete();
     APP_ERROR_CHECK(control.error_code);
 }
+
 
 /**@brief Function for the GAP initialization.
  *
@@ -755,11 +756,11 @@ void bluetooth_services_init(void)
     control.error_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
     APP_ERROR_CHECK(control.error_code);
 
-//    // DFU Related Event Handlers
-//    dfus_init.evt_handler = ble_dfu_evt_handler;
-//
-//    control.error_code = ble_dfu_buttonless_init(&dfus_init);
-//    APP_ERROR_CHECK(control.error_code);
+    // DFU Related Event Handlers
+    dfus_init.evt_handler = _bluetooth_dfu_service_evt_handler;
+
+    control.error_code = ble_dfu_buttonless_init(&dfus_init);
+    APP_ERROR_CHECK(control.error_code);
 
     ble_configuration_service_init.evt_handler = _bluetooth_on_configuration_service_evt;    // Initialize Configuration Service
 
@@ -925,63 +926,127 @@ void bluetooth_disconnect(void)
     }
 }
 
-///**@brief This function must be called before any interrupts are enabled. It can be called after the log module is initialized.
-// */
-//void ble_dfu_async_svci_init(void)
-//{
-//    // Initialize the async SVCI interface to bootloader before any interrupts are enabled.
-//    control.error_code = ble_dfu_buttonless_async_svci_init();
-//    APP_ERROR_CHECK(control.error_code);
-//}
-//
-//// YOUR_JOB: Update this code if you want to do anything given a DFU event (optional).
-///**@brief Function for handling dfu events from the Buttonless Secure DFU service
-// *
-// * @param[in]   event   Event from the Buttonless Secure DFU service.
-// */
-//void ble_dfu_evt_handler(ble_dfu_buttonless_evt_type_t event)
-//{
-//    switch (event)
-//    {
-//        case BLE_DFU_EVT_BOOTLOADER_ENTER_PREPARE:
-//        {
-//            NRF_LOG_INFO("Device is preparing to enter bootloader mode.");
-//
-//            // Prevent device from advertising on disconnect.
-//            ble_adv_modes_config_t config;
-//            advertising_config_get(&config);
-//            config.ble_adv_on_disconnect_disabled = true;
-//            ble_advertising_modes_config_set(&m_advertising, &config);
-//
-//            // Disconnect all other bonded devices that currently are connected.
-//            // This is required to receive a service changed indication
-//            // on bootup after a successful (or aborted) Device Firmware Update.
-//            uint32_t conn_count = ble_conn_state_for_each_connected(disconnect, NULL);
-//            NRF_LOG_INFO("Disconnected %d links.", conn_count);
-//            break;
-//        }
-//
-//        case BLE_DFU_EVT_BOOTLOADER_ENTER:
-//            // YOUR_JOB: Write app-specific unwritten data to FLASH, control finalization of this
-//            //           by delaying reset by reporting false in app_shutdown_handler
-//            NRF_LOG_INFO("Device will enter bootloader mode.");
-//            break;
-//
-//        case BLE_DFU_EVT_BOOTLOADER_ENTER_FAILED:
-//            NRF_LOG_ERROR("Request to enter bootloader mode failed asynchroneously.");
-//            // YOUR_JOB: Take corrective measures to resolve the issue
-//            //           like calling APP_ERROR_CHECK to reset the device.
-//            break;
-//
-//        case BLE_DFU_EVT_RESPONSE_SEND_ERROR:
-//            NRF_LOG_ERROR("Request to send a response to client failed.");
-//            // YOUR_JOB: Take corrective measures to resolve the issue
-//            //           like calling APP_ERROR_CHECK to reset the device.
-//            APP_ERROR_CHECK(false);
-//            break;
-//
-//        default:
-//            NRF_LOG_ERROR("Unknown event from ble_dfu_buttonless.");
-//            break;
-//    }
-//}
+/**@brief Function for putting the chip into sleep mode.
+ *
+ * @note This function will not return.
+ */
+static void _bluetooth_soft_device_sleep_mode_enter(void)
+{
+    NRF_LOG_INFO("_bluetooth_soft_device_sleep_mode_enter");
+    //Disable SoftDevice. It is required to be able to write to GPREGRET2 register (SoftDevice API blocks it).
+    //GPREGRET2 register holds the information about skipping CRC check on next boot.
+    control.error_code = nrf_sdh_disable_request();
+    APP_ERROR_CHECK(control.error_code);
+}
+
+/* nrf_sdh state observer. */
+NRF_SDH_STATE_OBSERVER(m_buttonless_dfu_state_obs, 0) =
+{
+    .handler = _buttonless_dfu_sdh_state_observer,
+};
+
+//lint -esym(528, m_app_shutdown_handler)
+/**@brief Register application shutdown handler with priority 0.
+ */
+NRF_PWR_MGMT_HANDLER_REGISTER(_bluetooth_app_shutdown_handler, 0);
+
+/** @brief handler for buttonless dfu sdh state observer.
+ */
+static void _buttonless_dfu_sdh_state_observer(nrf_sdh_state_evt_t state, void * p_context)
+{
+    if (state == NRF_SDH_EVT_STATE_DISABLED)
+    {
+        // Softdevice was disabled before going into reset. Inform bootloader to skip CRC on next boot.
+        nrf_power_gpregret2_set(BOOTLOADER_DFU_SKIP_CRC);
+
+        //Go to system off.
+        nrf_pwr_mgmt_shutdown(NRF_PWR_MGMT_SHUTDOWN_GOTO_SYSOFF);
+    }
+}
+
+/**@brief Handler for shutdown preparation.
+ *
+ * @details During shutdown procedures, this function will be called at a 1 second interval
+ *          untill the function returns true. When the function returns true, it means that the
+ *          app is ready to reset to DFU mode.
+ *
+ * @param[in]   event   Power manager event.
+ *
+ * @retval  True if shutdown is allowed by this power manager handler, otherwise false.
+ */
+static bool _bluetooth_app_shutdown_handler(nrf_pwr_mgmt_evt_t event)
+{
+    NRF_LOG_INFO("app_shutdown_handler");
+    switch(event)
+    {
+        case NRF_PWR_MGMT_EVT_PREPARE_DFU:
+            NRF_LOG_INFO("NRF_PWR_MGMT_EVT_PREPARE_DFU");
+            NRF_LOG_INFO("Power management wants to reset to DFU mode.");
+            control.error_code = nrf_sdh_disable_request();
+            APP_ERROR_CHECK(control.error_code);
+            break;
+
+        default:
+            // YOUR_JOB: Implement any of the other events available from the power management module:
+            //      -NRF_PWR_MGMT_EVT_PREPARE_SYSOFF
+            //      -NRF_PWR_MGMT_EVT_PREPARE_WAKEUP
+            //      -NRF_PWR_MGMT_EVT_PREPARE_RESET
+            return true;
+    }
+
+    NRF_LOG_INFO("Power management allowed to reset to DFU mode.");
+    return true;
+}
+
+/**@brief This function must be called before any interrupts are enabled. It can be called after the log module is initialized.
+ */
+void bluetooth_dfu_async_svci_init(void)
+{
+    NRF_LOG_INFO("ble_dfu_async_svci_init");
+    // Initialize the async SVCI interface to bootloader before any interrupts are enabled.
+    control.error_code = ble_dfu_buttonless_async_svci_init();
+    APP_ERROR_CHECK(control.error_code);
+}
+
+// YOUR_JOB: Update this code if you want to do anything given a DFU event (optional).
+/**@brief Function for handling dfu events from the Buttonless Secure DFU service
+ *
+ * @param[in]   event   Event from the Buttonless Secure DFU service.
+ */
+static void _bluetooth_dfu_service_evt_handler(ble_dfu_buttonless_evt_type_t event)
+{
+    NRF_LOG_INFO("_bluetooth_dfu_service_evt_handler");
+    switch(event)
+    {
+        case BLE_DFU_EVT_BOOTLOADER_ENTER_PREPARE:
+            NRF_LOG_INFO("BLE_DFU_EVT_BOOTLOADER_ENTER_PREPARE");
+            bluetooth_disconnect();
+            break;
+
+        case BLE_DFU_EVT_BOOTLOADER_ENTER:
+            NRF_LOG_INFO("BLE_DFU_EVT_BOOTLOADER_ENTER");
+            // YOUR_JOB: Write app-specific unwritten data to FLASH, control finalization of this
+            //           by delaying reset by reporting false in app_shutdown_handler
+            NRF_LOG_INFO("Device will enter bootloader mode.");
+            break;
+
+        case BLE_DFU_EVT_BOOTLOADER_ENTER_FAILED:
+            NRF_LOG_INFO("BLE_DFU_EVT_BOOTLOADER_ENTER_FAILED");
+            NRF_LOG_INFO("Request to enter bootloader mode failed asynchroneously.");
+            // YOUR_JOB: Take corrective measures to resolve the issue
+            //           like calling APP_ERROR_CHECK to reset the device.
+            break;
+
+        case BLE_DFU_EVT_RESPONSE_SEND_ERROR:
+            NRF_LOG_INFO("BLE_DFU_EVT_RESPONSE_SEND_ERROR");
+            NRF_LOG_INFO("Request to send a response to client failed.");
+            // YOUR_JOB: Take corrective measures to resolve the issue
+            //           like calling APP_ERROR_CHECK to reset the device.
+            APP_ERROR_CHECK(false);
+            break;
+
+        default:
+            NRF_LOG_INFO("Unknown event from ble_dfu_buttonless.");
+            break;
+    }
+}

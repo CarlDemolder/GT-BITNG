@@ -23,5 +23,11 @@
 #include "nrf_ble_gatt.h"
 #include "nrf_ble_qwr.h"
 
+#include "nrf_dfu_ble_svci_bond_sharing.h"
+#include "nrf_svci_async_function.h"
+#include "nrf_svci_async_handler.h"
+#include "nrf_bootloader_info.h"
+
+#include "ble_dfu.h"
 
 #endif // BLE_SERVICE_H__
