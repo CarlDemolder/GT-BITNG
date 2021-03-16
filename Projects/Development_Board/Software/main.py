@@ -1,8 +1,12 @@
 import matplotlib
-matplotlib.use("TkAgg")
-
-import serial_tools as serial
+import serial_tools
 import serial_slave_constants as ssc
+
+import ble_dongle
+from blatann.utils import setup_logger
+
+matplotlib.use("TkAgg")
+logger = setup_logger(level="INFO")
 
 from openpyxl import Workbook
 import pandas as pd
@@ -54,21 +58,10 @@ def ble_led_blink_custom(ser, led_on_ms, led_off_ms):
 
 
 def main():
-    ser = serial.SerialPort()
-    baud_rate = 9600
-    com_port = 'COM3'
-    ser.open_serial_port(com_port, baud_rate)
-
-    # time.sleep(1)
-    # ind_led_blink_short(ser)
-    # time.sleep(1)
-    # ind_led_blink_medium(ser)
-    # time.sleep(1)
-    # ind_led_blink_long(ser)
-    time.sleep(1)
-    ind_led_blink_custom(ser, 1000, 1000)
-    time.sleep(1)
-    ble_led_blink_custom(ser, 1000, 1000)
+    serial_port = serial_tools.SerialPort()
+    serial_port.select_port()
+    ble_dongle.BLEDongle()
+    ble_dongle.setCOMPort(serial_port.serial.port)
 
 
 if __name__ == "__main__":

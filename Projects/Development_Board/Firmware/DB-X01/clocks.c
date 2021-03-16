@@ -334,6 +334,9 @@ void rtc_sensor_stop(void)
 
         rtc_sensor_configuration.rtc_is_running = 0;
         rtc_sensor_configuration.rtc_restart = 1;
+
+        lfclock_start();
+
         NRF_LOG_INFO("RTC sensor is stopped and disabled");
     }
 }

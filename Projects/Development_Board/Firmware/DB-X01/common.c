@@ -81,8 +81,10 @@ void enable_vcc_ldo(void)
 
 void disable_vcc_ldo(void)
 {
-    NRF_LOG_INFO("Disable VCC LDO");
-    nrf_gpio_pin_write(EN_VCC_LDO_PIN, 0);     // Disabling the VCC LDO to shutdown the MCU
+    NRF_LOG_INFO("disable_vcc_ldo");
+    nrf_gpio_pin_write(EN_VCC_LDO_PIN, 0);     
+    nrf_delay_ms(100);
+    nrf_gpio_pin_write(EN_VCC_LDO_PIN, 1);    // Disabling the VCC LDO to shutdown the MCU
 }
 
 #if MAX30102

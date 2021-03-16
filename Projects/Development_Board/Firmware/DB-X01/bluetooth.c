@@ -7,7 +7,7 @@
 #define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
 
 #define MIN_CONN_INTERVAL               MSEC_TO_UNITS(10, UNIT_1_25_MS)         /**< Minimum acceptable connection interval (0.1 seconds). */
-#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(20, UNIT_1_25_MS)         /**< Maximum acceptable connection interval (0.2 second). */
+#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(100, UNIT_1_25_MS)         /**< Maximum acceptable connection interval (0.2 second). */
 #define SLAVE_LATENCY                   0                                       /**< Slave latency. */
 #define CONN_SUP_TIMEOUT                MSEC_TO_UNITS(8000, UNIT_10_MS)         /**< Connection supervisory timeout (10 seconds). */
 
@@ -416,6 +416,7 @@ void bluetooth_advertising_init(void)
     adv_init.config.ble_adv_fast_enabled = true;
     adv_init.config.ble_adv_fast_interval = APP_ADV_INTERVAL;
     adv_init.config.ble_adv_fast_timeout = APP_ADV_DURATION;
+
     adv_init.config.ble_adv_on_disconnect_disabled = true;      //ADD THIS LINE TO PREVENT ADVERTISING ON THE DISCONNECTED EVENT
 
     adv_init.evt_handler = _bluetooth_on_adv_evt;
@@ -428,10 +429,11 @@ void bluetooth_advertising_init(void)
 
 /**@brief Function for setting the power level of the advertising
  */
-void bluetooth_set_advertising_power(void)
+void bluetooth_set_transmitting_power(uint8_t power_level)
 {
-    NRF_LOG_INFO("set_advertising_power");
-    control.error_code = sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_ADV, m_advertising.adv_handle, 4);
+    NRF_LOG_INFO("bluetooth_set_transmitting_power");
+    int8_t tx_power_values[9] = {-40, -20, -16, -12, -8, -4, 0, 3, 4}; // -40dBm, -20dBm, -16dBm, -12dBm, -8dBm, -4dBm, 0dBm, +3dBm and +4dBm.
+    control.error_code = sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_ADV, m_advertising.adv_handle, tx_power_values[power_level]);
     APP_ERROR_CHECK(control.error_code);
 }
 
@@ -439,7 +441,7 @@ void bluetooth_set_advertising_power(void)
  */
 void bluetooth_advertising_start(void)
 {
-    NRF_LOG_INFO("advertising_start");
+    NRF_LOG_INFO("bluetooth_advertising_start");
     control.error_code = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
     APP_ERROR_CHECK(control.error_code);
 }
@@ -448,23 +450,29 @@ void bluetooth_advertising_start(void)
  */
 void bluetooth_advertising_stop(void)
 {
-    NRF_LOG_INFO("advertising_stop");
+    NRF_LOG_INFO("bluetooth_advertising_stop");
     control.error_code = sd_ble_gap_adv_stop(m_advertising.adv_handle);
     APP_ERROR_CHECK(control.error_code);
 }
 
 void bluetooth_advertising_restart(void)
 {
-    NRF_LOG_INFO("advertising_restart");
+    NRF_LOG_INFO("bluetooth_advertising_restart");
     control.error_code = sd_ble_gap_adv_start(m_advertising.adv_handle, APP_BLE_CONN_CFG_TAG);
     APP_ERROR_CHECK(control.error_code);
+}
+
+void bluetooth_enable_advertising_after_disconnection(void)
+{
+    NRF_LOG_INFO("bluetooth_enable_advertising_after_disconnection");
+    control.advertising_after_disconnection_flag = true;
 }
 
 /**@brief Function for initializing the GATT module.
  */
 void bluetooth_gatt_init(void)
 {
-    NRF_LOG_INFO("gatt_init");
+    NRF_LOG_INFO("bluetooth_gatt_init");
     control.error_code = nrf_ble_gatt_init(&m_gatt, NULL);
     APP_ERROR_CHECK(control.error_code);
 }
@@ -475,7 +483,7 @@ void bluetooth_gatt_init(void)
  */
 void bluetooth_ble_stack_init(void)
 {
-    NRF_LOG_INFO("ble_stack_init");
+    NRF_LOG_INFO("bluetooth_ble_stack_init");
     
     if(nrf_sdh_is_enabled())
     {
@@ -518,6 +526,11 @@ static void _bluetooth_ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_conte
     {
         case BLE_GAP_EVT_DISCONNECTED:
             NRF_LOG_INFO("BLE_GAP_EVT_DISCONNECTED");
+            if(control.advertising_after_disconnection_flag)
+            {
+                bluetooth_advertising_restart();
+            }
+            control.connection_flag = false;
             break;
 
         case BLE_GAP_EVT_CONNECTED:
@@ -526,6 +539,7 @@ static void _bluetooth_ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_conte
             control.error_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
             APP_ERROR_CHECK(control.error_code);
             bluetooth_gap_params_update(m_conn_handle); // Once all Services have been discovered, change the GAP Connection Parameters
+            control.connection_flag = true;
             break;
 
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
@@ -830,35 +844,46 @@ void bluetooth_configuration_service_settings_char_read(uint8_t *settings_char_d
 void bluetooth_configuration_service_response_char_write(uint8_t *response_char_data)
 {
     NRF_LOG_INFO("bluetooth_configuration_service_response_char_write");
-
-    memcpy(ble_configuration_service_init.response_char, response_char_data, CONFIGURATION_SERVICE_RESPONSE_CHAR_LENGTH);
-    control.error_code = configuration_service_response_char_write(&m_ble_configuration_service, response_char_data);   // Update the Response Characteristic
-    APP_ERROR_CHECK(control.error_code);
+    if(control.connection_flag)
+    {
+        memcpy(ble_configuration_service_init.response_char, response_char_data, CONFIGURATION_SERVICE_RESPONSE_CHAR_LENGTH);
+        control.error_code = configuration_service_response_char_write(&m_ble_configuration_service, response_char_data);   // Update the Response Characteristic
+        APP_ERROR_CHECK(control.error_code);
+    }
 }
 
 void bluetooth_configuration_service_crc_char_write(uint8_t *crc_char_data)
 {
     NRF_LOG_INFO("bluetooth_configuration_service_crc_char_write");
-    memcpy(ble_configuration_service_init.crc_char, crc_char_data, CONFIGURATION_SERVICE_CRC_CHAR_LENGTH);
-    control.error_code = configuration_service_crc_char_write(&m_ble_configuration_service, crc_char_data);   // Update the CRC Characteristic
-    APP_ERROR_CHECK(control.error_code);
+    if(control.connection_flag)
+    {
+        memcpy(ble_configuration_service_init.crc_char, crc_char_data, CONFIGURATION_SERVICE_CRC_CHAR_LENGTH);
+        control.error_code = configuration_service_crc_char_write(&m_ble_configuration_service, crc_char_data);   // Update the CRC Characteristic
+        APP_ERROR_CHECK(control.error_code);
+    }
 }
 
 #if TMP117
 void bluetooth_temperature_service_temp_char_write(uint8_t *temp_char_data)
 {
     NRF_LOG_INFO("bluetooth_temperature_service_temp_char_write");
-    memcpy(ble_temperature_service_init.temp_char, temp_char_data, TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH);
-    control.error_code = temperature_service_temp_char_write(&m_ble_temperature_service, temp_char_data);   // Update the Temp Characteristic
-    APP_ERROR_CHECK(control.error_code);
+    if(control.connection_flag)
+    {
+        memcpy(ble_temperature_service_init.temp_char, temp_char_data, TEMPERATURE_SERVICE_TEMP_CHAR_LENGTH);
+        control.error_code = temperature_service_temp_char_write(&m_ble_temperature_service, temp_char_data);   // Update the Temp Characteristic
+        APP_ERROR_CHECK(control.error_code);
+    }
 }
 
 void bluetooth_temperature_service_instant_temp_char_write(uint8_t *instant_temp_char_data)
 {
     NRF_LOG_INFO("bluetooth_temperature_service_instant_temp_char_write");
-    memcpy(ble_temperature_service_init.instant_temp_char, instant_temp_char_data, TEMPERATURE_SERVICE_INSTANT_TEMP_CHAR_LENGTH);
-    control.error_code = temperature_service_instant_temp_char_write(&m_ble_temperature_service, instant_temp_char_data);   // Update the Temp Characteristic
-    APP_ERROR_CHECK(control.error_code);
+    if(control.connection_flag)
+    {
+        memcpy(ble_temperature_service_init.instant_temp_char, instant_temp_char_data, TEMPERATURE_SERVICE_INSTANT_TEMP_CHAR_LENGTH);
+        control.error_code = temperature_service_instant_temp_char_write(&m_ble_temperature_service, instant_temp_char_data);   // Update the Temp Characteristic
+        APP_ERROR_CHECK(control.error_code);
+    }
 }
 #endif
 
@@ -866,17 +891,23 @@ void bluetooth_temperature_service_instant_temp_char_write(uint8_t *instant_temp
 void bluetooth_ecg_service_ecg_char_write(uint8_t *ecg_char_data)
 {
     NRF_LOG_INFO("bluetooth_ecg_service_ecg_char_write");
-    memcpy(ble_ecg_service_init.ecg_char, ecg_char_data, ECG_SERVICE_ECG_CHAR_LENGTH);
-    control.error_code = ecg_service_ecg_char_write(&m_ble_ecg_service, ecg_char_data);   // Update the ECG Characteristic
-    APP_ERROR_CHECK(control.error_code);
+    if(control.connection_flag)
+    {
+        memcpy(ble_ecg_service_init.ecg_char, ecg_char_data, ECG_SERVICE_ECG_CHAR_LENGTH);
+        control.error_code = ecg_service_ecg_char_write(&m_ble_ecg_service, ecg_char_data);   // Update the ECG Characteristic
+        APP_ERROR_CHECK(control.error_code);
+    }
 }
 
 void bluetooth_ecg_service_instant_ecg_char_write(uint8_t *instant_ecg_char_data)
 {
     NRF_LOG_INFO("bluetooth_ecg_service_instant_ecg_char_write");
-    memcpy(ble_ecg_service_init.instant_ecg_char, instant_ecg_char_data, ECG_SERVICE_INSTANT_ECG_CHAR_LENGTH);
-    control.error_code = ecg_service_instant_ecg_char_write(&m_ble_ecg_service, instant_ecg_char_data);   // Update the INSTANT ECG Characteristic
-    APP_ERROR_CHECK(control.error_code);
+    if(control.connection_flag)
+    {
+        memcpy(ble_ecg_service_init.instant_ecg_char, instant_ecg_char_data, ECG_SERVICE_INSTANT_ECG_CHAR_LENGTH);
+        control.error_code = ecg_service_instant_ecg_char_write(&m_ble_ecg_service, instant_ecg_char_data);   // Update the INSTANT ECG Characteristic
+        APP_ERROR_CHECK(control.error_code);
+    }
 }
 #endif
 
@@ -884,9 +915,12 @@ void bluetooth_ecg_service_instant_ecg_char_write(uint8_t *instant_ecg_char_data
 void bluetooth_pressure_service_instant_pressure_char_write(uint8_t *instant_pressure_char_data)
 {
     NRF_LOG_INFO("bluetooth_pressure_service_instant_pressure_char_write");
-    memcpy(ble_pressure_service_init.instant_pressure_char, instant_pressure_char_data, PRESSURE_SERVICE_INSTANT_PRESSURE_CHAR_LENGTH);
-    control.error_code = pressure_service_instant_pressure_char_write(&m_ble_pressure_service, instant_pressure_char_data);   // Update the Temp Characteristic
-    APP_ERROR_CHECK(control.error_code);
+    if(control.connection_flag)
+    {
+        memcpy(ble_pressure_service_init.instant_pressure_char, instant_pressure_char_data, PRESSURE_SERVICE_INSTANT_PRESSURE_CHAR_LENGTH);
+        control.error_code = pressure_service_instant_pressure_char_write(&m_ble_pressure_service, instant_pressure_char_data);   // Update the Temp Characteristic
+        APP_ERROR_CHECK(control.error_code);
+    }
 }
 #endif
 

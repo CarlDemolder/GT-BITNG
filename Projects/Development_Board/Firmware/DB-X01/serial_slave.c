@@ -9,7 +9,7 @@ void startup_initialization(void)
 {
     uint8_t nrf52_initialization_command[3] = {0x00, SERIAL_SLAVE_MODULE, NRF52_INITIALIZATION_COMMAND};       
     state_handler(nrf52_initialization_command); // Initialize NRF52 Module
-    
+
     #if TMP117
     uint8_t tmp117_initialization_command[3] = {0x00, SERIAL_SLAVE_MODULE, TMP117_INITIALIZATION_COMMAND};       
     state_handler(tmp117_initialization_command); // Initialize TMP117 Module
@@ -24,7 +24,7 @@ void startup_initialization(void)
     uint8_t cy15b108qi_initialization_command[3] = {0x00, SERIAL_SLAVE_MODULE, CY15B108QI_INITIALIZATION_COMMAND};       
     state_handler(cy15b108qi_initialization_command); // Initialize CY15B108QI Module
     #endif
-
+    
     #if FDC1004
     uint8_t fdc1004_initialization_command[3] = {0x00, SERIAL_SLAVE_MODULE, FDC1004_INITIALIZATION_COMMAND};       
     state_handler(fdc1004_initialization_command); // Initialize FDC1004 Module
@@ -40,10 +40,10 @@ static void _nrf52_initialization(void)
     state_handler(log_command); // Enable LOG Driver
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
+    #if !DEBUG
     uint8_t bluetooth_dfu_async_svci_init_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_INIT_DFU_ASYNC_SVCI_COMMAND};
     state_handler(bluetooth_dfu_async_svci_init_command); // Initialize the async SVCI interface to bootloader before interrupts are enabled.
-
+    #endif
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
     uint8_t nrfx_clock_init_command[4] = {0x00, NRF52_MODULE, NRF52_CLOCK_COMMAND, NRF52_NRFX_CLOCK_DRIVER_INIT};   
@@ -63,7 +63,7 @@ static void _nrf52_initialization(void)
     uint8_t ldo_command[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_LDO_INIT};       
     state_handler(ldo_command); // Enable LDO Drivers
 
-    uint8_t vcc_en_command[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_VCC_LDO_EN};   
+    uint8_t vcc_en_command[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_VCC_LDO_ENABLE};   
     state_handler(vcc_en_command); // Enable VCC LDO  
 
     uint8_t power_manager_command[4] = {0x00, NRF52_MODULE, NRF52_POWER_COMMAND, NRF52_POWER_MANAGER_INIT};  
@@ -112,8 +112,8 @@ static void _tmp117_initialization(void)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    uint8_t tmp117_shutdown_command[5] = {0x00, TMP117_MODULE, TMP117_INIT_COMMAND};  
-    state_handler(tmp117_shutdown_command); // Initializing the TMP117
+    uint8_t tmp117_init_command[5] = {0x00, TMP117_MODULE, TMP117_INIT_COMMAND};  
+    state_handler(tmp117_init_command); // Initializing the TMP117
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -269,7 +269,7 @@ void enable_bluetooth_handler(void)
     uint8_t bluetooth_advertising_init_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_INIT_ADVERTISING_COMMAND};
     state_handler(bluetooth_advertising_init_command); // Initialize the Advertising Module for Bluetooth
 
-    uint8_t bluetooth_set_advertising_power_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_SET_ADVERTISING_POWER_COMMAND};
+    uint8_t bluetooth_set_advertising_power_command[4] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_SET_ADVERTISING_POWER_COMMAND, BLUETOOTH_ADVERTISING_POWER_0_DB};
     state_handler(bluetooth_set_advertising_power_command); // Set the Advertising Power for the Bluetooth Module
 
     uint8_t bluetooth_conn_params_init_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_INIT_CONN_PARAMS_COMMAND};
@@ -701,14 +701,19 @@ static void _nrf52_handler(uint8_t *serial_command)
                     disable_dcdc_converter();
                     break;
 
-                case NRF52_POWER_SLEEP_MODE_ENTER:
-                    NRF_LOG_INFO("NRF52_POWER_SLEEP_MODE_ENTER");
-                    sleep_mode_enter();
+                case NRF52_POWER_SOFT_DEVICE_SYSTEM_ON:
+                    NRF_LOG_INFO("NRF52_POWER_SOFT_DEVICE_SYSTEM_ON");
+                    soft_device_system_on();
                     break;
 
-                case NRF52_POWER_DEEP_SLEEP_MODE_ENTER:
-                    NRF_LOG_INFO("NRF52_POWER_DEEP_SLEEP_MODE_ENTER");
-                    deep_sleep_mode_enter();
+                case NRF52_POWER_SOFT_DEVICE_SYSTEM_OFF:
+                    NRF_LOG_INFO("NRF52_POWER_SOFT_DEVICE_SYSTEM_OFF");
+                    soft_device_system_off();
+                    break;
+
+                case NRF52_POWER_MANAGEMENT_SHUTDOWN:
+                    NRF_LOG_INFO("NRF52_POWER_MANAGEMENT_SHUTDOWN");
+                    power_management_shutdown();
                     break;
 
                 case NRF52_POWER_MANAGER_HANDLER:
@@ -813,11 +818,16 @@ static void _nrf52_handler(uint8_t *serial_command)
                     input_output_init();
                     break;
 
-                case NRF52_VCC_LDO_EN:
-                    NRF_LOG_INFO("NRF52_VCC_LDO_EN");
+                case NRF52_VCC_LDO_ENABLE:
+                    NRF_LOG_INFO("NRF52_VCC_LDO_ENABLE");
                     enable_vcc_ldo();
                     break;
                 
+                case NRF52_VCC_LDO_DISABLE:
+                    NRF_LOG_INFO("NRF52_VCC_LDO_DISABLE");
+                    disable_vcc_ldo();
+                    break;
+
                 #if MAX30003
                 case NRF52_MAX30003_POWER_LDO_EN:
                     NRF_LOG_INFO("NRF52_MAX30003_POWER_LDO_EN");
@@ -1400,7 +1410,7 @@ static void _bluetooth_handler(uint8_t *serial_command)
 
         case BLUETOOTH_SET_ADVERTISING_POWER_COMMAND:
             NRF_LOG_INFO("BLUETOOTH_MODULE: SET_ADVERTISING_POWER");
-            bluetooth_set_advertising_power();
+            bluetooth_set_transmitting_power(serial_command[3]);
             break;
 
         case BLUETOOTH_START_ADVERTISING_COMMAND:
@@ -1411,6 +1421,11 @@ static void _bluetooth_handler(uint8_t *serial_command)
         case BLUETOOTH_RESTART_ADVERTISING_COMMAND:
             NRF_LOG_INFO("BLUETOOTH_MODULE: RESTART_ADVERTIZING");
             bluetooth_advertising_restart();
+            break;
+
+        case BLUETOOTH_ENABLE_ADVERTISING_AFTER_DISCONNECTION_COMMAND:
+            NRF_LOG_INFO("BLUETOOTH_MODULE: ENABLE_ADVERTISING_AFTER_DISCONNECTION");
+            bluetooth_enable_advertising_after_disconnection();
             break;
 
         case BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND:

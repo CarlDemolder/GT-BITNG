@@ -30,7 +30,9 @@
 #define SG_PRESSURE_X01 0X06
 #define SG_STRAIN_X01 0X07
 
+//#define BOARD_VERSION LP_ECG_X01
 #define BOARD_VERSION DB_X02
+#define DEBUG_MODE  1           /** Set to zero if you want to use bootloader and DFU to uploaded HEX onto board  */
 
 enum COMMON_CONSTANTS
 {
@@ -41,7 +43,7 @@ enum COMMON_CONSTANTS
 #if BOARD_VERSION == DB_X02
     #define MAX30003 1
     #define MAX30102 0
-    #define CY15B108QI 1
+    #define CY15B108QI 0
     #define TMP117 1
     #define WB 0
     #define FT201X 0
@@ -88,7 +90,7 @@ enum COMMON_CONSTANTS
 
 #if BOARD_VERSION == LP_ECG_X01
     #define MAX30003 1
-    #define CY15B108QI 1
+    #define CY15B108QI 0
     #define TMP117 1
 
     enum PIN_CONSTANTS

@@ -30,7 +30,7 @@ enum TMP117_OPERATION_CONSTANTS
 {
     TMP117_SHUTDOWN_MODE = 0X01,
     TMP117_CONTINUOUS_CONVERSION_MODE = 0X00,
-    TMP117_ONE_SHOT_CONVERSION = 0X02,
+    TMP117_ONE_SHOT_CONVERSION = 0X03,
 };
 
 enum TMP117_CONVERSION_CYCLE_TIME_CONSTANTS
@@ -223,6 +223,7 @@ void tmp117_set_external_memory_start_address(uint32_t external_memory_start_add
 
 void tmp117_set_external_memory_end_address(uint32_t external_memory_end_address);
 
+void tmp117_take_measurement(void);
 
 /* Static Functions */
 

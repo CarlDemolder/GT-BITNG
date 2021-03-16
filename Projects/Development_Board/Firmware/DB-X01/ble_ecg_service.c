@@ -88,7 +88,7 @@ uint32_t ecg_service_ecg_char_add(ble_ecg_service_t *p_cus, const ble_ecg_servic
     char_md.p_sccd_md = NULL;
 
     ble_uuid.type = p_cus->uuid_type;
-    ble_uuid.uuid = ECG_ECG_CHAR_UUID;
+    ble_uuid.uuid = ECG_SERVICE_ECG_CHAR_UUID;
 
     // attr_md is the variable that sets the properties of the attribute, or the accessability of the attribute
     // .vloc option is set to BLE_GATTS_VLOC_STACK as we want the characteristic to be stored in the SoftDevice RAM section,
@@ -203,7 +203,7 @@ uint32_t ecg_service_instant_ecg_char_add(ble_ecg_service_t *p_cus, const ble_ec
     char_md.p_sccd_md = NULL;
 
     ble_uuid.type = p_cus->uuid_type;
-    ble_uuid.uuid = ECG_INSTANT_ECG_CHAR_UUID;
+    ble_uuid.uuid = ECG_SERVICE_INSTANT_ECG_CHAR_UUID;
 
     // attr_md is the variable that sets the properties of the attribute, or the accessability of the attribute
     // .vloc option is set to BLE_GATTS_VLOC_STACK as we want the characteristic to be stored in the SoftDevice RAM section,

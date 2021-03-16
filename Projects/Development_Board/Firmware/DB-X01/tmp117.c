@@ -40,13 +40,13 @@ void tmp117_init()
     configuration.conv = TMP117_SHORTEST_TIME_MODE;         // Initializing the conversion cycle time to the short time amount
     _tmp117_unlock_eeprom();
     _tmp117_write_configuration_register();
-
-    // General call to reset the chip
-    _tmp117_general_call_reset();
+    _tmp117_lock_eeprom();
+    _tmp117_general_call_reset(); // General call to reset the chip
     _tmp117_read_configuration_register();
 
-    // Reading the temperature register. After a reset, the first data saved to the register is trash. This is to flush that data out. 
-    tmp117_set_conversion_mode(TMP117_ONE_SHOT_CONVERSION);
+
+    // Getting rid of the first data point in the temperature register. 
+    tmp117_set_conversion_mode(TMP117_CONTINUOUS_CONVERSION_MODE);
     _tmp117_read_temperature_register();
     tmp117_set_conversion_mode(TMP117_SHUTDOWN_MODE);
 
@@ -134,16 +134,49 @@ void tmp117_set_averaging_mode(uint8_t averaging_mode)
     _tmp117_unlock_eeprom();
     configuration.avg = averaging_mode;             // 0 = No Averaging; (1 = 8, 2 = 32, 3 = 64) Averaged Conversions
     _tmp117_write_configuration_register();
-    _tmp117_general_call_reset();
+    _tmp117_lock_eeprom();
+    _tmp117_read_configuration_register();
 }
 
 void tmp117_set_conversion_mode(uint8_t conversion_mode)
 {
-    NRF_LOG_INFO("tmp117_set_averaging_mode");
+    NRF_LOG_INFO("tmp117_set_conversion_mode");
+    _tmp117_read_configuration_register();
     _tmp117_unlock_eeprom();
-    configuration.mod = conversion_mode;             // 0 & 2 = Continous conversion; 1 = Shutdown; 2 = One-Shot conversion
+    configuration.mod = conversion_mode;             // 0 & 2 = Continous conversion; 1 = Shutdown; 3 = One-Shot conversion
     _tmp117_write_configuration_register();
-    _tmp117_general_call_reset();
+    _tmp117_lock_eeprom();
+    _tmp117_read_configuration_register();
+}
+
+void tmp117_take_measurement(void)
+{
+    NRF_LOG_INFO("tmp117_take_measurement");
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t i2c_init_command[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  
+    state_handler(i2c_init_command); // Init TWIM Driver
+
+    uint8_t i2c_enable_command[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_ENABLE};  
+    state_handler(i2c_enable_command); // Enable TWIM Driver
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    tmp117_set_conversion_mode(TMP117_CONTINUOUS_CONVERSION_MODE);
+
+    _tmp117_read_temperature_register();
+
+    tmp117_set_conversion_mode(TMP117_SHUTDOWN_MODE);
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t i2c_disable_command[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_DISABLE};  
+    state_handler(i2c_disable_command); // Disable TWIM Driver
+
+    uint8_t i2c_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  
+    state_handler(i2c_uninit_command); // Uninit TWIM Driver
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 }
 
 void tmp117_interrupt_handler(void)
@@ -162,7 +195,7 @@ void tmp117_interrupt_handler(void)
 
         /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-        tmp117_set_conversion_mode(TMP117_ONE_SHOT_CONVERSION);
+        tmp117_set_conversion_mode(TMP117_CONTINUOUS_CONVERSION_MODE);
 
         _tmp117_read_temperature_register();
 
@@ -690,6 +723,12 @@ static void _tmp117_write_configuration_register(void)
 
     uint8_t temp_data[3] = {configuration.register_pointer, control.i2c_data[0], control.i2c_data[1]};
     i2c_no_stop_write_register(control.slave_address, temp_data, 3);
+
+    _tmp117_read_eeprom_unlock_register();
+    while(eeprom_unlock.eeprom_busy)
+    {
+        _tmp117_read_eeprom_unlock_register();
+    }
 }
 
 /* High Limit Register. This register is a 16-bit, read/write register that stores the high limit for comparison with the 
@@ -779,7 +818,7 @@ static void _tmp117_write_eeprom_unlock_register(void)
 {
     NRF_LOG_INFO("_tmp117_write_eeprom_unlock_register");
 
-    control.i2c_data[0] = (eeprom_unlock.eun << 7) | (eeprom_unlock.eeprom_busy << 6);
+    control.i2c_data[0] = eeprom_unlock.eun << 7;
     control.i2c_data[1] = 0;
 
     uint8_t temp_data[3] = {eeprom_unlock.register_pointer, control.i2c_data[0], control.i2c_data[1]};
@@ -841,6 +880,7 @@ static void _tmp117_unlock_eeprom(void)
     NRF_LOG_INFO("_tmp117_unlock_eeprom");
     eeprom_unlock.eun = 1;
     _tmp117_write_eeprom_unlock_register();
+    _tmp117_read_eeprom_unlock_register();
 }
 
 static void _tmp117_lock_eeprom(void)
@@ -848,20 +888,23 @@ static void _tmp117_lock_eeprom(void)
     NRF_LOG_INFO("_tmp117_lock_eeprom");
     eeprom_unlock.eun = 0;
     _tmp117_write_eeprom_unlock_register();
+    _tmp117_read_eeprom_unlock_register();
 }
 
 static void _tpm117_soft_reset(void)
 {
-    NRF_LOG_INFO("_tmp117_lock_eeprom");
+    NRF_LOG_INFO("_tmp117_soft_reset");
     _tmp117_unlock_eeprom();
     configuration.soft_reset = 1;
     _tmp117_write_configuration_register();
+    _tmp117_general_call_reset();
     nrf_delay_ms(3);
+    _tmp117_read_configuration_register();
 }
 
 static void _tmp117_general_call_reset(void)
 {
-    NRF_LOG_INFO("TMP117: General Call Reset");
+    NRF_LOG_INFO("_tmp117_general_call_reset");
     
     uint8_t temp_data[1] = {TMP117_GENERAL_CALL_RESET};
     i2c_no_stop_write_register(control.slave_address, temp_data, 1);

@@ -22,7 +22,9 @@
 /**@brief Status Register Structure. This structure contains all values read from the Status Register.*/
 struct Bluetooth_Control_Struct
 {
-    ret_code_t error_code;          /**< Variable to track errors */
+    ret_code_t error_code;                            /**< Variable to track errors */
+    bool advertising_after_disconnection_flag;        /**< Flag to determine if the device should advertise after disconnection */
+    bool connection_flag;                             /**< Flag to determine if the peripheral is connected or disconnected to the central device */
 };
 
 static void _bluetooth_nrf_qwr_error_handler(uint32_t nrf_error);
@@ -40,7 +42,9 @@ static void _bluetooth_ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_conte
 void bluetooth_ble_stack_init(void);
 void bluetooth_peer_manager_init(void);
 void bluetooth_advertising_init(void);
-void bluetooth_set_advertising_power(void);
+void bluetooth_set_transmitting_power(uint8_t power_level);
+void bluetooth_enable_advertising_after_disconnection(void);
+
 void bluetooth_advertising_start(void);
 void bluetooth_advertising_stop(void);
 void bluetooth_advertising_restart(void);

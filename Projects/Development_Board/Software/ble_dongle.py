@@ -2,182 +2,162 @@ import sys
 import time
 import logging
 from queue import Queue, Empty
-from pc_ble_driver_py.observers import *
 
-TARGET_DEV_NAME = "ble_device"
-CONNECTIONS = 1
-CFG_TAG = 1
+import db_x02_gatt_constants
 
+from blatann import BleDevice
+from blatann.gap import smp
+from blatann.examples import example_utils, constants
+from blatann.nrf import nrf_events
 
-def init(conn_ic_id):
-    # noinspection PyGlobalUndefined
-    global config, BLEDriver, BLEAdvData, BLEEvtID, BLEAdapter, BLEEnableParams, BLEGapTimeoutSrc, BLEUUID, BLEConfigCommon, BLEConfig, \
-        BLEConfigConnGatt, BLEGapScanParams
+logger = example_utils.setup_logger(level="INFO")
 
-    from pc_ble_driver_py import config
+class BLEDongle(object):
+    def __init__(self):
+        self.serial = serial.Serial()
 
-    config.__conn_ic_id__ = conn_ic_id
-    # noinspection PyUnresolvedReferences
-    from pc_ble_driver_py.ble_driver import \
-    (
-        BLEDriver,
-        BLEAdvData,
-        BLEEvtID,
-        BLEEnableParams,
-        BLEGapTimeoutSrc,
-        BLEUUID,
-        BLEGapScanParams,
-        BLEConfigCommon,
-        BLEConfig,
-        BLEConfigConnGatt,
-    )
-    
-    # noinspection PyUnresolvedReferences
-    from pc_ble_driver_py.ble_adapter import BLEAdapter
-
-    global nrf_sd_ble_api_ver
-    nrf_sd_ble_api_ver = config.sd_api_ver_get()
+def on_counting_char_notification(characteristic, event_args):
+    """
+    Callback for when a notification is received from the peripheral's counting characteristic.
+    The peripheral will periodically notify a monotonically increasing, 4-byte integer. This callback unpacks
+    the value and logs it out
+    :param characteristic: The characteristic the notification was on (counting characteristic)
+    :type characteristic: blatann.gatt.gattc.GattcCharacteristic
+    :param event_args: The event arguments
+    :type event_args: blatann.event_args.NotificationReceivedEventArgs
+    """
+    # Unpack as a little-endian, 4-byte integer
+    current_count = struct.unpack("<I", event_args.value)[0]
+    logger.info("Counting char notification. Curent count: {}".format(current_count))
 
 
-class HRCollector(BLEDriverObserver, BLEAdapterObserver):
-    def __init__(self, adapter):
-        super(HRCollector, self).__init__()
-        self.adapter = adapter
-        self.conn_q = Queue()
-        self.adapter.observer_register(self)
-        self.adapter.driver.observer_register(self)
-        self.adapter.default_mtu = 250
-
-    def open(self):
-        self.adapter.driver.open()
-        if config.__conn_ic_id__.upper() == "NRF51":
-            self.adapter.driver.ble_enable(
-                BLEEnableParams(
-                    vs_uuid_count=1,
-                    service_changed=0,
-                    periph_conn_count=0,
-                    central_conn_count=1,
-                    central_sec_count=0,
-                )
-            )
-        elif config.__conn_ic_id__.upper() == "NRF52":
-            gatt_cfg = BLEConfigConnGatt()
-            gatt_cfg.att_mtu = self.adapter.default_mtu
-            gatt_cfg.tag = CFG_TAG
-            self.adapter.driver.ble_cfg_set(BLEConfig.conn_gatt, gatt_cfg)
-
-            self.adapter.driver.ble_enable()
-
-    def close(self):
-        self.adapter.driver.close()
-
-    def connect_and_discover(self):
-        scan_duration = 5
-        params = BLEGapScanParams(interval_ms=200, window_ms=150, timeout_s=scan_duration)
-
-        self.adapter.driver.ble_gap_scan_start(scan_params=params)
-
-        try:
-            new_conn = self.conn_q.get(timeout=scan_duration)
-            self.adapter.service_discovery(new_conn)
-
-            self.adapter.enable_notification(
-                new_conn, BLEUUID(BLEUUID.Standard.battery_level)
-            )
-
-            self.adapter.enable_notification(new_conn, BLEUUID(BLEUUID.Standard.heart_rate))
-            return new_conn
-        except Empty:
-            print(f"No heart rate collector advertising with name {TARGET_DEV_NAME} found.")
-            return None
-
-    def on_gap_evt_connected(
-        self, ble_driver, conn_handle, peer_addr, role, conn_params
-    ):
-        print("New connection: {}".format(conn_handle))
-        self.conn_q.put(conn_handle)
-
-    def on_gap_evt_disconnected(self, ble_driver, conn_handle, reason):
-        print("Disconnected: {} {}".format(conn_handle, reason))
-
-    def on_gap_evt_adv_report(
-        self, ble_driver, conn_handle, peer_addr, rssi, adv_type, adv_data
-    ):
-        if BLEAdvData.Types.complete_local_name in adv_data.records:
-            dev_name_list = adv_data.records[BLEAdvData.Types.complete_local_name]
-
-        elif BLEAdvData.Types.short_local_name in adv_data.records:
-            dev_name_list = adv_data.records[BLEAdvData.Types.short_local_name]
-
-        else:
-            return
-
-        dev_name = "".join(chr(e) for e in dev_name_list)
-        address_string = "".join("{0:02X}".format(b) for b in peer_addr.addr)
-        print(
-            "Received advertisment report, address: 0x{}, device_name: {}".format(
-                address_string, dev_name
-            )
-        )
-
-        if dev_name == TARGET_DEV_NAME:
-            self.adapter.connect(peer_addr, tag=CFG_TAG)
-
-    def on_notification(self, ble_adapter, conn_handle, uuid, data):
-        if len(data) > 32:
-            data = "({}...)".format(data[0:10])
-        print("Connection: {}, {} = {}".format(conn_handle, uuid, data))
+def on_passkey_entry(peer, passkey_event_args):
+    """
+    Callback for when the user is requested to enter a passkey to resume the pairing process.
+    Requests the user to enter the passkey and resolves the event with the passkey entered
+    :param peer: the peer the passkey is for
+    :param passkey_event_args:
+    :type passkey_event_args: blatann.event_args.PasskeyEntryEventArgs
+    """
+    passkey = input("Enter peripheral passkey: ")
+    passkey_event_args.resolve(passkey)
 
 
-def main(selected_serial_port):
-    print("Serial port used: {}".format(selected_serial_port))
-    driver = BLEDriver(
-        serial_port=selected_serial_port, auto_flash=False, baud_rate=1000000, log_severity_level="info"
-    )
-
-    adapter = BLEAdapter(driver)
-    collector = HRCollector(adapter)
-    collector.open()
-    conn = collector.connect_and_discover()
-
-    if conn is not None:
-        time.sleep(10)
-
-    collector.close()
-
-
-def item_choose(item_list):
-    for i, it in enumerate(item_list):
-        print("\t{} : {}".format(i, it))
-    print(" ")
-
-    while True:
-        try:
-            choice = int(input("Enter your choice: "))
-            if (choice >= 0) and (choice < len(item_list)):
-                break
-        except Exception:
-            pass
-        print("\tTry again...")
-    return choice
+def on_peripheral_security_request(peer, event_args):
+    """
+    Handler for peripheral-initiated security requests. This is useful in the case that the
+    application wants to override the default response to peripheral-initiated security requests
+    based on parameters, the peer, etc.
+    For example, to reject new pairing requests but allow already-bonded
+    devices to enable encryption, one could use the event_args.is_bonded_device flag to accept or reject the request.
+    This handler is optional. If not provided the SecurityParameters.reject_pairing_requests parameter will
+    determine the action to take.
+    :param peer: The peer that requested security
+    :type peer: blatann.peer.Peer
+    :param event_args: The event arguments
+    :type event_args: blatann.event_args.PeripheralSecurityRequestEventArgs
+    """
+    logger.info("{} Peripheral requested security -- bond: {}, mitm: {}, lesc: {}, keypress: {}".format(
+        "Already-Bonded" if event_args.is_bonded_device else "Non-bonded",
+        event_args.bond, event_args.mitm, event_args.lesc, event_args.keypress
+    ))
+    # At this point check the security parameters and accept, reject, or force re-pair depending on your security needs
+    # For this demo, match the requested parameters (not required) and accept
+    peer.security.security_params.bond = event_args.bond
+    peer.security.security_params.passcode_pairing = event_args.mitm
+    peer.security.security_params.lesc_pairing = event_args.lesc
+    event_args.accept()
+    # Other options include
+    #   event_args.reject()
+    #   event_args.force_repair()
 
 
-if __name__ == "__main__":
-    logging.basicConfig(
-        level="DEBUG",
-        format="%(asctime)s [%(thread)d/%(threadName)s] %(message)s",
-    )
-    serial_port = None
-    if len(sys.argv) < 2:
-        print("Please specify connectivity IC identifier (NRF51, NRF52)")
-        exit(1)
-    init(sys.argv[1])
-    if len(sys.argv) == 3:
-        serial_port = sys.argv[2]
+def main(serial_port):
+    # Set the target to the peripheral's advertised name
+    target_device_name = db_x02_gatt_constants.PERIPHERAL_NAME
+
+    # Create and open the BLE device (and suppress spammy logs)
+    ble_device = BleDevice(serial_port)
+    ble_device.event_logger.suppress(nrf_events.GapEvtAdvReport)
+    ble_device.open()
+
+    # Set the scanner to scan for 4 seconds
+    ble_device.scanner.set_default_scan_params(timeout_seconds=4)
+
+    logger.info("Scanning for '{}'".format(target_device_name))
+    target_address = example_utils.find_target_device(ble_device, target_device_name)
+
+    if not target_address:
+        logger.info("Did not find target peripheral")
+        return
+
+    # Initiate the connection and wait for it to finish
+    logger.info("Found match: connecting to address {}".format(target_address))
+    peer = ble_device.connect(target_address).wait()
+    if not peer:
+        logger.warning("Timed out connecting to device")
+        return
+    logger.info("Connected, conn_handle: {}".format(peer.conn_handle))
+
+    # Setup the security parameters and register a handler for when passkey entry is needed.
+    # Should be done right after connection in case the peripheral initiates a security request
+    peer.security.set_security_params(passcode_pairing=True, io_capabilities=smp.IoCapabilities.KEYBOARD_DISPLAY,
+                                      bond=False, out_of_band=False)
+    # Register the callback for when a passkey needs to be entered by the user
+    peer.security.on_passkey_required.register(on_passkey_entry)
+    # Register the callback for if a peripheral requests security
+    peer.security.on_peripheral_security_request.register(on_peripheral_security_request)
+
+    # Wait up to 10 seconds for service discovery to complete
+    _, event_args = peer.discover_services().wait(10, exception_on_timeout=False)
+    logger.info("Service discovery complete! status: {}".format(event_args.status))
+
+    # Log each service found
+    for service in peer.database.services:
+        logger.info(service)
+
+    peer.set_connection_parameters(100, 120, 6000)  # Discovery complete, go to a longer connection interval
+
+    # Wait up to 60 seconds for the pairing process, if the link is not secured yet
+    if peer.security.security_level == smp.SecurityLevel.OPEN:
+        peer.security.pair().wait(60)
+
+    # Find the counting characteristic
+    counting_char = peer.database.find_characteristic(constants.COUNTING_CHAR_UUID)
+    if counting_char:
+        logger.info("Subscribing to the counting characteristic")
+        counting_char.subscribe(on_counting_char_notification).wait(5)
     else:
-        descs = BLEDriver.enum_serial_ports()
-        choices = ["{}: {}".format(d.port, d.serial_number) for d in descs]
-        choice = item_choose(choices)
-        serial_port = descs[choice].port
-    main(serial_port)
-    quit()
+        logger.warning("Failed to find counting characteristic")
+
+    # Find the hex conversion characteristic. This characteristic takes in a bytestream and converts it to its
+    # hex representation. e.g. '0123' -> '30313233'
+    hex_convert_char = peer.database.find_characteristic(constants.HEX_CONVERT_CHAR_UUID)
+    if hex_convert_char:
+        # Generate some data ABCDEFG... Then, incrementally send increasing lengths of strings.
+        # i.e. first send 'A', then 'AB', then 'ABC'...
+        data_to_convert = bytes(ord('A') + i for i in range(12))
+        for i in range(len(data_to_convert)):
+            data_to_send = data_to_convert[:i+1]
+            logger.info("Converting to hex data: '{}'".format(data_to_send))
+
+            # Write the data, waiting up to 5 seconds for the write to complete
+            if not hex_convert_char.write(data_to_send).wait(5, False):
+                logger.error("Failed to write data, i={}".format(i))
+                break
+
+            # Write was successful, when we read the characteristic the peripheral should have converted the string
+            # Once again, initiate a read and wait up to 5 seconds for the read to complete
+            char, event_args = hex_convert_char.read().wait(5, False)
+            logger.info("Hex: '{}'".format(event_args.value.decode("ascii")))
+    else:
+        logger.warning("Failed to find hex convert char")
+
+    # Clean up
+    logger.info("Disconnecting from peripheral")
+    peer.disconnect().wait()
+    ble_device.close()
+
+
+if __name__ == '__main__':
+    main("COM7")
