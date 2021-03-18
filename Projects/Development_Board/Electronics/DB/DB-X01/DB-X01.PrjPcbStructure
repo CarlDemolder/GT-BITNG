@@ -1,1 +1,4 @@
-Record=TopLevelDocument|FileName=DB_ECG-X01.SchDoc
+Record=TopLevelDocument|FileName=DB_ECG-X01.SchDoc|SheetNumber=4
+Record=NoMainPathDocument|SourceDocument=DB_ECG-X01.SchDoc|FileName=DB_Main-X01.SchDoc|SheetNumber=1
+Record=NoMainPathDocument|SourceDocument=DB_ECG-X01.SchDoc|FileName=DB_Pheripherals-X01.SchDoc|SheetNumber=2
+Record=NoMainPathDocument|SourceDocument=DB_ECG-X01.SchDoc|FileName=DB_Power-X01.SchDoc|SheetNumber=3
