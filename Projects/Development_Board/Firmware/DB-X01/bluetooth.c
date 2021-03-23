@@ -6,14 +6,14 @@
 #define APP_BLE_OBSERVER_PRIO           3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
 
-#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(10, UNIT_1_25_MS)         /**< Minimum acceptable connection interval (0.1 seconds). */
-#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(100, UNIT_1_25_MS)         /**< Maximum acceptable connection interval (0.2 second). */
-#define SLAVE_LATENCY                   0                                       /**< Slave latency. */
-#define CONN_SUP_TIMEOUT                MSEC_TO_UNITS(8000, UNIT_10_MS)         /**< Connection supervisory timeout (10 seconds). */
+#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(100, UNIT_1_25_MS)         /**< Minimum acceptable connection interval (0.1 seconds). */
+#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(125, UNIT_1_25_MS)         /**< Maximum acceptable connection interval (0.2 seconds). */
+#define SLAVE_LATENCY                   2                                       /**< Slave latency. */
+#define CONN_SUP_TIMEOUT                MSEC_TO_UNITS(20000, UNIT_10_MS)         /**< Connection supervisory timeout (10 seconds). */
 
 #define FIRST_CONN_PARAMS_UPDATE_DELAY  RTC_TIMER_TICKS(5000)                   /**< Time from initiating event (connect or start of notification) to first time sd_ble_gap_conn_param_update is called (5 seconds). */
 #define NEXT_CONN_PARAMS_UPDATE_DELAY   RTC_TIMER_TICKS(30000)                  /**< Time between each call to sd_ble_gap_conn_param_update after the first call (30 seconds). */
-#define MAX_CONN_PARAMS_UPDATE_COUNT    1                                       /**< Number of attempts before giving up the connection parameter negotiation. */
+#define MAX_CONN_PARAMS_UPDATE_COUNT    6                                       /**< Number of attempts before giving up the connection parameter negotiation. */
 
 #define SEC_PARAM_BOND                  1                                       /**< Perform bonding. */
 #define SEC_PARAM_MITM                  0                                       /**< Man In The Middle protection not required. */
@@ -29,7 +29,7 @@
 #endif
 
 #if BOARD_VERSION == DB_X02
-#define DEVICE_NAME                     "DB-X02"                                /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                     "LP_ECG-X01"                                /**< Name of device. Will be included in the advertising data. */
 #endif
 
 #if BOARD_VERSION == SG_X01
@@ -340,6 +340,10 @@ static void _bluetooth_on_conn_params_evt(ble_conn_params_evt_t * p_evt)
         control.error_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_CONN_INTERVAL_UNACCEPTABLE);
         APP_ERROR_CHECK(control.error_code);
     }
+    if (p_evt->evt_type == BLE_CONN_PARAMS_EVT_SUCCEEDED)
+    {
+        NRF_LOG_INFO("BLE_CONN_PARAMS_EVT_SUCCEEDED");
+    }
 }
 
 /**@brief Function for handling a Connection Parameters error.
@@ -564,6 +568,12 @@ static void _bluetooth_ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_conte
             APP_ERROR_CHECK(control.error_code);
             break;
 
+       case BLE_GATTS_EVT_SYS_ATTR_MISSING:
+            NRF_LOG_INFO("BLE_GATTS_EVT_SYS_ATTR_MISSING");
+            control.error_code = sd_ble_gatts_sys_attr_set(p_ble_evt->evt.gatts_evt.conn_handle, NULL, 0, 0);
+            APP_ERROR_CHECK(control.error_code);
+            break;
+
         case BLE_GATTS_EVT_WRITE:
             NRF_LOG_INFO("BLE_GATTS_EVT_WRITE");
             break;
@@ -611,6 +621,15 @@ static void _bluetooth_on_configuration_service_evt(ble_configuration_service_t 
             bluetooth_configuration_service_settings_char_read(ble_configuration_service_init.settings_char);
             break;
 
+        case CONFIGURATION_SERVICE_EVT_CONNECTED:
+            NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_CONNECTED");
+            break;
+
+        case CONFIGURATION_SERVICE_EVT_DISCONNECTED:
+            NRF_LOG_INFO("CONFIGURATION_SERVICE_EVT_DISCONNECTED");
+            control.connection_flag = false;
+            break;
+
         default:
               break;
     }
@@ -653,6 +672,13 @@ static void _bluetooth_on_temperature_service_evt(ble_temperature_service_t *p_c
 
         case TEMPERATURE_SERVICE_EVT_DISCONNECTED:
             NRF_LOG_INFO("TEMPERATURE_SERVICE_EVT_DISCONNECTED");
+            control.connection_flag = false;
+
+            uint8_t stop_tmp117_data_collection_command[3] = {0X00, TMP117_MODULE, TMP117_STOP_DATA_COLLECTION_COMMAND};
+            state_handler(stop_tmp117_data_collection_command); // If the phone disconnects from the patch, stop collecting data
+
+            uint8_t stop_rtc_timer_command[4] = {0x00, NRF52_MODULE, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_SENSOR_STOP};
+            state_handler(stop_rtc_timer_command); // If the phone disconnects from the patch, stop the RTC to collect data from sensors
             break;
         
         case TEMPERATURE_SERVICE_EVT_WRITE:
@@ -702,6 +728,10 @@ static void _bluetooth_on_ecg_service_evt(ble_ecg_service_t *p_cus_service, ecg_
 
         case ECG_SERVICE_EVT_DISCONNECTED:
             NRF_LOG_INFO("ECG_SERVICE_EVT_DISCONNECTED");
+            control.connection_flag = false;
+
+            uint8_t stop_max30003_data_collection_command[3] = {0X00, MAX30003_MODULE, MAX30003_STOP_DATA_COLLECTION_COMMAND};
+            state_handler(stop_max30003_data_collection_command); // If the phone disconnects from the patch, stop collecting data
             break;
         
         case ECG_SERVICE_EVT_WRITE:
@@ -743,6 +773,8 @@ static void _bluetooth_on_pressure_service_evt(ble_pressure_service_t *p_cus_ser
 
         case PRESSURE_SERVICE_EVT_DISCONNECTED:
             NRF_LOG_INFO("PRESSURE_SERVICE_EVT_DISCONNECTED");
+            control.connection_flag = false;
+
             break;
         
         case PRESSURE_SERVICE_EVT_WRITE:
@@ -921,6 +953,14 @@ void bluetooth_pressure_service_instant_pressure_char_write(uint8_t *instant_pre
         memcpy(ble_pressure_service_init.instant_pressure_char, instant_pressure_char_data, PRESSURE_SERVICE_INSTANT_PRESSURE_CHAR_LENGTH);
         control.error_code = pressure_service_instant_pressure_char_write(&m_ble_pressure_service, instant_pressure_char_data);   // Update the Temp Characteristic
         APP_ERROR_CHECK(control.error_code);
+    }
+    else
+    {
+        uint8_t stop_fdc1004_data_collection_command[3] = {0X00, FDC1004_MODULE, FDC1004_STOP_DATA_COLLECTION_COMMAND};
+        state_handler(stop_fdc1004_data_collection_command); // If the phone disconnects from the patch, stop collecting data
+
+        uint8_t stop_rtc_timer_command[4] = {0x00, NRF52_MODULE, NRF52_RTC_CLOCK_COMMAND, NRF52_RTC_SENSOR_STOP};
+        state_handler(stop_rtc_timer_command); // If the phone disconnects from the patch, stop the RTC to collect data from sensors
     }
 }
 #endif
