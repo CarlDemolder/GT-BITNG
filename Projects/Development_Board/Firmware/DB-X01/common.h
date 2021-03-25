@@ -90,7 +90,7 @@ enum COMMON_CONSTANTS
 
 #if BOARD_VERSION == LP_ECG_X01
     #define MAX30003 1
-    #define CY15B108QI 0
+    #define CY15B108QI 1
     #define TMP117 1
 
     enum PIN_CONSTANTS
