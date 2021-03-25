@@ -169,6 +169,10 @@ uint32_t temperature_service_temp_char_write(ble_temperature_service_t *p_cus, u
         hvx_params.p_data = gatts_value.p_value;
 
         control.error_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+        while(control.error_code != 0x00)
+        {
+            control.error_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+        }
         NRF_LOG_INFO("sd_ble_gatts_hvx result: %x. \r\n", control.error_code); 
     }
     else
@@ -290,6 +294,10 @@ uint32_t temperature_service_instant_temp_char_write(ble_temperature_service_t *
         hvx_params.p_data = gatts_value.p_value;
 
         control.error_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+        while(control.error_code != 0x00)
+        {
+            control.error_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+        }
         NRF_LOG_INFO("sd_ble_gatts_hvx result: %x. \r\n", control.error_code); 
     }
     else

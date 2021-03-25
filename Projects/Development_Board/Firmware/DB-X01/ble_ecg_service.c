@@ -161,6 +161,10 @@ uint32_t ecg_service_ecg_char_write(ble_ecg_service_t *p_cus, uint8_t *new_ecg_c
         hvx_params.p_data = gatts_value.p_value;
 
         control.error_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+        while(control.error_code != 0x00)
+        {
+            control.error_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+        }
         NRF_LOG_INFO("sd_ble_gatts_hvx result: %x. \r\n", control.error_code); 
     }
     else
@@ -259,6 +263,7 @@ uint32_t ecg_service_instant_ecg_char_write(ble_ecg_service_t *p_cus, uint8_t *n
     control.error_code = sd_ble_gatts_value_set(p_cus->conn_handle, p_cus->instant_ecg_char_handles.value_handle, &gatts_value);
     if (control.error_code != NRF_SUCCESS)
     {
+        NRF_LOG_INFO("sd_ble_gatts_value_set: %x", control.error_code);
         return control.error_code;
     }
 
@@ -276,6 +281,10 @@ uint32_t ecg_service_instant_ecg_char_write(ble_ecg_service_t *p_cus, uint8_t *n
         hvx_params.p_data = gatts_value.p_value;
 
         control.error_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+        while(control.error_code != 0x00)
+        {
+            control.error_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+        }
         NRF_LOG_INFO("sd_ble_gatts_hvx result: %x. \r\n", control.error_code); 
     }
     else

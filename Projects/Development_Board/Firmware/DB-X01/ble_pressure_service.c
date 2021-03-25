@@ -162,6 +162,10 @@ uint32_t pressure_service_instant_pressure_char_write(ble_pressure_service_t *p_
         hvx_params.p_data = gatts_value.p_value;
 
         control.error_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+        while(control.error_code != 0x00)
+        {
+            control.error_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+        }
         NRF_LOG_INFO("sd_ble_gatts_hvx result: %x. \r\n", control.error_code); 
     }
     else
