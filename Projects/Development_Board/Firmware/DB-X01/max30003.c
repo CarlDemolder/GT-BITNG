@@ -380,23 +380,30 @@ uint8_t max30003_get_status_register_eovf(void)
     return status_register.eovf;
 }
 
+uint8_t max30003_get_status_register_eint(void)
+{
+    NRF_LOG_INFO("max30003_get_status_register_eint");
+    return status_register.eint;
+}
+
 void max30003_init_pin_interrupt(void)
 {
     NRF_LOG_INFO("max30003_init_pin_interrupt");
     nrf_gpio_pin_dir_set(MAX30003_INT1_PIN, NRF_GPIO_PIN_DIR_INPUT);
-    nrfx_gpiote_in_config_t max30003_interrupt_config = NRFX_GPIOTE_CONFIG_IN_SENSE_HITOLO(true);
+    control.interrupt_config = (nrfx_gpiote_in_config_t) NRFX_GPIOTE_CONFIG_IN_SENSE_HITOLO(true);
 
-    ret_code_t error_code = nrfx_gpiote_in_init(MAX30003_INT1_PIN, &max30003_interrupt_config, max30003_pin_interrupt_handler);
+    control.interrupt_config.pull = NRF_GPIO_PIN_PULLUP; 
     
-    NRF_LOG_INFO(" nrfx_gpiote_in_init: %d: \r\n", error_code);
-    APP_ERROR_CHECK(error_code);
+    control.error_code = nrfx_gpiote_in_init(MAX30003_INT1_PIN, &control.interrupt_config, max30003_pin_interrupt_handler);
+    
+    NRF_LOG_INFO(" nrfx_gpiote_in_init: %d: \r\n", control.error_code);
+    APP_ERROR_CHECK(control.error_code);
 }
 
 void max30003_enable_pin_interrupt(void)
 {
     NRF_LOG_INFO("max30003_enable_pin_interrupt");
     nrfx_gpiote_in_event_enable(MAX30003_INT1_PIN, true);
-    nrf_delay_ms(MAX30003_DELAY);
 }
 
 void max30003_disable_pin_interrupt(void)
@@ -411,7 +418,9 @@ void max30003_pin_interrupt_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t
     UNUSED_PARAMETER(pin);
     UNUSED_PARAMETER(action);
 
+    //max30003_disable_pin_interrupt();
     max30003_interrupt_handler();    // Call to Overall ECG Manager to manage ECG workflow
+    //max30003_enable_pin_interrupt();
 }
 
 void max30003_fifo_reset(void)
@@ -426,14 +435,14 @@ void max30003_interrupt_handler(void)
     
     if(control.interrupt == 1)
     {
-        uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
-        state_handler(spim_enable_command); // Enable SPIM Module
+        uint8_t spim_select_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, MAX30003_CS_PIN};
+        state_handler(spim_select_cs_pin_command); // Set Chip Select Pin to MAX30003 for the SPIM Module
 
         uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
         state_handler(spim_init_command); // Initialize SPIM Module
 
-        uint8_t spim_select_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, MAX30003_CS_PIN};
-        state_handler(spim_select_cs_pin_command); // Set Chip Select Pin to MAX30003 for the SPIM Module
+        uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+        state_handler(spim_enable_command); // Enable SPIM Module
 
         /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -452,105 +461,105 @@ void max30003_interrupt_handler(void)
         }
         else
         {
-            max30003_read_ecg_fifo_memory();    // Read data from FIFO memory stored on MAX30003
-            
-            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
-            // Data is stored as a uint16_t data type. In order to save it to external memory, it is converted to a uinnt8_t data type.
-            uint8_t cy15b108qi_voltage_data[control.bytes_per_interrupt]; // uint8_t array has twice the number of elements as uint16_t 
-            for(uint8_t i = 0; i < control.samples_per_interrupt; i++)
+            if(max30003_get_status_register_eint())
             {
-                cy15b108qi_voltage_data[2*i] = (uint8_t) ((0xFF00 & ecg_fifo_memory_register.ecg_voltage[i]) >> 8);
-//                NRF_LOG_INFO("Sample: %u, cy15b108qi_voltage_array: %u", 2*i, cy15b108qi_voltage_data[2*i]);
-                cy15b108qi_voltage_data[2*i+1] = (uint8_t) (0x00FF & ecg_fifo_memory_register.ecg_voltage[i]);
-//                NRF_LOG_INFO("Sample: %u, cy15b108qi_voltage_array: %u", 2*i+1, cy15b108qi_voltage_data[2*i+1]);
-            }
+                max30003_read_ecg_fifo_memory();    // Read data from FIFO memory stored on MAX30003
+            
+                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+                // Data is stored as a uint16_t data type. In order to save it to external memory, it is converted to a uinnt8_t data type.
+                uint8_t cy15b108qi_voltage_data[control.bytes_per_interrupt]; // uint8_t array has twice the number of elements as uint16_t 
+                for(uint8_t i = 0; i < control.samples_per_interrupt; i++)
+                {
+                    cy15b108qi_voltage_data[2*i] = (uint8_t) ((0xFF00 & ecg_fifo_memory_register.ecg_voltage[i]) >> 8);
+    //                NRF_LOG_INFO("Sample: %u, cy15b108qi_voltage_array: %u", 2*i, cy15b108qi_voltage_data[2*i]);
+                    cy15b108qi_voltage_data[2*i+1] = (uint8_t) (0x00FF & ecg_fifo_memory_register.ecg_voltage[i]);
+    //                NRF_LOG_INFO("Sample: %u, cy15b108qi_voltage_array: %u", 2*i+1, cy15b108qi_voltage_data[2*i+1]);
+                }
     
-            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
-            if(control.long_term_storage == 1)    
-            {
-                #if CY15B108QI
-                uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
-                state_handler(spim_enable_command); // Enable SPIM Module
-
-                uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
-                state_handler(spim_init_command); // Initialize SPIM Module
-
-                spim_select_cs_pin_command[4] = CY15B108QI_CS_PIN;
-                state_handler(spim_select_cs_pin_command); // Set Chip Select Pin to CY15B108QI for the SPIM Module
-
                 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-                uint8_t cy15b108qi_exit_deep_power_down_mode_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_EXIT_DEEP_POWER_DOWN_MODE_COMMAND};
-                state_handler(cy15b108qi_exit_deep_power_down_mode_command); // Exit the Deep power down mode
+                if(control.long_term_storage == 1)    
+                {
+                    #if CY15B108QI
 
-                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+                    spim_select_cs_pin_command[4] = CY15B108QI_CS_PIN;
+                    state_handler(spim_select_cs_pin_command); // Set Chip Select Pin to CY15B108QI for the SPIM Module
+
+                    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+                    uint8_t cy15b108qi_exit_deep_power_down_mode_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_EXIT_DEEP_POWER_DOWN_MODE_COMMAND};
+                    state_handler(cy15b108qi_exit_deep_power_down_mode_command); // Exit the Deep power down mode
+
+                    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
             
-                if(control.external_memory_write_current_address > (control.external_memory_end_address - control.bytes_per_interrupt))
-                {
-                    control.external_memory_write_current_address = control.external_memory_start_address;
-                }
+                    if(control.external_memory_write_current_address > (control.external_memory_end_address - control.bytes_per_interrupt))
+                    {
+                        control.external_memory_write_current_address = control.external_memory_start_address;
+                    }
 
-                cy15b108qi_write_registers(cy15b108qi_voltage_data, control.bytes_per_interrupt, control.external_memory_write_current_address);
-                control.external_memory_write_current_address += control.bytes_per_interrupt;
+                    cy15b108qi_write_registers(cy15b108qi_voltage_data, control.bytes_per_interrupt, control.external_memory_write_current_address);
+                    control.external_memory_write_current_address += control.bytes_per_interrupt;
 
-                control.current_sample_count += control.samples_per_interrupt;
-                NRF_LOG_INFO("control.current_sample_count: %u", control.current_sample_count);
+                    control.current_sample_count += control.samples_per_interrupt;
+                    NRF_LOG_INFO("control.current_sample_count: %u", control.current_sample_count);
 
-                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */     
+                    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */     
 
-                uint8_t cy15b108qi_enter_deep_power_down_mode_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_ENTER_DEEP_POWER_DOWN_MODE_COMMAND};
-                state_handler(cy15b108qi_enter_deep_power_down_mode_command); // Enter the Deep power down mode
+                    uint8_t cy15b108qi_enter_deep_power_down_mode_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_ENTER_DEEP_POWER_DOWN_MODE_COMMAND};
+                    state_handler(cy15b108qi_enter_deep_power_down_mode_command); // Enter the Deep power down mode
 
-                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+                    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-                uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
-                state_handler(spim_uninit_command); // Uninitialize SPIM Module
-
-                uint8_t spim_disable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
-                state_handler(spim_disable_command); // Disable SPIM Module
-
-                /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
-                if(control.current_sample_count >= control.samples_per_recording_session)
-                {
-                    // The transmitting start address is set the write start address      
-                    control.external_memory_transmit_start_address = control.external_memory_write_start_address;           
+                    if(control.current_sample_count >= control.samples_per_recording_session)
+                    {
+                        // The transmitting start address is set the write start address      
+                        control.external_memory_transmit_start_address = control.external_memory_write_start_address;           
                     
-                    // The transmitting current address is set the external memory transmit start address
-                    control.external_memory_transmit_current_address = control.external_memory_transmit_start_address;
+                        // The transmitting current address is set the external memory transmit start address
+                        control.external_memory_transmit_current_address = control.external_memory_transmit_start_address;
                     
-                    // The transmitting end address is set to the last write address
-                    control.external_memory_transmit_end_address = control.external_memory_write_current_address - control.bytes_per_interrupt;           
+                        // The transmitting end address is set to the last write address
+                        control.external_memory_transmit_end_address = control.external_memory_write_current_address - control.bytes_per_interrupt;           
       
-                    // The external memory write start address is set to the external memory write_current address
-                    control.external_memory_write_start_address = control.external_memory_write_current_address;
+                        // The external memory write start address is set to the external memory write_current address
+                        control.external_memory_write_start_address = control.external_memory_write_current_address;
 
-                    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+                        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-                    // Reset sampling count
-                    control.current_sample_count = 0;
+                        // Reset sampling count
+                        control.current_sample_count = 0;
 
-                    // Flag to state that the data is ready to be transmitted via BLE
-                    control.data_ready_for_transmit = 1;  
+                        // Flag to state that the data is ready to be transmitted via BLE
+                        control.data_ready_for_transmit = 1;  
                     
-                    // Setting the number of bytes left to transmit to the number of bytes per recording session  
-                    control.bytes_left_to_transmit = control.bytes_per_recording_session;
+                        // Setting the number of bytes left to transmit to the number of bytes per recording session  
+                        control.bytes_left_to_transmit = control.bytes_per_recording_session;
 
-                    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+                        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-                    uint8_t bluetooth_restart_advertising_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_RESTART_ADVERTISING_COMMAND};
-                    state_handler(bluetooth_restart_advertising_command); // Start to transmit the Recording Session of the ECG Data
+                        uint8_t bluetooth_restart_advertising_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_RESTART_ADVERTISING_COMMAND};
+                        state_handler(bluetooth_restart_advertising_command); // Start to transmit the Recording Session of the ECG Data
+                    }
+                    #endif
                 }
-                #endif
-            }
-            else
-            {
-//                NRF_LOG_INFO("voltage_data_length: %u", ARRAY_LENGTH(cy15b108qi_voltage_data));
-                bluetooth_ecg_service_instant_ecg_char_write(cy15b108qi_voltage_data);
+                else
+                {
+    //                NRF_LOG_INFO("voltage_data_length: %u", ARRAY_LENGTH(cy15b108qi_voltage_data));
+                    bluetooth_ecg_service_instant_ecg_char_write(cy15b108qi_voltage_data);
+                }
             }
         }
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        uint8_t spim_disable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
+        state_handler(spim_disable_command); // Disable SPIM Module
+
+        uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
+        state_handler(spim_uninit_command); // Uninitialize SPIM Module
+
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
     }
 }
 
@@ -571,14 +580,15 @@ void max30003_transmit_ecg_recording_session(void)
         uint8_t bluetooth_ecg_data[control.bytes_per_bluetooth_transmission];
 
         #if CY15B108QI
-        uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
-        state_handler(spim_enable_command); // Enable SPIM Module
+
+        uint8_t spim_set_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, CY15B108QI_CS_PIN};
+        state_handler(spim_set_cs_pin_command); // Set Chip Select Pin to CY15B108QI for the SPIM Module
 
         uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
         state_handler(spim_init_command); // Initialize SPIM Module
 
-        uint8_t spim_set_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, CY15B108QI_CS_PIN};
-        state_handler(spim_set_cs_pin_command); // Set Chip Select Pin to CY15B108QI for the SPIM Module
+        uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+        state_handler(spim_enable_command); // Enable SPIM Module
 
         /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -758,11 +768,11 @@ void max30003_transmit_ecg_recording_session(void)
 
         /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
     
-        uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
-        state_handler(spim_uninit_command); // Uninitialize SPIM Module
-
         uint8_t spim_disable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
         state_handler(spim_disable_command); // Disable SPIM Module  
+        
+        uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
+        state_handler(spim_uninit_command); // Uninitialize SPIM Module
 
         /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
         #endif
@@ -792,11 +802,11 @@ void max30003_start_data_collection(void)
     NRF_LOG_INFO("max30003_start_data_collection");
     control.interrupt = 1;    // Enabling the interrupt
 
-    uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
-    state_handler(spim_enable_command); // Enable SPIM Module
-
     uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
     state_handler(spim_init_command); // Initialize SPIM Module
+
+    uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+    state_handler(spim_enable_command); // Enable SPIM Module
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -825,11 +835,11 @@ void max30003_start_data_collection(void)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
-    state_handler(spim_uninit_command); // Uninitialize SPIM Module
-
     uint8_t spim_disable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
     state_handler(spim_disable_command); // Disable SPIM Module
+
+    uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
+    state_handler(spim_uninit_command); // Uninitialize SPIM Module
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -845,19 +855,19 @@ void max30003_stop_data_collection(void)
     control.interrupt = 0;    // Disabling the interrupt
     control.long_term_storage = 0; // Disable the long term storage command
 
-    uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
-    state_handler(spim_enable_command); // Enable SPIM Module
+    uint8_t spim_select_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, MAX30003_CS_PIN};
+    state_handler(spim_select_cs_pin_command); // Set Chip Select Pin to MAX30003 for the SPIM Module
 
     uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
     state_handler(spim_init_command); // Initialize SPIM Module
+
+    uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+    state_handler(spim_enable_command); // Enable SPIM Module
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
     uint8_t max30003_disable_pin_interrupt_command[3] = {0x00, MAX30003_MODULE, MAX30003_DISABLE_PIN_INTERRUPT_COMMAND}; 
     state_handler(max30003_disable_pin_interrupt_command); // MAX30003: Disable Pin Interrupt Command
-
-    uint8_t spim_select_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_SELECT_CS_PIN, MAX30003_CS_PIN};
-    state_handler(spim_select_cs_pin_command); // Set Chip Select Pin to MAX30003 for the SPIM Module
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -878,11 +888,11 @@ void max30003_stop_data_collection(void)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
-    state_handler(spim_uninit_command); // Uninitialize SPIM Module
-
     uint8_t spim_disable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
     state_handler(spim_disable_command); // Disable SPIM Module
+
+    uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
+    state_handler(spim_uninit_command); // Uninitialize SPIM Module
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -932,7 +942,7 @@ static void _max30003_read_status_register(void)
     status_register.ldoff_nh = (control.spi_data[2] & 0b00000010) && 0b00000100;
     status_register.ldoff_nl = (control.spi_data[2] & 0b00000001) && 0b00000100;
 
-//    NRF_LOG_INFO("status_register.eint: %X", status_register.eint);
+    NRF_LOG_INFO("status_register.eint: %X", status_register.eint);
     NRF_LOG_INFO("status_register.eovf: %X", status_register.eovf);
 //    NRF_LOG_INFO("status_register.fstint: %X", status_register.fstint);
 //    NRF_LOG_INFO("status_register.dcloffint: %X", status_register.dcloffint);

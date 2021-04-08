@@ -10,3 +10,7 @@ ProjectPath=PNW\Electrical\Sensor_Glove-X01\Sensor_Glove-X01.PrjPcb
 ProjectPath=..\..\Coleman-Nordic-Butterfly\Altium\infant_temp_v1c_4-14-19\infant_temperature_1c.PrjPcb
 [Project5]
 ProjectPath=LP_ECG\Electronics\LP_ECG-X01\LP_ECG-X01.PrjPcb
+[Project6]
+ProjectPath=Development_Board\Electronics\DB\DB-X03\DB-X03.PrjPcb
+[Project7]
+ProjectPath=..\..\..\..\Downloads\kicad_v4\kicad_v4\Imported lp_ecg\lp_ecg.PrjPcb

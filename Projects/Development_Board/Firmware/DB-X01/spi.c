@@ -98,7 +98,7 @@ void spim_init(void)
     }
     else
     {
-        NRF_LOG_INFO("spim is already uninitialized");
+        NRF_LOG_INFO("spim is already initialized");
     }
 }
 

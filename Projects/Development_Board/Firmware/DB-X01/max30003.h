@@ -55,6 +55,8 @@ struct MAX30003_Control_Struct
 {
     ret_code_t error_code;                                  /**< Variable to track errors */
 
+    nrfx_gpiote_in_config_t interrupt_config;               /**< Interrupt Configuration */
+
     uint8_t interrupt;                                      /**< Variable to record when the data interrupt flag */
     uint8_t counter;                                        /**< counter to iterate through values */
     uint8_t samples_per_interrupt;                          /**< Counter value to record the number of samples per interrupt */
@@ -251,6 +253,8 @@ void max30003_set_samples_per_interrupt(uint8_t temp_samples_per_interrupt);
 void max30003_set_samples_per_second(uint16_t temp_samples_per_second);
 
 uint8_t max30003_get_status_register_eovf(void);
+
+uint8_t max30003_get_status_register_eint(void);
 
 void max30003_init(void);
 

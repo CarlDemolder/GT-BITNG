@@ -7,6 +7,7 @@
 #include "nrfx_power_clock.h"
 
 void power_manager_init(void);
+void soft_device_set_low_power_mode(void);
 void soft_device_system_on(void);
 void soft_device_system_off(void);
 void power_management_shutdown(void);

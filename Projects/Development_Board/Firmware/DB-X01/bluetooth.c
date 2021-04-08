@@ -8,8 +8,8 @@
 
 #define MIN_CONN_INTERVAL               MSEC_TO_UNITS(100, UNIT_1_25_MS)         /**< Minimum acceptable connection interval (0.1 seconds). */
 #define MAX_CONN_INTERVAL               MSEC_TO_UNITS(125, UNIT_1_25_MS)         /**< Maximum acceptable connection interval (0.2 seconds). */
-#define SLAVE_LATENCY                   2                                       /**< Slave latency. */
-#define CONN_SUP_TIMEOUT                MSEC_TO_UNITS(20000, UNIT_10_MS)         /**< Connection supervisory timeout (10 seconds). */
+#define SLAVE_LATENCY                   0                                        /**< Slave latency. */
+#define CONN_SUP_TIMEOUT                MSEC_TO_UNITS(4000, UNIT_10_MS)         /**< Connection supervisory timeout (4 seconds). */
 
 #define FIRST_CONN_PARAMS_UPDATE_DELAY  RTC_TIMER_TICKS(5000)                   /**< Time from initiating event (connect or start of notification) to first time sd_ble_gap_conn_param_update is called (5 seconds). */
 #define NEXT_CONN_PARAMS_UPDATE_DELAY   RTC_TIMER_TICKS(30000)                  /**< Time between each call to sd_ble_gap_conn_param_update after the first call (30 seconds). */
@@ -390,13 +390,29 @@ static void _bluetooth_on_adv_evt(ble_adv_evt_t ble_adv_evt)
     switch (ble_adv_evt)
     {
         case BLE_ADV_EVT_FAST:
+        {
             NRF_LOG_INFO("BLE_ADV_EVT_FAST");
+
+            #if DEBUG_MODE
+            uint8_t ble_led_on_command[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_LED_BLE_LED_ON};  
+            state_handler(ble_led_on_command); // BLE LED on during advertising 
+            #endif
+
             break;
+        }
 
         case BLE_ADV_EVT_IDLE:
+        {
             NRF_LOG_INFO("BLE_ADV_EVT_IDLE");
+
+            #if DEBUG_MODE
+            uint8_t ble_led_off_command[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_LED_BLE_LED_OFF};  
+            state_handler(ble_led_off_command); // BLE LED off after advertising timeout
+            #endif
+
             disable_vcc_ldo();
             break;
+        }
 
         default:
             break;
@@ -464,6 +480,12 @@ void bluetooth_advertising_restart(void)
 {
     NRF_LOG_INFO("bluetooth_advertising_restart");
     control.error_code = sd_ble_gap_adv_start(m_advertising.adv_handle, APP_BLE_CONN_CFG_TAG);
+
+    #if DEBUG_MODE
+    uint8_t ble_led_on_command[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_LED_BLE_LED_ON};  
+    state_handler(ble_led_on_command); // BLE LED on during advertising 
+    #endif
+    
     APP_ERROR_CHECK(control.error_code);
 }
 
@@ -530,22 +552,43 @@ static void _bluetooth_ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_conte
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_DISCONNECTED:
+        {
             NRF_LOG_INFO("BLE_GAP_EVT_DISCONNECTED");
             if(control.advertising_after_disconnection_flag)
             {
                 bluetooth_advertising_restart();
             }
             control.connection_flag = false;
+            
+            #if DEBUG_MODE
+            uint8_t ind_led_off_command[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_LED_IND_LED_OFF};  
+            state_handler(ind_led_off_command); // IND LED off once disconnected 
+            #endif
+
             break;
+        }
 
         case BLE_GAP_EVT_CONNECTED:
+        {
             NRF_LOG_INFO("BLE_GAP_EVT_CONNECTED");
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             control.error_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
             APP_ERROR_CHECK(control.error_code);
+            
             bluetooth_gap_params_update(m_conn_handle); // Once all Services have been discovered, change the GAP Connection Parameters
+            
             control.connection_flag = true;
+            
+            #if DEBUG_MODE
+            uint8_t ble_led_off_command[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_LED_BLE_LED_OFF};  
+            state_handler(ble_led_off_command); // BLE LED off once connected
+             
+            uint8_t ind_led_on_command[4] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_LED_IND_LED_ON};  
+            state_handler(ind_led_on_command); // IND LED on once connected 
+            #endif
+            
             break;
+        }
 
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
             NRF_LOG_INFO("BLE_GAP_EVT_PHY_UPDATE_REQUEST");

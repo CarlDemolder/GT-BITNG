@@ -10,8 +10,7 @@
 #include "nordic_common.h"
 #include "sdk_common.h"
 
-#include "app_error.h"
-#include "app_util_platform.h"
+#include "custom_app_error_handler.h"
 
 #include "nrf.h"
 #include "nrf_delay.h"
@@ -32,7 +31,9 @@
 
 #define BOARD_VERSION LP_ECG_X01
 //#define BOARD_VERSION DB_X02
+
 #define DEBUG_MODE  0           /** Set to zero if you want to use bootloader and DFU to uploaded HEX onto board  */
+// Remember to enable NRF_LOG_ENABLED & NRF_LOG_BACKEND_RTT_ENABLED if you need to debug
 
 enum COMMON_CONSTANTS
 {
@@ -49,7 +50,8 @@ enum COMMON_CONSTANTS
     #define FT201X 0
     #define BMI160 0
     #define FDC1004 0
-    #define STRAIN_GAUGE 0
+    #define WHEATSTONE_BRIDGE 1
+
     enum PIN_CONSTANTS
     {
         BLE_LED_PIN = 11,                                   /** Pinout for BLE LED for DB-X02 */
@@ -149,9 +151,6 @@ enum COMMON_CONSTANTS
     #define TMP117 0
     #define FT201X 0
     #define FDC1004 1
-    #define ADG728 0
-    #define DAC5571 0
-    #define ADS1100 0
     #define STRAIN_GAUGE 0
 
     enum PIN_CONSTANTS
@@ -176,6 +175,12 @@ enum COMMON_CONSTANTS
 
 #if BMI160 || TMP117 || FT201X || FDC1004 || ADG728 || DAC5571 || ADS1100 || MAX30102
     #define I2C 1
+#endif
+
+#if WHEATSTONE_BRIDGE
+    #define ADG728 1
+    #define DAC5571 0
+    #define ADS1100 0
 #endif
 
 #define ARRAY_LENGTH(x)                 sizeof(x)/sizeof(x[0])                /** Array length */ 

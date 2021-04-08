@@ -55,7 +55,7 @@ enum TMP117_FUNCTION_CONSTANTS
 
 /* Control Struct */
 
-struct TMP117_control_struct
+struct TMP117_Control_Struct
 {
     ret_code_t error_code;                                  /**< Variable to track errors */
     uint8_t slave_address;                                  /**< Variable to record the I2C slave address */

@@ -5,15 +5,21 @@
 void power_manager_init(void)
 {
     NRF_LOG_INFO("power_manager_init");
-    ret_code_t err_code;
-    err_code = nrf_pwr_mgmt_init();
-    APP_ERROR_CHECK(err_code);
 
-    sd_power_mode_set(NRF_POWER_MODE_LOWPWR); // Setting the System On to low power mode with SoftDevice present
-    NRF_POWER->TASKS_LOWPWR = 1;  // Setting the System On to low power mode without SoftDevice present
+    ret_code_t err_code = nrf_pwr_mgmt_init();
+    APP_ERROR_CHECK(err_code);
 
 //    err_code = nrfx_power_init(NULL);
 //    APP_ERROR_CHECK(err_code);
+}
+
+void soft_device_set_low_power_mode(void)
+{
+    NRF_LOG_INFO("soft_device_set_low_power_mode");
+
+    ret_code_t err_code = sd_power_mode_set(NRF_POWER_MODE_LOWPWR); // Setting the System On to low power mode with SoftDevice present
+    APP_ERROR_CHECK(err_code);
+    //NRF_POWER->TASKS_LOWPWR = 1;  // Setting the System On to low power mode without SoftDevice present
 }
 
 void soft_device_system_on(void)
@@ -62,7 +68,8 @@ void power_manager_handler(void)
 void enable_dcdc_converter(void)
 {
     NRF_LOG_INFO("enable_dcdc_converter");
-    sd_power_dcdc_mode_set(NRF_POWER_DCDC_ENABLE);
+    ret_code_t error_code = sd_power_dcdc_mode_set(NRF_POWER_DCDC_ENABLE);
+    APP_ERROR_CHECK(error_code);
 }
 
 void disable_dcdc_converter(void)

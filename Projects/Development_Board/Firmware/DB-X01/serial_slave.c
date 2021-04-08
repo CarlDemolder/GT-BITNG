@@ -29,6 +29,11 @@ void startup_initialization(void)
     uint8_t fdc1004_initialization_command[3] = {0x00, SERIAL_SLAVE_MODULE, FDC1004_INITIALIZATION_COMMAND};       
     state_handler(fdc1004_initialization_command); // Initialize FDC1004 Module
     #endif
+
+    #if ADG728
+    uint8_t adg728_initialization_command[3] = {0x00, SERIAL_SLAVE_MODULE, ADG728_INITIALIZATION_COMMAND};       
+    state_handler(adg728_initialization_command); // Initialize ADG728 Module
+    #endif
 }
 
 /*
@@ -40,7 +45,7 @@ static void _nrf52_initialization(void)
     state_handler(log_command); // Enable LOG Driver
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-    #if !DEBUG
+    #if !DEBUG_MODE
     uint8_t bluetooth_dfu_async_svci_init_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_INIT_DFU_ASYNC_SVCI_COMMAND};
     state_handler(bluetooth_dfu_async_svci_init_command); // Initialize the async SVCI interface to bootloader before interrupts are enabled.
     #endif
@@ -143,9 +148,6 @@ static void _max30003_initialization(void)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
-    state_handler(spim_enable_command); // Enable SPIM Module
-
     uint8_t spim_init_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT_CS_PIN, MAX30003_CS_PIN};
     state_handler(spim_init_cs_pin_command); // Initialize the Chip Select Pin for the MAX30003
 
@@ -155,6 +157,9 @@ static void _max30003_initialization(void)
     uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
     state_handler(spim_init_command); // Initialize SPIM Module
  
+    uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+    state_handler(spim_enable_command); // Enable SPIM Module
+
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
     uint8_t max30003_init_command[3] = {0x00, MAX30003_MODULE, MAX30003_INIT_COMMAND}; 
@@ -162,11 +167,11 @@ static void _max30003_initialization(void)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
-    state_handler(spim_uninit_command); // Uninitialize SPIM Module
-
     uint8_t spim_disable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
     state_handler(spim_disable_command); // Disable SPIM Module 
+
+    uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
+    state_handler(spim_uninit_command); // Uninitialize SPIM Module
 }
 #endif
 
@@ -180,9 +185,6 @@ static void _cy15b108qi_initialization(void)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
-    state_handler(spim_enable_command); // Enable SPIM Module
-
     uint8_t spim_init_cs_pin_command[5] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT_CS_PIN, CY15B108QI_CS_PIN};
     state_handler(spim_init_cs_pin_command); // Initialize the Chip Select Pin for the CY15B108QI
 
@@ -192,6 +194,9 @@ static void _cy15b108qi_initialization(void)
     uint8_t spim_init_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_INIT};
     state_handler(spim_init_command); // Initialize SPIM Module
 
+    uint8_t spim_enable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_ENABLE};
+    state_handler(spim_enable_command); // Enable SPIM Module
+
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
     uint8_t cy15b108qi_init_command[3] = {0x00, CY15B108QI_MODULE, CY15B108QI_INIT_COMMAND}; 
@@ -199,11 +204,11 @@ static void _cy15b108qi_initialization(void)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
-    state_handler(spim_uninit_command); // Uninitialize SPIM Module
-
     uint8_t spim_disable_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_DISABLE};
     state_handler(spim_disable_command); // Disable SPIM Module 
+
+    uint8_t spim_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_SPI_COMMAND, NRF52_SPI_SPIM_UNINIT};
+    state_handler(spim_uninit_command); // Uninitialize SPIM Module
 }
 #endif
 
@@ -225,6 +230,35 @@ static void _fdc1004_initialization(void)
 
     uint8_t fdc1004_init_command[5] = {0x00, FDC1004_MODULE, FDC1004_INIT_COMMAND};  
     state_handler(fdc1004_init_command); // Initialize the FDC1004
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t i2c_disable_command[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_DISABLE};  
+    state_handler(i2c_disable_command); // Disable TWIM Driver
+
+    uint8_t i2c_uninit_command[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  
+    state_handler(i2c_uninit_command); // Uninit TWIM Driver
+}
+#endif
+
+/*
+*   @Brief: Function: _adg728_initialization() is used to initialize the ADG728 module
+*/
+#if ADG728
+static void _adg728_initialization(void)
+{
+    NRF_LOG_INFO("_adg728_initialization");
+
+    uint8_t i2c_init_command[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  
+    state_handler(i2c_init_command); // Init TWIM Driver
+
+    uint8_t i2c_enable_command[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_ENABLE};  
+    state_handler(i2c_enable_command); // Enable TWIM Driver
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t adg728_init_command[5] = {0x00, ADG728_MODULE, ADG728_INIT_COMMAND};  
+    state_handler(adg728_init_command); // Initialize the ADG728
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -280,8 +314,13 @@ void enable_bluetooth_handler(void)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
+    uint8_t sd_power_mode_set_command[4] = {0x00, NRF52_MODULE, NRF52_POWER_COMMAND, NRF52_SOFT_DEVICE_SET_LOW_POWER_MODE};
+    state_handler(sd_power_mode_set_command); // SD Power Mode set to Low Power
+
     uint8_t enable_dcdc_converter_command[4] = {0x00, NRF52_MODULE, NRF52_POWER_COMMAND, NRF52_POWER_DCDC_CONVERTER_ENABLE};
     state_handler(enable_dcdc_converter_command); // Enable the DCDC Converter to reduce power consumption during BLE transmission
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
     uint8_t bluetooth_advertising_start_command[3] = {0x00, BLUETOOTH_MODULE, BLUETOOTH_START_ADVERTISING_COMMAND};
     state_handler(bluetooth_advertising_start_command); // Start advertising data between the GATT Server and Client
@@ -474,6 +513,13 @@ void state_handler(uint8_t *serial_command)
             break;
         #endif
 
+        #if ADG728
+        case ADG728_MODULE:
+            NRF_LOG_INFO("STATE HANDLER: ADG728_MODULE");
+            _adg728_handler(serial_command);
+            break;
+        #endif
+
         case SERIAL_SLAVE_MODULE:
             NRF_LOG_INFO("STATE HANDLER: SERIAL_SLAVE_MODULE");
             _serial_slave_handler(serial_command);
@@ -524,6 +570,13 @@ static void _serial_slave_handler(uint8_t *serial_command)
         case FDC1004_INITIALIZATION_COMMAND:
             NRF_LOG_INFO("SERIAL_SLAVE_MODULE: FDC1004_INITIALIZATION_COMMAND");
             _fdc1004_initialization();
+            break;
+        #endif
+
+        #if ADG728
+        case ADG728_INITIALIZATION_COMMAND:
+            NRF_LOG_INFO("SERIAL_SLAVE_MODULE: ADG728_INITIALIZATION_COMMAND");
+            _adg728_initialization();
             break;
         #endif
 
@@ -724,6 +777,11 @@ static void _nrf52_handler(uint8_t *serial_command)
                 case NRF52_POWER_MANAGER_INIT:
                     NRF_LOG_INFO("NRF52_POWER_MANAGER_INIT");
                     power_manager_init();
+                    break;
+
+                case NRF52_SOFT_DEVICE_SET_LOW_POWER_MODE:
+                    NRF_LOG_INFO("NRF52_SOFT_DEVICE_SET_LOW_POWER_MODE");
+                    soft_device_set_low_power_mode();
                     break;
 
                 default:
@@ -1359,6 +1417,29 @@ static void _fdc1004_handler(uint8_t *serial_command)
         case FDC1004_STOP_DATA_COLLECTION_COMMAND:
             NRF_LOG_INFO("FDC1004_MODULE: FDC1004_STOP_DATA_COLLECTION");
             fdc1004_stop_data_collection();
+            break;
+
+        default:
+            break;
+    }
+}
+#endif
+
+#if ADG728
+static void _adg728_handler(uint8_t *serial_command)
+{
+    NRF_LOG_INFO("_adg728_handler");
+
+    switch(serial_command[2])
+    {
+        case ADG728_INIT_COMMAND:
+            NRF_LOG_INFO("ADG728_MODULE: ADG728_INIT");
+            adg728_init();
+            break;
+
+        case ADG728_CLOSE_SWITCH_COMMAND:
+            NRF_LOG_INFO("FDC1004_MODULE: ADG_CLOSE_SWITCH");
+            adg728_close_switch(serial_command[3]);
             break;
 
         default:

@@ -1,0 +1,6 @@
+Record=TopLevelDocument|FileName=DB_Capacitance-X03.SchDoc|SheetNumber=6
+Record=NoMainPathDocument|SourceDocument=DB_Capacitance-X03.SchDoc|FileName=DB_ECG-X03.SchDoc|SheetNumber=4
+Record=NoMainPathDocument|SourceDocument=DB_Capacitance-X03.SchDoc|FileName=DB_Main-X03.SchDoc|SheetNumber=1
+Record=NoMainPathDocument|SourceDocument=DB_Capacitance-X03.SchDoc|FileName=DB_Pheripherals-X03.SchDoc|SheetNumber=2
+Record=NoMainPathDocument|SourceDocument=DB_Capacitance-X03.SchDoc|FileName=DB_Power-X03.SchDoc|SheetNumber=3
+Record=NoMainPathDocument|SourceDocument=DB_Capacitance-X03.SchDoc|FileName=DB_Sensors-X03.SchDoc|SheetNumber=5

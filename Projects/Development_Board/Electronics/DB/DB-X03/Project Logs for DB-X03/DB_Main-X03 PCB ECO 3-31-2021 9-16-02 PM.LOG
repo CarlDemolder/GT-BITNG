@@ -1,0 +1,10 @@
+Removed Pin From Net: NetName=NetR12_1 Pin=R13-2
+Removed Pin From Net: NetName=GND Pin=R14-2
+Added Pin To Net: NetName=GND Pin=R13-2
+Added Pin To Net: NetName=NetR13_1 Pin=R14-2
+Change Class Name : Old Net Name=DB_Capacitance-X02 New Net Name=DB_Capacitance-X03
+Change Class Name : Old Net Name=DB_ECG-X02 New Net Name=DB_ECG-X03
+Change Class Name : Old Net Name=DB_Main-X02 New Net Name=DB_Main-X03
+Change Class Name : Old Net Name=DB_Pheripherals-X02 New Net Name=DB_Pheripherals-X03
+Change Class Name : Old Net Name=DB_Power-X02 New Net Name=DB_Power-X03
+Change Class Name : Old Net Name=DB_Sensors-X02 New Net Name=DB_Sensors-X03

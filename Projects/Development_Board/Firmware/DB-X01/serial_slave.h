@@ -30,6 +30,10 @@
 #include "fdc1004.h"
 #endif
 
+#if WHEATSTONE_BRIDGE
+#include "adg728.h"
+#endif
+
 enum MODULE_COMMAND_CONSTANTS
 {
     NRF52_MODULE = 0X01,
@@ -60,6 +64,10 @@ enum MODULE_COMMAND_CONSTANTS
 
     #if FDC1004
     FDC1004_MODULE = 0X09,
+    #endif
+
+    #if ADG728
+    ADG728_MODULE = 0X10,
     #endif
 };
 
@@ -97,6 +105,10 @@ enum SERIAL_SLAVE_COMMAND_CONSTANTS
 
     #if FDC1004
     FDC1004_INITIALIZATION_COMMAND = 0X07,
+    #endif
+
+    #if ADG728
+    ADG728_INITIALIZATION_COMMAND = 0X08,
     #endif
 };
 
@@ -270,6 +282,7 @@ enum NRF52_POWER_COMMAND_CONSTANTS
     NRF52_POWER_MANAGEMENT_SHUTDOWN = 0X05,
     NRF52_POWER_MANAGER_HANDLER = 0X06,
     NRF52_POWER_MANAGER_INIT = 0X07,
+    NRF52_SOFT_DEVICE_SET_LOW_POWER_MODE = 0X08,
 };
 
 enum NRF52_LED_COMMAND_CONSTANTS
@@ -367,6 +380,14 @@ enum FDC1004_COMMANDS_CONSTANTS
 };
 #endif
 
+#if ADG728
+enum ADG728_COMMANDS_CONSTANTS
+{
+    ADG728_INIT_COMMAND = 0X01,
+    ADG728_CLOSE_SWITCH_COMMAND = 0X02,
+};
+#endif
+
 enum NRF52_BLUETOOTH_RESPONSE_CHAR_CONSTANTS
 {
     BLUETOOTH_RESPONSE_CHAR_MESSAGE_RECEIVED = 0X01,
@@ -439,6 +460,10 @@ static void _cy15b108qi_handler(uint8_t *serial_command);
 
 #if FDC1004
 static void _fdc1004_handler(uint8_t *serial_command);
+#endif
+
+#if ADG728
+static void _adg728_handler(uint8_t *serial_command);
 #endif
 
 #endif /*__SERIAL_SLAVE_H__*/

@@ -2,7 +2,7 @@
 
 #if TMP117
 
-static struct TMP117_control_struct control;
+static struct TMP117_Control_Struct control;
 static struct TMP117_Temperature_Register_Struct temperature;
 static struct TMP117_Configuration_Register_Struct configuration;
 static struct TMP117_High_Limit_Register_Struct high_limit;
