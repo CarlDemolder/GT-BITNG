@@ -15,7 +15,9 @@ static struct MAX30003_Input_Multiplexer_Configuration_Register_Struct input_mul
 static struct MAX30003_ECG_Configuration_Register_Struct ecg_configuration_register;
 static struct MAX30003_RTOR1_Configuration_Register_Struct rtor1_configuration_register;
 static struct MAX30003_RTOR2_Configuration_Register_Struct rtor2_configuration_register;
+
 static struct MAX30003_ECG_FIFO_Memory_Register_Struct ecg_fifo_memory_register;
+
 static struct MAX30003_Software_Reset_Register_Struct software_reset_register;
 static struct MAX30003_Synchronization_Register_Struct synchronization_register;
 static struct MAX30003_FIFO_Reset_Register_Struct fifo_reset_register;
@@ -27,14 +29,14 @@ void max30003_init(void)
 {
     NRF_LOG_INFO("max30003_init");
 
-    control.register_byte_count = 3;    // Number of bytes per register
-    control.long_term_storage = 0;      // Initially set the long term data storage off
+    control.register_byte_count = 3;                        // Number of bytes per register
+    control.long_term_storage = 0;                          // Initially set the long term data storage off
     control.samples_per_second = 128;
-    control.bytes_per_sample = 2;       // Bytes per sample
-    control.counter = 0;                                                  // Counter to iterate through measurements taken
+    control.bytes_per_sample = 3;                           // Bytes per sample
+    control.counter = 0;                                    // Counter to iterate through measurements taken
 
     control.current_sample_count = 0;    
-    control.interrupt = 0;    // Disabling the interrupt flag for ECG Data
+    control.interrupt = 0;                                  // Disabling the interrupt flag for ECG Data
     control.data_ready_for_transmit = 0;                    // Data ready for transmit
     control.bytes_left_to_transmit = 0;
 
@@ -125,7 +127,7 @@ void max30003_init(void)
     // Calibration Configuration
     // MAX30003_CNFG_CAL_ADDRESS, 0x70, 0x48, 0x00
     _max30003_read_calibration_configuration_register();
-    calibration_configuration_register.en_vcal = 0x01;                // CALIBRATION SOURCE (VCALP & VCALN) ENABLE = 1
+    calibration_configuration_register.en_vcal = 0x00;                // CALIBRATION SOURCE (VCALP & VCALN) ENABLE = 1
     calibration_configuration_register.vmode = 0x01;                  // CALIBRATION SOURCE MODE SELECTION = BIPOLAR
     calibration_configuration_register.vmag = 0x01;                   // CALIBRATION SOURCE MAGNITUDE SELECTION = 0.50 mV
     calibration_configuration_register.fcal = 0x04;                   // DEFAULT: CALIBRATION SOURCE FREQUENCY SELECTION = 1 Hz
@@ -327,33 +329,38 @@ void max30003_interrupt2_disable(void)
 */
 void max30003_read_ecg_fifo_memory(void)
 {
-//    NRF_LOG_INFO("max30003_read_ecg_fifo_memory_register");
-//    NRF_LOG_INFO("control.samples_per_interrupt: %u", control.samples_per_interrupt);
-    _max30003_spim_read_registers(ecg_fifo_memory_register.register_pointer, ecg_fifo_memory_register.data, control.samples_per_interrupt*3);
-    uint32_t temp_ecg_voltage = 0;
-    control.counter = 0;
-    for(uint8_t i = 0; i < control.samples_per_interrupt*3; i=i+3)
+    NRF_LOG_INFO("max30003_read_ecg_fifo_memory_register");
+
+    _max30003_spim_read_registers(ecg_fifo_memory_register.register_pointer, ecg_fifo_memory_register.data, control.bytes_per_interrupt);
+    
+    uint32_t temp_ecg_voltage = 0;  // Temp variable to extract the 18 bit ECG voltage
+    control.counter = 0;            // Counter to record the sample number
+    
+    for(uint8_t i = 0; i < control.bytes_per_interrupt; i = i+3)
     {
         temp_ecg_voltage = 0;
         temp_ecg_voltage = (ecg_fifo_memory_register.data[i+2] & 0b11000000) >> 6;
         temp_ecg_voltage = temp_ecg_voltage | (((uint32_t) ecg_fifo_memory_register.data[i+1]) << 2);
-        temp_ecg_voltage = temp_ecg_voltage | (((uint32_t) ecg_fifo_memory_register.data[i]) << 10); 
-//        NRF_LOG_INFO("temp_ecg_voltage: %X", temp_ecg_voltage);
-        ecg_fifo_memory_register.ecg_voltage[control.counter] = (uint16_t)((temp_ecg_voltage & 0b00000000000000111111111111111100)>>2);
+        temp_ecg_voltage = temp_ecg_voltage | (((uint32_t) ecg_fifo_memory_register.data[i]) << 10);
+
+        //ecg_fifo_memory_register.ecg_voltage[control.counter] = (uint16_t)((temp_ecg_voltage & 0b00000000000000111111111111111100) >> 2);
+        ecg_fifo_memory_register.ecg_voltage[control.counter] = temp_ecg_voltage;
         ecg_fifo_memory_register.etag[control.counter] = (ecg_fifo_memory_register.data[i+2] & 0b00111000) >> 3;
         ecg_fifo_memory_register.ptag[control.counter] = ecg_fifo_memory_register.data[i+2] & 0b00000111;
-//        NRF_LOG_INFO("W: %u, R:%X %X %X, V: %X", (control.counter+1), ecg_fifo_memory_register.data[i], ecg_fifo_memory_register.data[i+1], 
-//        ecg_fifo_memory_register.data[i+2], ecg_fifo_memory_register.ecg_voltage[control.counter]);
-//        NRF_LOG_INFO("ETAG: %X, PTAG: %X", ecg_fifo_memory_register.etag[control.counter], ecg_fifo_memory_register.ptag[control.counter]);
-//        NRF_LOG_INFO("");
+
+        NRF_LOG_INFO("W: %u, R:%X %X %X, V: %X", (control.counter+1), ecg_fifo_memory_register.data[i], ecg_fifo_memory_register.data[i+1], 
+        ecg_fifo_memory_register.data[i+2], ecg_fifo_memory_register.ecg_voltage[control.counter]);
+        NRF_LOG_INFO("ETAG: %X, PTAG: %X", ecg_fifo_memory_register.etag[control.counter], ecg_fifo_memory_register.ptag[control.counter]);
+        NRF_LOG_INFO("");
+
         control.counter++;
     }
-//    NRF_LOG_INFO("Counter: %u", control.counter);
 }
 
 void max30003_get_ecg_voltage(uint8_t* temp_data, uint8_t temp_data_length)
 {
     NRF_LOG_INFO("max30003_get_ecg_voltage");
+
     for(int i = 0; i < temp_data_length; i++)
     {
         temp_data[i] = ecg_fifo_memory_register.ecg_voltage[i];
@@ -468,15 +475,22 @@ void max30003_interrupt_handler(void)
                 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
                 // Data is stored as a uint16_t data type. In order to save it to external memory, it is converted to a uinnt8_t data type.
-                uint8_t cy15b108qi_voltage_data[control.bytes_per_interrupt]; // uint8_t array has twice the number of elements as uint16_t 
+                //uint8_t max30003_voltage_data[control.bytes_per_interrupt]; // uint8_t array has twice the number of elements as uint16_t 
+                uint8_t max30003_voltage_data[ECG_SERVICE_INSTANT_ECG_CHAR_LENGTH]; // uint8_t array has twice the number of elements as uint16_t 
+
                 for(uint8_t i = 0; i < control.samples_per_interrupt; i++)
                 {
-                    cy15b108qi_voltage_data[2*i] = (uint8_t) ((0xFF00 & ecg_fifo_memory_register.ecg_voltage[i]) >> 8);
-    //                NRF_LOG_INFO("Sample: %u, cy15b108qi_voltage_array: %u", 2*i, cy15b108qi_voltage_data[2*i]);
-                    cy15b108qi_voltage_data[2*i+1] = (uint8_t) (0x00FF & ecg_fifo_memory_register.ecg_voltage[i]);
-    //                NRF_LOG_INFO("Sample: %u, cy15b108qi_voltage_array: %u", 2*i+1, cy15b108qi_voltage_data[2*i+1]);
-                }
-    
+                //    max30003_voltage_data[3*i] = (uint8_t) ((0x00FF0000 & ecg_fifo_memory_register.ecg_voltage[i]) >> 16);
+                //    max30003_voltage_data[3*i+1] = (uint8_t) ((0x0000FF00 & ecg_fifo_memory_register.ecg_voltage[i]) >> 8);
+                //    max30003_voltage_data[3*i+2] = (uint8_t) (0x000000FF & ecg_fifo_memory_register.ecg_voltage[i]);
+
+                //    NRF_LOG_INFO("Sample: %u, max30003_voltage_data: %X %X %X", i+1,  max30003_voltage_data[3*i],  max30003_voltage_data[3*i+1],  max30003_voltage_data[3*i+2]);
+                    uint16_t temp_voltage = (uint16_t)((ecg_fifo_memory_register.ecg_voltage[i] & 0b00000000000000111111111111111100) >> 2);
+                    max30003_voltage_data[2*i] = (uint8_t) ((0xFF00 & temp_voltage) >> 8);
+                    max30003_voltage_data[2*i+1] = (uint8_t) (0x00FF & temp_voltage);
+
+                    NRF_LOG_INFO("Sample: %u, max30003_voltage_data: %X %X", i+1,  max30003_voltage_data[2*i],  max30003_voltage_data[2*i+1]);
+                }    
                 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
                 if(control.long_term_storage == 1)    
@@ -498,7 +512,7 @@ void max30003_interrupt_handler(void)
                         control.external_memory_write_current_address = control.external_memory_start_address;
                     }
 
-                    cy15b108qi_write_registers(cy15b108qi_voltage_data, control.bytes_per_interrupt, control.external_memory_write_current_address);
+                    cy15b108qi_write_registers( max30003_voltage_data, control.bytes_per_interrupt, control.external_memory_write_current_address);
                     control.external_memory_write_current_address += control.bytes_per_interrupt;
 
                     control.current_sample_count += control.samples_per_interrupt;
@@ -545,8 +559,7 @@ void max30003_interrupt_handler(void)
                 }
                 else
                 {
-    //                NRF_LOG_INFO("voltage_data_length: %u", ARRAY_LENGTH(cy15b108qi_voltage_data));
-                    bluetooth_ecg_service_instant_ecg_char_write(cy15b108qi_voltage_data);
+                    bluetooth_ecg_service_instant_ecg_char_write( max30003_voltage_data);
                 }
             }
         }
@@ -1507,8 +1520,10 @@ static void _max30003_spim_read_registers(uint8_t register_address, uint8_t *dat
     NRF_LOG_INFO("_max30003_spim_read_registers");
    
     uint8_t temp_data_length = data_length + 1;
-    uint8_t temp_data[temp_data_length];
     NRF_LOG_INFO("temp_data_length: %u", temp_data_length);
+
+    uint8_t temp_data[temp_data_length];
+
     spim_read_registers(register_address, temp_data, temp_data_length);
     
     temp_data[0] = register_address;

@@ -292,7 +292,7 @@ uint32_t ecg_service_instant_ecg_char_write(ble_ecg_service_t *p_cus, uint8_t *n
         control.error_code = NRF_ERROR_INVALID_STATE;
         NRF_LOG_INFO("sd_ble_gatts_hvx result: NRF_ERROR_INVALID_STATE. \r\n"); 
     }
-    NRF_LOG_INFO(" Characteristic Written %X %X", new_instant_ecg_char_data[0], new_instant_ecg_char_data[1]);
+    NRF_LOG_INFO(" Characteristic Written %X %X %X", new_instant_ecg_char_data[0], new_instant_ecg_char_data[1], new_instant_ecg_char_data[2]);
     return control.error_code;
 }
 

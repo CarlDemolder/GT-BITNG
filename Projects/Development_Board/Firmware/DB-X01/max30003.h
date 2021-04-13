@@ -222,10 +222,10 @@ struct MAX30003_RTOR2_Configuration_Register_Struct
 struct MAX30003_ECG_FIFO_Memory_Register_Struct
 {
     uint8_t register_pointer;                                       /**< Register Value */    
-    uint8_t data[(MAX30003_MAX_FIFO_WORDS+1)*3];                    /**< Register Value, Number of words to read from the FIFO, 3 bytes per word */
-    uint16_t ecg_voltage[(MAX30003_MAX_FIFO_WORDS+1)];              /**< Register Value */
-    uint8_t etag[(MAX30003_MAX_FIFO_WORDS+1)];                      /**< Register Value */  
-    uint8_t ptag[(MAX30003_MAX_FIFO_WORDS+1)];                      /**< Register Value */ 
+    uint8_t data[MAX30003_MAX_FIFO_WORDS*3];                        /**< Register Value, Number of words to read from the FIFO, 3 bytes per word */
+    uint32_t ecg_voltage[MAX30003_MAX_FIFO_WORDS];                  /**< Register Value */
+    uint8_t etag[MAX30003_MAX_FIFO_WORDS];                          /**< Register Value */  
+    uint8_t ptag[MAX30003_MAX_FIFO_WORDS];                          /**< Register Value */ 
 };
 
 struct MAX30003_Software_Reset_Register_Struct

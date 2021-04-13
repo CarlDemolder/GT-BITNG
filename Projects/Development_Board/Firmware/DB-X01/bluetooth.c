@@ -558,6 +558,13 @@ static void _bluetooth_ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_conte
             {
                 bluetooth_advertising_restart();
             }
+            else
+            {
+                uint8_t medium_blink_ind_led_command[5] = {0x00, NRF52_MODULE, NRF52_COMMON_COMMAND, NRF52_LED_IND_BLINK, NRF52_LED_IND_MEDIUM_BLINK};  
+                state_handler(medium_blink_ind_led_command); // BLE LED Medium Blink 
+                disable_vcc_ldo();
+            }
+
             control.connection_flag = false;
             
             #if DEBUG_MODE

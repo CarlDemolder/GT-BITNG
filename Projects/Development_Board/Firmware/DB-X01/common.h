@@ -38,7 +38,8 @@
 enum COMMON_CONSTANTS
 {
     POWER_LDO_ON_DELAY = 1000,                          /** Power LDO ON Delay to allow it to startup */
-    FIRMWARE_VERSION = 1,                               /** Firmware version to verify the hardware is using the latest firmware version*/  
+    FIRMWARE_VERSION = 10,                              /** Firmware version to verify the hardware is using the latest firmware version */  
+    HARDWARE_VERSION = 1,                               /** Hardware version to */
 };
 
 #if BOARD_VERSION == DB_X02
