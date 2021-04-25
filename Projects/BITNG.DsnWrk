@@ -14,3 +14,9 @@ ProjectPath=LP_ECG\Electronics\LP_ECG-X01\LP_ECG-X01.PrjPcb
 ProjectPath=Development_Board\Electronics\DB\DB-X03\DB-X03.PrjPcb
 [Project7]
 ProjectPath=..\..\..\..\Downloads\kicad_v4\kicad_v4\Imported lp_ecg\lp_ecg.PrjPcb
+[Project8]
+ProjectPath=Wireless_Charger\Wireless_Charger-X01\Wireless_Charger-X01.PrjPcb
+[Project9]
+ProjectPath=Chip_Socket_Programmer\Chip_Socket_Programmer-X01\Chip_Socket_Programmer-X01.PrjPcb
+[Project10]
+ProjectPath=LP_ECG\Electronics\LP_ECG-X02\LP_ECG-X02.PrjPcb
