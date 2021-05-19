@@ -1,0 +1,12 @@
+Output: NC Drill Files
+Type  : NC Drill
+From  : PCB Document [Chip_Socket_Programmer-X01.PcbDoc]
+   Generated File[Chip_Socket_Programmer-X01.TXT]
+   Generated File[Chip_Socket_Programmer-X01.LDP]
+   Generated File[Chip_Socket_Programmer-X01.DRR]
+
+
+Files Generated   : 3
+Documents Printed : 0
+
+Finished Output Generation At 12:08:41 AM On 5/18/2021

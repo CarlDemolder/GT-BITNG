@@ -1,0 +1,21 @@
+----------------------------------------------------------------------------------------------------------------------------------
+NCDrill File Report For: Chip_Socket_Programmer-X01.PcbDoc   5/18/2021  12:08:41 AM
+----------------------------------------------------------------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : Chip_Socket_Programmer-X01.TXT
+
+Tool       Hole Size               Hole Tolerance               Hole Type       Hole Count   Plated         Tool Travel
+----------------------------------------------------------------------------------------------------------------------------------
+T1      12mil (0.305mm)                                           Round             53        PTH        0.00inch (0.00mm)
+T2      28mil (0.7mm)                                             Round             48        PTH        0.00inch (0.00mm)
+T3      40mil (1.02mm)                                            Round             6         PTH        0.00inch (0.00mm)
+T4      45mil (1.143mm)                                           Round             4         PTH        0.00inch (0.00mm)
+T5      67mil (1.7mm)                                             Round             1         PTH        0.00inch (0.00mm)
+T6      83mil (2.1mm)                                             Round             2         PTH        0.00inch (0.00mm)
+T7      98mil (2.5mm)                                             Round             4         PTH        0.00inch (0.00mm)
+T8      51mil (1.3mm)                                             Round             2         NPTH       0.00inch (0.00mm)
+----------------------------------------------------------------------------------------------------------------------------------
+Totals                                                                              120
+
+Total Processing Time (hh:mm:ss) : 00:00:00
