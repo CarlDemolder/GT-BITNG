@@ -53,24 +53,33 @@ void fdc1004_init(void)
 
     control.register_byte_count = 2;   // Each register counts 2 bytes
 
-    fdc1004_soft_reset();              // Soft Reset
+    //fdc1004_soft_reset();              // Soft Reset
     
     // MSB Measurement Configuration Register
-    _fdc1004_read_measurement_configuration_register();
+    _fdc1004_read_measurement_configuration_register(1);    // Read Measurement Channel #1
+    _fdc1004_read_measurement_configuration_register(2);    // Read Measurement Channel #2
+    _fdc1004_read_measurement_configuration_register(3);    // Read Measurement Channel #3
+    _fdc1004_read_measurement_configuration_register(4);    // Read Measurement Channel #4
+    
     measurement_configuration_register.cha[0] = 0x00;         // Assign Positive Channel CDC of Measurement Channel #1 to CIN1
     measurement_configuration_register.cha[1] = 0x01;         // Assign Positive Channel CDC of Measurement Channel #2 to CIN2
     measurement_configuration_register.cha[2] = 0x02;         // Assign Positive Channel CDC of Measurement Channel #3 to CIN3
     measurement_configuration_register.cha[3] = 0x03;         // Assign Positive Channel CDC of Measurement Channel #4 to CIN4
-    measurement_configuration_register.chb[0] = 0x04;         // Disable Negative Channel CDC of Measurement Channel #1
-    measurement_configuration_register.chb[1] = 0x04;         // Disable Negative Channel CDC of Measurement Channel #2
-    measurement_configuration_register.chb[2] = 0x04;         // Disable Negative Channel CDC of Measurement Channel #3
-    measurement_configuration_register.chb[3] = 0x04;         // Disable Negative Channel CDC of Measurement Channel #4
+    
+    measurement_configuration_register.chb[0] = 0x05;         // Disable Negative Channel CDC of Measurement Channel #1
+    measurement_configuration_register.chb[1] = 0x05;         // Disable Negative Channel CDC of Measurement Channel #2
+    measurement_configuration_register.chb[2] = 0x05;         // Disable Negative Channel CDC of Measurement Channel #3
+    measurement_configuration_register.chb[3] = 0x05;         // Disable Negative Channel CDC of Measurement Channel #4
+    
     measurement_configuration_register.capdac[0] = 0x00;      // Setting the Offset Capacitance to 0 pF for Measurement Channel #1
     measurement_configuration_register.capdac[1] = 0x00;      // Setting the Offset Capacitance to 0 pF for Measurement Channel #2
     measurement_configuration_register.capdac[2] = 0x00;      // Setting the Offset Capacitance to 0 pF for Measurement Channel #3
     measurement_configuration_register.capdac[3] = 0x00;      // Setting the Offset Capacitance to 0 pF for Measurement Channel #4
-    _fdc1004_write_measurement_configuration_register();
-    _fdc1004_read_measurement_configuration_register();
+
+    _fdc1004_write_measurement_configuration_register(1);    // Write Measurement Channel #1 Settings
+    _fdc1004_write_measurement_configuration_register(2);    // Write Measurement Channel #2 Settings
+    _fdc1004_write_measurement_configuration_register(3);    // Write Measurement Channel #3 Settings
+    _fdc1004_write_measurement_configuration_register(4);    // Write Measurement Channel #4 Settings
 
     // FDC Configuration Register
     _fdc1004_read_fdc_configuration_register();
@@ -86,7 +95,11 @@ void fdc1004_init(void)
 
 
     // Offset Calibration Register
-    _fdc1004_read_offset_calibration_register();
+    _fdc1004_read_offset_calibration_register(1);
+    _fdc1004_read_offset_calibration_register(2);
+    _fdc1004_read_offset_calibration_register(3);
+    _fdc1004_read_offset_calibration_register(4);
+    
     offset_calibration_register.integer[0] = 0x00;            // Integer part set to 0 pF for Measurement Channel #1
     offset_calibration_register.integer[1] = 0x00;            // Integer part set to 0 pF for Measurement Channel #2
     offset_calibration_register.integer[2] = 0x00;            // Integer part set to 0 pF for Measurement Channel #3
@@ -103,12 +116,24 @@ void fdc1004_init(void)
 
     offset_calibration_register.decimal[3][0] = 0x00;         // Decimal part set to 0 pF for Measurement Channel #4
     offset_calibration_register.decimal[3][1] = 0x00;         // Decimal part set to 0 pF for Measurement Channel #4
-    _fdc1004_write_offset_calibration_register();
-    _fdc1004_read_offset_calibration_register();
+    
+    _fdc1004_write_offset_calibration_register(1);
+    _fdc1004_write_offset_calibration_register(2);
+    _fdc1004_write_offset_calibration_register(3);
+    _fdc1004_write_offset_calibration_register(4);
+
+    _fdc1004_read_offset_calibration_register(1);
+    _fdc1004_read_offset_calibration_register(2);
+    _fdc1004_read_offset_calibration_register(3);
+    _fdc1004_read_offset_calibration_register(4);
 
 
     // Gain Calibration Register
-    _fdc1004_read_gain_calibration_register();
+    _fdc1004_read_gain_calibration_register(1);
+    _fdc1004_read_gain_calibration_register(2);
+    _fdc1004_read_gain_calibration_register(3);
+    _fdc1004_read_gain_calibration_register(4);
+
     gain_calibration_register.integer[0] = 0X01;          // Integer part of the gain set to 1 for Measurement Channel #1
     gain_calibration_register.integer[1] = 0X01;          // Integer part of the gain set to 1 for Measurement Channel #2
     gain_calibration_register.integer[2] = 0X01;          // Integer part of the gain set to 1 for Measurement Channel #3
@@ -125,8 +150,16 @@ void fdc1004_init(void)
 
     gain_calibration_register.decimal[3][0] = 0;          // Decimal part of the gain set to 0 for Measurement Channel #4
     gain_calibration_register.decimal[3][1] = 0;          // Decimal part of the gain set to 0 for Measurement Channel #4
-    _fdc1004_write_gain_calibration_register();
-    _fdc1004_read_gain_calibration_register();
+    
+    _fdc1004_write_gain_calibration_register(1);
+    _fdc1004_write_gain_calibration_register(2);
+    _fdc1004_write_gain_calibration_register(3);
+    _fdc1004_write_gain_calibration_register(4);
+
+    _fdc1004_read_gain_calibration_register(1);
+    _fdc1004_read_gain_calibration_register(2);
+    _fdc1004_read_gain_calibration_register(3);
+    _fdc1004_read_gain_calibration_register(4);
 
     control.interrupt = 0;    // Disabling the interrupt to begin
     control.status = 1;       // Setting the status of this sensor to enabled
@@ -155,6 +188,7 @@ void fdc1004_soft_reset(void)
     fdc_configuration_register.rst = 1;                   // Software reset to initiate a device reset. After reset, value will return to 0
     _fdc1004_write_fdc_configuration_register();
     _fdc1004_read_fdc_configuration_register();
+    fdc_configuration_register.rst = 0;                   // Set reset value to 0 to make sure it does not cause another soft reset
 }
 
 void fdc1004_set_offset_calibration(uint8_t channel, uint8_t integer, uint8_t decimal_1, uint8_t decimal_2)
@@ -171,12 +205,12 @@ void fdc1004_set_offset_calibration(uint8_t channel, uint8_t integer, uint8_t de
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    _fdc1004_read_offset_calibration_register();
+    _fdc1004_read_offset_calibration_register(channel);
     offset_calibration_register.integer[channel-1] = integer;
     offset_calibration_register.decimal[channel-1][0] = decimal_1;
     offset_calibration_register.decimal[channel-1][1] = decimal_2;
-    _fdc1004_write_offset_calibration_register();
-    _fdc1004_read_offset_calibration_register();
+    _fdc1004_write_offset_calibration_register(channel);
+    _fdc1004_read_offset_calibration_register(channel);
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -203,12 +237,12 @@ void fdc1004_set_gain_calibration(uint8_t channel, uint8_t integer, uint8_t deci
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    _fdc1004_read_gain_calibration_register();
+    _fdc1004_read_gain_calibration_register(channel);
     gain_calibration_register.integer[channel-1] = integer;
     gain_calibration_register.decimal[channel-1][0] = decimal_1;
     gain_calibration_register.decimal[channel-1][1] = decimal_2;
-    _fdc1004_write_gain_calibration_register();
-    _fdc1004_read_gain_calibration_register();
+    _fdc1004_write_gain_calibration_register(channel);
+    _fdc1004_read_gain_calibration_register(channel);
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -235,10 +269,10 @@ void fdc1004_set_measurement_rate(uint8_t measurement_rate)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    _fdc1004_read_measurement_configuration_register();
+    _fdc1004_read_fdc_configuration_register();
     fdc_configuration_register.rate = measurement_rate;                  // 1 = 100 S/s, 2 = 200 S/s, 3 = 400 S/s 
-    _fdc1004_write_measurement_configuration_register();
-    _fdc1004_read_measurement_configuration_register();
+    _fdc1004_write_fdc_configuration_register();
+    _fdc1004_read_fdc_configuration_register();
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -265,10 +299,10 @@ void fdc1004_set_repeat_measurement(uint8_t repeat_measurement)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
-    _fdc1004_read_measurement_configuration_register();
+    _fdc1004_read_fdc_configuration_register();
     fdc_configuration_register.repeat = repeat_measurement;               // 1 = repeat enabled, 0 = repeat disabled
-    _fdc1004_write_measurement_configuration_register();
-    _fdc1004_read_measurement_configuration_register();
+    _fdc1004_write_fdc_configuration_register();
+    _fdc1004_read_fdc_configuration_register();
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -342,44 +376,21 @@ void fdc1004_get_device_id(uint8_t *device_id)
 void fdc1004_set_capdac(uint8_t channel, uint8_t capdac)
 {
     NRF_LOG_INFO("fdc1004_set_capdac");
-
-    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
-    uint8_t i2c_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  
-    state_handler(i2c_init_array_data); // Init TWIM Driver
-
-    uint8_t i2c_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_ENABLE};  
-    state_handler(i2c_enable_array_data); // Enable TWIM Driver
-
-    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
-    _fdc1004_read_measurement_configuration_register();
+    // Value written locally
     measurement_configuration_register.capdac[channel-1] = capdac; // C_offset = CAPDAC x 3.125 pF; Single channel capacitance offset
-    _fdc1004_write_measurement_configuration_register();
-    _fdc1004_read_measurement_configuration_register();
-
-    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
-    uint8_t i2c_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_DISABLE};  
-    state_handler(i2c_disable_array_data); // Disable TWIM Driver
-
-    uint8_t i2c_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  
-    state_handler(i2c_uninit_array_data); // Uninit TWIM Driver
-
-    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 }
 
 void fdc1004_enable_channel(uint8_t channel)
 {
     NRF_LOG_INFO("fdc1004_enable_channel");
-
+    // Control Flag for internal operation to enable channel measurement
     control.cin_status[channel-1] = 1;
 }
 
 void fdc1004_disable_channel(uint8_t channel)
 {
     NRF_LOG_INFO("fdc1004_disable_channel");
-
+    // Control Flag for internal operation to disable channel measurement
     control.cin_status[channel-1] = 0;
 }
 
@@ -399,7 +410,7 @@ void fdc1004_get_measurement(uint8_t channel, uint8_t *measurement)
     
     if(control.cin_status[channel-1] == 1)
     {       
-        _fdc1004_trigger_single_measurement(channel);  // Trigger channel measurement
+        _fdc1004_trigger_measurement(channel);  // Trigger channel measurement
         nrf_delay_us(2500);
         _fdc1004_read_measurement(channel);
         measurement[0] = control.cin_data[channel-1][0];
@@ -443,14 +454,12 @@ void fdc1004_interrupt_handler(void)
             if(control.cin_status[i] == 1)
             {
                 NRF_LOG_INFO("channel reading: %u", i);
-                _fdc1004_trigger_single_measurement(i+1);  // Trigger channel measurement
-                nrf_delay_us(2500);
-                _fdc1004_read_measurement(i+1);     // Read Channel measurement
-            }
-            else
-            {
-                control.cin_data[i][0] = 0;
-                control.cin_data[i][1] = 0;
+
+                _fdc1004_trigger_measurement(i+1);     // Trigger channel measurement
+               
+                _fdc1004_read_measurement(i+1);               // Read Channel measurement
+                
+                _fdc1004_disable_measurement(i+1);            // Disable channel measurement
             }
         }
 
@@ -478,6 +487,32 @@ void fdc1004_start_data_collection(void)
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
+    uint8_t i2c_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  
+    state_handler(i2c_init_array_data); // Init TWIM Driver
+
+    uint8_t i2c_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_ENABLE};  
+    state_handler(i2c_enable_array_data); // Enable TWIM Driver
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    for(uint8_t i = 0; i < ARRAY_LENGTH(control.cin_status); i++)
+    {
+        if(control.cin_status[i] == 1)
+        {
+            _fdc1004_configure_measurement(i+1);   // Configure channel measurement
+        }
+    }
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t i2c_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_DISABLE};  
+    state_handler(i2c_disable_array_data); // Disable TWIM Driver
+
+    uint8_t i2c_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  
+    state_handler(i2c_uninit_array_data); // Uninit TWIM Driver
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
     uint8_t response_char_pressure_data_collection_started_command[7] = {0X00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, 0x00, 
     0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_PRESSURE_DATA_COLLECTION_STARTED};
     state_handler(response_char_pressure_data_collection_started_command); // Sending message to client that data collection has started
@@ -487,6 +522,31 @@ void fdc1004_stop_data_collection(void)
 {
     NRF_LOG_INFO("fdc1004_stop_data_collection");
     control.interrupt = 0;    // Disabling the interrupt
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t i2c_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  
+    state_handler(i2c_init_array_data); // Init TWIM Driver
+
+    uint8_t i2c_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_ENABLE};  
+    state_handler(i2c_enable_array_data); // Enable TWIM Driver
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    for(uint8_t i = 0; i < ARRAY_LENGTH(fdc_configuration_register.meas); i++)
+    {
+        fdc_configuration_register.meas[i] = 0;   // Disabling all measurement channels
+    }
+
+    _fdc1004_write_fdc_configuration_register();
+
+    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+    uint8_t i2c_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_DISABLE};  
+    state_handler(i2c_disable_array_data); // Disable TWIM Driver
+
+    uint8_t i2c_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  
+    state_handler(i2c_uninit_array_data); // Uninit TWIM Driver
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
@@ -541,36 +601,30 @@ static void _fdc1004_read_lsb_measurement_register(uint8_t channel)
 * D[9:5], CAPDAC = Offset Capacitance; Configure the single-ended measurement capacitince offset: C_offset = CAPDAC x 3.125 pF
 * D[4:0], RESERVED, Always 0 (read only)
 */
-static void _fdc1004_read_measurement_configuration_register(void)
+static void _fdc1004_read_measurement_configuration_register(uint8_t channel)
 {
     NRF_LOG_INFO("_fdc1004_read_measurement_configuration_register");
 
-    for(uint8_t i = 0; i < ARRAY_LENGTH(measurement_configuration_register.register_pointer); i++)
-    {
-        control.i2c_data[0] = 0;
-        control.i2c_data[1] = 0;
+    control.i2c_data[0] = 0;
+    control.i2c_data[1] = 0;
 
-        i2c_separate_write_read_register(control.slave_address, &measurement_configuration_register.register_pointer[i], 1, control.i2c_data, 2);    
+    i2c_separate_write_read_register(control.slave_address, &measurement_configuration_register.register_pointer[channel-1], 1, control.i2c_data, 2);    
 
-        measurement_configuration_register.cha[i] = (control.i2c_data[0] & 0b11100000) >> 5;
-        measurement_configuration_register.chb[i] = (control.i2c_data[0] & 0b00011100) >> 2;
-        measurement_configuration_register.capdac[i] = ((control.i2c_data[0] & 0b00000011) << 3) | ((control.i2c_data[1] & 0b11100000) >> 5);
-    }
+    measurement_configuration_register.cha[channel-1] = (control.i2c_data[0] & 0b11100000) >> 5;
+    measurement_configuration_register.chb[channel-1] = (control.i2c_data[0] & 0b00011100) >> 2;
+    measurement_configuration_register.capdac[channel-1] = ((control.i2c_data[0] & 0b00000011) << 3) | ((control.i2c_data[1] & 0b11100000) >> 5);
 }
 
-static void _fdc1004_write_measurement_configuration_register(void)
+static void _fdc1004_write_measurement_configuration_register(uint8_t channel)
 {
     NRF_LOG_INFO("_fdc1004_write_measurement_configuration_register");
 
-    for(uint8_t i = 0; i < ARRAY_LENGTH(measurement_configuration_register.register_pointer); i++)
-    {
-        control.i2c_data[0] = (measurement_configuration_register.cha[i] << 5) | (measurement_configuration_register.chb[i] << 2);
-        control.i2c_data[0] = ((measurement_configuration_register.capdac[i] & 0b00011000) >> 3) | control.i2c_data[0];
-        control.i2c_data[1] = (measurement_configuration_register.capdac[i] & 0b00000111) << 5;
+    control.i2c_data[0] = (measurement_configuration_register.cha[channel-1] << 5) | (measurement_configuration_register.chb[channel-1] << 2);
+    control.i2c_data[0] = ((measurement_configuration_register.capdac[channel-1] & 0b00011000) >> 3) | control.i2c_data[0];
+    control.i2c_data[1] = (measurement_configuration_register.capdac[channel-1] & 0b00000111) << 5;
 
-        uint8_t temp_data[3] = {measurement_configuration_register.register_pointer[i], control.i2c_data[0], control.i2c_data[1]};
-        i2c_no_stop_write_register(control.slave_address, temp_data, 3);
-    }
+    uint8_t temp_data[3] = {measurement_configuration_register.register_pointer[channel-1], control.i2c_data[0], control.i2c_data[1]};
+    i2c_no_stop_write_register(control.slave_address, temp_data, 3);
 }
 
 /**@brief FDC Configuration Register Structure. This register configures measurement triggering and reports measurement completion
@@ -620,10 +674,9 @@ static void _fdc1004_write_fdc_configuration_register(void)
 
     control.i2c_data[0] = (fdc_configuration_register.rst << 7) | (fdc_configuration_register.rate << 2) | fdc_configuration_register.repeat;
     
-    for(uint8_t i = 0; i < ARRAY_LENGTH(fdc_configuration_register.done); i++)
+    for(uint8_t i = 0; i < ARRAY_LENGTH(fdc_configuration_register.meas); i++)
     {
         control.i2c_data[1] = (fdc_configuration_register.meas[i] << (7-i)) | control.i2c_data[1];
-        control.i2c_data[1] = (fdc_configuration_register.done[i] << (3-i)) | control.i2c_data[1];
     }
     uint8_t temp_data[3] = {fdc_configuration_register.register_pointer, control.i2c_data[0], control.i2c_data[1]};
     i2c_no_stop_write_register(control.slave_address, temp_data, 3);
@@ -638,36 +691,30 @@ static void _fdc1004_write_fdc_configuration_register(void)
 * D[15:11], OFFSET_CALn (Integer Part) = Integer portion of the Offset Calibration of Channel CINn
 * D[10:0], OFFSET_CALn (Decimal Part) = Decimal portion of the Offset Calibration of Channel CINn
 */
-static void _fdc1004_read_offset_calibration_register(void)
+static void _fdc1004_read_offset_calibration_register(uint8_t channel)
 {
     NRF_LOG_INFO("_fdc1004_read_offset_calibration_register");
 
-    for(uint8_t i = 0; i < ARRAY_LENGTH(offset_calibration_register.register_pointer); i++)
-    {
-        control.i2c_data[0] = 0;
-        control.i2c_data[1] = 0;
+    control.i2c_data[0] = 0;
+    control.i2c_data[1] = 0;
 
-        i2c_separate_write_read_register(control.slave_address, &offset_calibration_register.register_pointer[i], 1, control.i2c_data, 2);
+    i2c_separate_write_read_register(control.slave_address, &offset_calibration_register.register_pointer[channel-1], 1, control.i2c_data, 2);
 
-        offset_calibration_register.integer[i] = (control.i2c_data[0] & 0b11111000) >> 3;
-       
-        offset_calibration_register.decimal[i][0] = (control.i2c_data[0] & 0b00000111);
-        offset_calibration_register.decimal[i][1] = control.i2c_data[1];
-    }
+    offset_calibration_register.integer[channel-1] = (control.i2c_data[0] & 0b11111000) >> 3;
+   
+    offset_calibration_register.decimal[channel-1][0] = (control.i2c_data[0] & 0b00000111);
+    offset_calibration_register.decimal[channel-1][1] = control.i2c_data[1];
 }
 
-static void _fdc1004_write_offset_calibration_register(void)
+static void _fdc1004_write_offset_calibration_register(uint8_t channel)
 {
     NRF_LOG_INFO("_fdc1004_write_offset_calibration_register");
 
-    for(uint8_t i = 0; i < ARRAY_LENGTH(offset_calibration_register.register_pointer); i++)
-    {
-        control.i2c_data[0] = (offset_calibration_register.integer[i] << 3) | offset_calibration_register.decimal[i][0];
-        control.i2c_data[1] = offset_calibration_register.decimal[i][1];
+    control.i2c_data[0] = (offset_calibration_register.integer[channel-1] << 3) | offset_calibration_register.decimal[channel-1][0];
+    control.i2c_data[1] = offset_calibration_register.decimal[channel-1][1];
 
-        uint8_t temp_data[3] = {offset_calibration_register.register_pointer[i], control.i2c_data[0], control.i2c_data[1]};
-        i2c_no_stop_write_register(control.slave_address, temp_data, 3);
-    }
+    uint8_t temp_data[3] = {offset_calibration_register.register_pointer[channel-1], control.i2c_data[0], control.i2c_data[1]};
+    i2c_no_stop_write_register(control.slave_address, temp_data, 3);
 }
 
 /* 
@@ -679,36 +726,30 @@ static void _fdc1004_write_offset_calibration_register(void)
 * D[15:14], GAIN_CALn (Integer Part) = Integer portion of the GAIN Calibration of Channel CINn
 * D[13:0], GAIN_CALn (Decimal Part) = Decimal portion of the GAIN Calibration of Channel CINn
 */
-static void _fdc1004_read_gain_calibration_register(void)
+static void _fdc1004_read_gain_calibration_register(uint8_t channel)
 {
     NRF_LOG_INFO("_fdc1004_read_gain_calibration_register");
 
-    for(uint8_t i = 0; i < ARRAY_LENGTH(gain_calibration_register.register_pointer); i++)
-    {
-        control.i2c_data[0] = 0;
-        control.i2c_data[1] = 0;
+    control.i2c_data[0] = 0;
+    control.i2c_data[1] = 0;
 
-        i2c_separate_write_read_register(control.slave_address, &gain_calibration_register.register_pointer[i], 1, control.i2c_data, 2);
+    i2c_separate_write_read_register(control.slave_address, &gain_calibration_register.register_pointer[channel-1], 1, control.i2c_data, 2);
 
-        gain_calibration_register.integer[i] = (control.i2c_data[0] & 0b11000000) >> 6;
-       
-        gain_calibration_register.decimal[i][0] = (control.i2c_data[0] & 0b00111111);
-        gain_calibration_register.decimal[i][1] = control.i2c_data[1];
-    }
+    gain_calibration_register.integer[channel-1] = (control.i2c_data[0] & 0b11000000) >> 6;
+   
+    gain_calibration_register.decimal[channel-1][0] = (control.i2c_data[0] & 0b00111111);
+    gain_calibration_register.decimal[channel-1][1] = control.i2c_data[1];
 }
 
-static void _fdc1004_write_gain_calibration_register(void)
+static void _fdc1004_write_gain_calibration_register(uint8_t channel)
 {
     NRF_LOG_INFO("_fdc1004_write_gain_calibration_register");
 
-    for(uint8_t i = 0; i < ARRAY_LENGTH(gain_calibration_register.register_pointer); i++)
-    {
-        control.i2c_data[0] = (gain_calibration_register.integer[i] << 6) | gain_calibration_register.decimal[i][0];
-        control.i2c_data[1] = gain_calibration_register.decimal[i][1];
+    control.i2c_data[0] = (gain_calibration_register.integer[channel-1] << 6) | gain_calibration_register.decimal[channel-1][0];
+    control.i2c_data[1] = gain_calibration_register.decimal[channel-1][1];
 
-        uint8_t temp_data[3] = {gain_calibration_register.register_pointer[i], control.i2c_data[0], control.i2c_data[1]};
-        i2c_no_stop_write_register(control.slave_address, temp_data, 3);
-    }
+    uint8_t temp_data[3] = {gain_calibration_register.register_pointer[channel-1], control.i2c_data[0], control.i2c_data[1]};
+    i2c_no_stop_write_register(control.slave_address, temp_data, 3);
 }
 
 /* 
@@ -747,36 +788,45 @@ static void _fdc1004_read_device_id_register(void)
     control.device_id[1] = control.i2c_data[1];
 }
 
-
 static void _fdc1004_read_measurement(uint8_t channel)
 {
     NRF_LOG_INFO("_fdc1004_read_measurement");
-    _fdc1004_read_fdc_configuration_register();
-    if(fdc_configuration_register.done[channel-1] == 1)
-    {
-        NRF_LOG_INFO("Channel: %u measurement is done", channel);
-        _fdc1004_read_msb_measurement_register(channel);
-        _fdc1004_read_lsb_measurement_register(channel);
-        control.cin_data[channel-1][0] = msb_measurement_register.msb_measurement[channel-1][0];
-        control.cin_data[channel-1][1] = msb_measurement_register.msb_measurement[channel-1][1];
-        control.cin_data[channel-1][2] = lsb_measurement_register.lsb_measurement[channel-1];
+    uint8_t measurement_complete = 0;   // Flag to determine if the measurement has completed
 
-        _fdc1004_read_fdc_configuration_register();
-        if(fdc_configuration_register.done[channel-1] == 0)
-        {
-            NRF_LOG_INFO("Channel: %u measurement was properly read", channel);
-        }
-    }
-    else
+    while(!measurement_complete)
     {
-        NRF_LOG_INFO("Channel: %u measurement is not complete", channel);
+        _fdc1004_read_fdc_configuration_register();
+        if(fdc_configuration_register.done[channel-1] == 1)
+        {
+            NRF_LOG_INFO("Channel: %u measurement is done", channel);
+            measurement_complete = 1;
+
+            _fdc1004_read_msb_measurement_register(channel);
+            _fdc1004_read_lsb_measurement_register(channel);
+
+            control.cin_data[channel-1][0] = msb_measurement_register.msb_measurement[channel-1][0];
+            control.cin_data[channel-1][1] = msb_measurement_register.msb_measurement[channel-1][1];
+            control.cin_data[channel-1][2] = lsb_measurement_register.lsb_measurement[channel-1];
+
+            _fdc1004_read_fdc_configuration_register();
+
+            if(fdc_configuration_register.done[channel-1] == 0)
+            {
+                NRF_LOG_INFO("Channel: %u measurement was properly read", channel);
+            }
+            else
+            {
+                NRF_LOG_INFO("Channel: %u measurement was not properly read", channel);
+            }
+        }
     }
 }
 
-static void _fdc1004_trigger_single_measurement(uint8_t channel)
+static void _fdc1004_trigger_measurement(uint8_t channel)
 {
     NRF_LOG_INFO("fdc1004_trigger_single_measurement");
-    _fdc1004_read_fdc_configuration_register();
+    //_fdc1004_read_fdc_configuration_register();
+    
     /* 
     * 1. Set repeat = 0
     * 2. Sett the corresponding MEAS_x field to 1
@@ -792,8 +842,29 @@ static void _fdc1004_trigger_single_measurement(uint8_t channel)
             fdc_configuration_register.meas[i] = 0;   // Disabling all other measurement channels
         }
     }
+
     _fdc1004_write_fdc_configuration_register();
-    _fdc1004_read_fdc_configuration_register();
+    //_fdc1004_read_fdc_configuration_register();
 }
+
+static void _fdc1004_configure_measurement(uint8_t channel)
+{
+    NRF_LOG_INFO("fdc1004_configure_single_measurement");
+
+    measurement_configuration_register.chb[channel-1] = 0x04;         // Assign Negative Channel CDC of Measurement Channel to CAPDAC
+
+    _fdc1004_write_measurement_configuration_register(channel);
+    //_fdc1004_read_measurement_configuration_register(channel);
+}
+
+static void _fdc1004_disable_measurement(uint8_t channel)
+{
+    NRF_LOG_INFO("fdc1004_trigger_single_measurement");
+
+    measurement_configuration_register.chb[channel-1] = 0x05;         // Disable Negative Channel CDC of Measurement Channel
+
+    _fdc1004_write_measurement_configuration_register(channel);
+    //_fdc1004_read_measurement_configuration_register(channel);
+} 
 
 #endif

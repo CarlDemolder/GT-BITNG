@@ -186,21 +186,21 @@ static void _fdc1004_read_msb_measurement_register(uint8_t channel);
 
 static void _fdc1004_read_lsb_measurement_register(uint8_t channel);
 
-static void _fdc1004_read_measurement_configuration_register(void);
+static void _fdc1004_read_measurement_configuration_register(uint8_t channel);
 
-static void _fdc1004_write_measurement_configuration_register(void);
+static void _fdc1004_write_measurement_configuration_register(uint8_t channel);
 
 static void _fdc1004_read_fdc_configuration_register(void);
 
 static void _fdc1004_write_fdc_configuration_register(void);
 
-static void _fdc1004_read_offset_calibration_register(void);
+static void _fdc1004_read_offset_calibration_register(uint8_t channel);
 
-static void _fdc1004_write_offset_calibration_register(void);
+static void _fdc1004_write_offset_calibration_register(uint8_t channel);
 
-static void _fdc1004_read_gain_calibration_register(void);
+static void _fdc1004_read_gain_calibration_register(uint8_t channel);
 
-static void _fdc1004_write_gain_calibration_register(void);
+static void _fdc1004_write_gain_calibration_register(uint8_t channel);
 
 static void _fdc1004_read_manufacturer_id_register(void);
 
@@ -208,7 +208,11 @@ static void _fdc1004_read_device_id_register(void);
 
 static void _fdc1004_read_measurement(uint8_t channel);
 
-static void _fdc1004_trigger_single_measurement(uint8_t channel);
+static void _fdc1004_trigger_measurement(uint8_t channel);
+
+static void _fdc1004_configure_measurement(uint8_t channel);
+
+static void _fdc1004_disable_measurement(uint8_t channel);
 
 #endif
 

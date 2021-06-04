@@ -1,0 +1,4 @@
+Record=TopLevelDocument|FileName=Sensor_Glove_Main-X02.SchDoc|SheetNumber=1
+Record=NoMainPathDocument|SourceDocument=Sensor_Glove_Main-X02.SchDoc|FileName=Sensor_Glove_Pheripherals-X02.SchDoc|SheetNumber=2
+Record=NoMainPathDocument|SourceDocument=Sensor_Glove_Main-X02.SchDoc|FileName=Sensor_Glove_Power-X02.SchDoc|SheetNumber=4
+Record=NoMainPathDocument|SourceDocument=Sensor_Glove_Main-X02.SchDoc|FileName=Sensor_Glove_Sensors-X02.SchDoc|SheetNumber=3

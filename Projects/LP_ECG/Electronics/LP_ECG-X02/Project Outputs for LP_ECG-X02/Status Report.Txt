@@ -1,0 +1,10 @@
+Output: Generates pick and place files
+Type  : Pick Place
+From  : PCB Document [LP_ECG-X02.PcbDoc]
+   Generated File[Pick Place for LP_ECG-X02.txt]
+
+
+Files Generated   : 1
+Documents Printed : 0
+
+Finished Output Generation At 12:05:07 PM On 6/2/2021
