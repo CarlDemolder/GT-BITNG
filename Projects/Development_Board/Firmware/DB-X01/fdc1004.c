@@ -455,9 +455,11 @@ void fdc1004_interrupt_handler(void)
             {
                 NRF_LOG_INFO("channel reading: %u", i);
 
-                _fdc1004_trigger_measurement(i+1);     // Trigger channel measurement
+                _fdc1004_configure_measurement(i+1);          // Configure channel measurement
+
+                _fdc1004_trigger_measurement(i+1);            // Trigger channel measurement
                
-                _fdc1004_read_measurement(i+1);               // Read Channel measurement
+                _fdc1004_read_measurement(i+1);               // Read channel measurement
                 
                 _fdc1004_disable_measurement(i+1);            // Disable channel measurement
             }
@@ -484,34 +486,6 @@ void fdc1004_start_data_collection(void)
 {
     NRF_LOG_INFO("fdc1004_start_data_collection");
     control.interrupt = 1;    // Enabling the interrupt
-
-    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
-    uint8_t i2c_init_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_INIT};  
-    state_handler(i2c_init_array_data); // Init TWIM Driver
-
-    uint8_t i2c_enable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_ENABLE};  
-    state_handler(i2c_enable_array_data); // Enable TWIM Driver
-
-    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
-    for(uint8_t i = 0; i < ARRAY_LENGTH(control.cin_status); i++)
-    {
-        if(control.cin_status[i] == 1)
-        {
-            _fdc1004_configure_measurement(i+1);   // Configure channel measurement
-        }
-    }
-
-    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-
-    uint8_t i2c_disable_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_DISABLE};  
-    state_handler(i2c_disable_array_data); // Disable TWIM Driver
-
-    uint8_t i2c_uninit_array_data[4] = {0x00, NRF52_MODULE, NRF52_I2C_COMMAND, NRF52_I2C_TWIM_UNINIT};  
-    state_handler(i2c_uninit_array_data); // Uninit TWIM Driver
-
-    /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
     uint8_t response_char_pressure_data_collection_started_command[7] = {0X00, BLUETOOTH_MODULE, BLUETOOTH_WRITE_RESPONSE_CHAR_COMMAND, 0x00, 
     0x00, 0x00, BLUETOOTH_RESPONSE_CHAR_PRESSURE_DATA_COLLECTION_STARTED};
@@ -825,7 +799,6 @@ static void _fdc1004_read_measurement(uint8_t channel)
 static void _fdc1004_trigger_measurement(uint8_t channel)
 {
     NRF_LOG_INFO("fdc1004_trigger_single_measurement");
-    //_fdc1004_read_fdc_configuration_register();
     
     /* 
     * 1. Set repeat = 0
@@ -844,7 +817,6 @@ static void _fdc1004_trigger_measurement(uint8_t channel)
     }
 
     _fdc1004_write_fdc_configuration_register();
-    //_fdc1004_read_fdc_configuration_register();
 }
 
 static void _fdc1004_configure_measurement(uint8_t channel)
@@ -852,9 +824,8 @@ static void _fdc1004_configure_measurement(uint8_t channel)
     NRF_LOG_INFO("fdc1004_configure_single_measurement");
 
     measurement_configuration_register.chb[channel-1] = 0x04;         // Assign Negative Channel CDC of Measurement Channel to CAPDAC
-
+    
     _fdc1004_write_measurement_configuration_register(channel);
-    //_fdc1004_read_measurement_configuration_register(channel);
 }
 
 static void _fdc1004_disable_measurement(uint8_t channel)
@@ -864,7 +835,6 @@ static void _fdc1004_disable_measurement(uint8_t channel)
     measurement_configuration_register.chb[channel-1] = 0x05;         // Disable Negative Channel CDC of Measurement Channel
 
     _fdc1004_write_measurement_configuration_register(channel);
-    //_fdc1004_read_measurement_configuration_register(channel);
 } 
 
 #endif
