@@ -62,9 +62,9 @@
  </Watch4>
  <Files>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="9" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../main.c" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="4" y="438" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../fdc1004.c" selected="1" top="428" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="438" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../fdc1004.c" selected="1" top="438" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="212" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../fdc1004.h" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="28" y="28" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../common.h" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="28" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../common.h" selected="0" top="28" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="37" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../serial_slave.c" selected="0" top="6" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../clocks.c" selected="0" top="274" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../bluetooth.c" selected="0" top="0" codecName="Default"/>
